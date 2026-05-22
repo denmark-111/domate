@@ -1,6 +1,10 @@
-import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useWorkspace } from '../context/WorkspaceContext';
 
-const HomeDashboard = ({ workspaces, onSelectWorkspace }) => {
+const HomeDashboard = () => {
+  const { workspaces } = useWorkspace();
+  const navigate = useNavigate();
+
   return (
     <div className="flex-1 overflow-y-auto bg-gray-50 p-8 sm:p-12">
       <div className="max-w-5xl mx-auto">
@@ -13,7 +17,7 @@ const HomeDashboard = ({ workspaces, onSelectWorkspace }) => {
           {workspaces.map((ws) => (
             <button
               key={ws.id}
-              onClick={() => onSelectWorkspace(ws.id)}
+              onClick={() => navigate(`/workspaces/${ws.id}`)}
               className="group bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl hover:border-blue-500 transition-all text-left flex flex-col h-48"
             >
               <div className="flex justify-between items-start mb-4">

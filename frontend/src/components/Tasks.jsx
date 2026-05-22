@@ -1,6 +1,8 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const Tasks = ({ goToHome }) => {
+const Tasks = () => {
+  const navigate = useNavigate();
   const tasks = [
     { title: 'Update project documentation', ws: 'Product Team', board: 'Development', due: 'Today' },
     { title: 'Buy groceries', ws: 'Personal Tasks', board: 'Daily Routine', due: 'Tomorrow' },
@@ -12,7 +14,7 @@ const Tasks = ({ goToHome }) => {
       <header className="h-16 border-b border-gray-200 flex items-center justify-between px-8 bg-white z-10 shrink-0">
         <div className="flex items-center gap-4">
           <button 
-            onClick={goToHome}
+            onClick={() => navigate('/')}
             className="flex items-center gap-2 text-gray-400 hover:text-gray-600 text-sm transition-colors group"
           >
             <span className="group-hover:-translate-x-1 transition-transform">←</span>

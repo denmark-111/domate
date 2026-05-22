@@ -1,21 +1,25 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useWorkspace } from '../context/WorkspaceContext';
 
-const Sidebar = ({ 
-  activeWorkspace, 
-  workspaces, 
-  activeView, 
-  setActiveView, 
-  boards, 
-  activeBoard, 
-  setActiveBoard 
-}) => {
+const Sidebar = () => {
   const [isWorkspaceMenuOpen, setIsWorkspaceMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Get shared workspace state from context
+  const { 
+    activeWorkspace, 
+    workspaces, 
+    activeView, 
+    setActiveView, 
+    boards, 
+    activeBoard, 
+    setActiveBoard 
+  } = useWorkspace();
 
   const handleWorkspaceChange = (wsId) => {
-    navigate(`/${wsId}`);
+    navigate(`/workspaces/${wsId}`);
     setIsWorkspaceMenuOpen(false);
   };
 
@@ -74,17 +78,6 @@ const Sidebar = ({
                       {ws.name}
                     </button>
                   ))}
-                  <div className="border-t border-gray-100 mt-1 pt-1">
-                    <button 
-                      onClick={() => {
-                        setIsWorkspaceMenuOpen(false);
-                        navigate('/');
-                      }}
-                      className="w-full text-left px-3 py-2 text-sm text-gray-500 hover:bg-gray-50 flex items-center gap-2"
-                    >
-                      🏠 All Workspaces
-                    </button>
-                  </div>
                 </div>
               )}
             </div>
