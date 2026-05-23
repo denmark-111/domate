@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { WorkspaceProvider } from './context/WorkspaceContext';
 import Sidebar from './components/Sidebar';
+import Topbar from './components/Topbar';
 import HomeDashboard from './components/HomeDashboard';
 import Tasks from './components/Tasks';
 import Workspace from './components/Workspace';
@@ -12,11 +13,14 @@ const AppContent = ({ viewType }) => {
       <div className="flex h-screen bg-white text-gray-900 font-sans">
         <Sidebar />
 
-        <main className="flex-1 flex flex-col overflow-hidden">
-          {viewType === 'home' && <HomeDashboard />}
-          {viewType === 'tasks' && <Tasks />}
-          {viewType === 'workspace' && <Workspace />}
-        </main>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Topbar />
+          <main className="flex-1 flex flex-col overflow-hidden">
+            {viewType === 'home' && <HomeDashboard />}
+            {viewType === 'tasks' && <Tasks />}
+            {viewType === 'workspace' && <Workspace />}
+          </main>
+        </div>
       </div>
     </WorkspaceProvider>
   );

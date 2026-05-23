@@ -188,19 +188,6 @@ const Sidebar = () => {
           </div>
         )}
       </div>
-
-      {/* User Profile */}
-      <div className="p-4 border-t border-gray-200 bg-white">
-        <button className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors group text-left">
-          <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold shadow-sm border-2 border-white group-hover:scale-110 transition-transform">
-            JD
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-gray-900 truncate">John Doe</p>
-            <p className="text-[10px] text-gray-500 truncate font-medium">Settings & Account</p>
-          </div>
-        </button>
-      </div>
     </aside>
   );
 };
