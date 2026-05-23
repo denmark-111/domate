@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
+import AddTaskForm from './AddTaskForm';
+import AddListForm from './AddListForm';
 
 const TaskCard = ({ task }) => (
   <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
@@ -25,7 +27,7 @@ const TaskCard = ({ task }) => (
   </div>
 );
 
-const Column = ({ title, tasks }) => (
+const Column = ({ title, tasks, onAddTask, isAddingTask, onCancelAddTask }) => (
   <div className="w-80 flex-shrink-0 flex flex-col gap-4">
     <div className="flex items-center justify-between px-2">
       <div className="flex items-center gap-2">
@@ -40,15 +42,29 @@ const Column = ({ title, tasks }) => (
         <TaskCard key={task.id} task={task} />
       ))}
       
-      <button className="w-full py-2 text-sm text-gray-500 hover:bg-gray-100 rounded-md border-2 border-dashed border-gray-200 transition-colors">
-        + Add Task
-      </button>
+      {!isAddingTask ? (
+        <button
+          onClick={() => onAddTask(title)}
+          className="w-full py-2 text-sm text-gray-500 hover:bg-gray-100 rounded-md border-2 border-dashed border-gray-200 transition-colors"
+        >
+          + Add Task
+        </button>
+      ) : (
+        <AddTaskForm
+          columnTitle={title}
+          onSubmit={(data) => {
+            console.log('Adding task:', data);
+            onCancelAddTask();
+          }}
+          onCancel={onCancelAddTask}
+        />
+      )}
     </div>
   </div>
 );
 
 const Board = () => {
-  const data = [
+  const [data, setData] = useState([
     {
       title: 'To Do',
       tasks: [
@@ -68,20 +84,57 @@ const Board = () => {
         { id: 4, title: 'Initial layout implementation', label: 'Feature', comments: 1, assigneeInitials: 'JD' },
       ]
     }
-  ];
+  ]);
+
+  const [addingTaskIn, setAddingTaskIn] = useState(null);
+  const [showAddList, setShowAddList] = useState(false);
+
+  const handleAddTask = (columnTitle) => {
+    setAddingTaskIn(columnTitle);
+  };
+
+  const handleCancelAddTask = () => {
+    setAddingTaskIn(null);
+  };
+
+  const handleAddList = (listData) => {
+    const newList = {
+      title: listData.title,
+      tasks: []
+    };
+    setData([...data, newList]);
+    setShowAddList(false);
+  };
 
   return (
     <section className="flex-1 overflow-x-auto p-8 bg-gray-50/50">
       <div className="flex gap-6 h-full">
         {data.map((col) => (
-          <Column key={col.title} title={col.title} tasks={col.tasks} />
+          <Column
+            key={col.title}
+            title={col.title}
+            tasks={col.tasks}
+            onAddTask={handleAddTask}
+            isAddingTask={addingTaskIn === col.title}
+            onCancelAddTask={handleCancelAddTask}
+          />
         ))}
         
-        <div className="w-80 flex-shrink-0">
-          <button className="w-full py-3 bg-gray-100/50 hover:bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 text-gray-500 font-medium transition-colors">
-            + Add Column
-          </button>
-        </div>
+        {!showAddList ? (
+          <div className="w-80 flex-shrink-0">
+            <button
+              onClick={() => setShowAddList(true)}
+              className="w-full py-3 bg-gray-100/50 hover:bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 text-gray-500 font-medium transition-colors"
+            >
+              + Add List
+            </button>
+          </div>
+        ) : (
+          <AddListForm
+            onSubmit={handleAddList}
+            onCancel={() => setShowAddList(false)}
+          />
+        )}
       </div>
     </section>
   );
