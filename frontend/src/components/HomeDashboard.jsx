@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWorkspace } from '../context/WorkspaceContext';
+import CreateWorkspaceForm from './CreateWorkspaceForm';
 
 const HomeDashboard = () => {
   const { workspaces } = useWorkspace();
   const navigate = useNavigate();
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
   return (
     <div className="flex-1 overflow-y-auto bg-gray-50 p-8 sm:p-12">
@@ -43,7 +46,10 @@ const HomeDashboard = () => {
           ))}
 
           {/* Create New Workspace Button */}
-          <button className="group p-6 rounded-2xl border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50/50 transition-all text-left flex flex-col items-center justify-center h-48 gap-3">
+          <button
+            onClick={() => setShowCreateForm(true)}
+            className="group p-6 rounded-2xl border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50/50 transition-all text-left flex flex-col items-center justify-center h-48 gap-3"
+          >
             <div className="w-12 h-12 rounded-full border-2 border-dashed border-gray-400 group-hover:border-blue-500 flex items-center justify-center text-2xl text-gray-400 group-hover:text-blue-500 transition-all">
               +
             </div>
@@ -75,6 +81,9 @@ const HomeDashboard = () => {
           </div>
         </section>
       </div>
+
+      {/* Create Workspace Modal */}
+      {showCreateForm && <CreateWorkspaceForm onClose={() => setShowCreateForm(false)} />}
     </div>
   );
 };
