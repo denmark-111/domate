@@ -16,7 +16,9 @@ const Sidebar = () => {
     setActiveView, 
     boards, 
     activeBoard, 
-    setActiveBoard 
+    setActiveBoard,
+    showCreateBoard,
+    setShowCreateBoard
   } = useWorkspace();
 
   const handleWorkspaceChange = (wsId) => {
@@ -111,7 +113,10 @@ const Sidebar = () => {
             <div className="mt-8 px-4">
               <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 px-2 flex justify-between items-center">
                 <span>Boards</span>
-                <button className="text-gray-400 hover:text-blue-600 hover:bg-blue-50 w-5 h-5 flex items-center justify-center rounded transition-colors">
+                <button 
+                  onClick={() => setShowCreateBoard(true)}
+                  className="text-gray-400 hover:text-blue-600 hover:bg-blue-50 w-5 h-5 flex items-center justify-center rounded transition-colors"
+                >
                   <Plus size={20} />
                 </button>
               </div>

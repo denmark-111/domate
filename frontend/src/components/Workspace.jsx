@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Board from './Board';
+import CreateBoardForm from './CreateBoardForm';
 import { useWorkspace } from '../context/WorkspaceContext';
 
 const Workspace = () => {
   const navigate = useNavigate();
-  // Pull all workspace state from context
-  const { activeWorkspace, activeView, activeBoard } = useWorkspace();
+  const { activeWorkspace, activeView, activeBoard, showCreateBoard, setShowCreateBoard } = useWorkspace();
 
   // Redirect if workspace not found or still loading
   useEffect(() => {
@@ -40,9 +40,6 @@ const Workspace = () => {
         </div>
         
         <div className="flex items-center gap-3">
-          <button className="px-4 py-2 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm transition-all active:scale-95">
-            {activeView === 'Board' ? 'Add Task' : activeView === 'Chat' ? 'New Message' : 'New Announcement'}
-          </button>
         </div>
       </header>
 
@@ -67,6 +64,19 @@ const Workspace = () => {
           </div>
         )}
       </div>
+
+      {/* Create Board Modal */}
+      {showCreateBoard && (
+        <CreateBoardForm
+          workspaceName={activeWorkspace.name}
+          onClose={() => setShowCreateBoard(false)}
+          onSubmit={(board) => {
+            console.log('Board created:', board);
+            // Handle board creation here
+            setShowCreateBoard(false);
+          }}
+        />
+      )}
     </>
   );
 };

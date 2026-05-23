@@ -8,6 +8,7 @@ export const WorkspaceProvider = ({ children }) => {
   const { workspaceId } = useParams();
   const [activeView, setActiveView] = useState('Announcements');
   const [activeBoard, setActiveBoard] = useState(null);
+  const [showCreateBoard, setShowCreateBoard] = useState(false);
 
   // Find the active workspace object
   const activeWorkspace = workspaceId 
@@ -35,7 +36,9 @@ export const WorkspaceProvider = ({ children }) => {
       setActiveView,
       activeBoard,
       setActiveBoard,
-      boards
+      boards,
+      showCreateBoard,
+      setShowCreateBoard
     }}>
       {children}
     </WorkspaceContext.Provider>
