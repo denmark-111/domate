@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import KanbanBoard from './KanbanBoard';
+import Board from './Board';
 import { useWorkspace } from '../context/WorkspaceContext';
 
 const Workspace = () => {
@@ -35,21 +35,21 @@ const Workspace = () => {
           </div>
           <span className="text-gray-300">/</span>
           <h2 className="text-lg font-bold text-gray-900 tracking-tight">
-            {activeView === 'Boards' ? activeBoard : activeView}
+            {activeView === 'Board' ? activeBoard : activeView}
           </h2>
         </div>
         
         <div className="flex items-center gap-3">
           <button className="px-4 py-2 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm transition-all active:scale-95">
-            {activeView === 'Boards' ? 'Add Task' : activeView === 'Chat' ? 'New Message' : 'New Announcement'}
+            {activeView === 'Board' ? 'Add Task' : activeView === 'Chat' ? 'New Message' : 'New Announcement'}
           </button>
         </div>
       </header>
 
       {/* Workspace Content Area */}
       <div className="flex-1 overflow-hidden flex flex-col">
-        {activeView === 'Boards' ? (
-          <KanbanBoard boardName={activeBoard} />
+        {activeView === 'Board' ? (
+          <Board boardName={activeBoard} />
         ) : (
           <div className="flex-1 flex items-center justify-center bg-gray-50">
             <div className="max-w-md text-center p-8 bg-white rounded-2xl shadow-sm border border-gray-100">

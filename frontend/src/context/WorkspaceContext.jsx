@@ -6,7 +6,7 @@ const WorkspaceContext = createContext();
 
 export const WorkspaceProvider = ({ children }) => {
   const { workspaceId } = useParams();
-  const [activeView, setActiveView] = useState('Boards');
+  const [activeView, setActiveView] = useState('Announcements');
   const [activeBoard, setActiveBoard] = useState(null);
 
   // Find the active workspace object
@@ -20,8 +20,7 @@ export const WorkspaceProvider = ({ children }) => {
   // Reset local workspace state when the workspace itself changes
   useEffect(() => {
     if (workspaceId) {
-      setActiveView('Boards');
-      setActiveBoard(mockBoards[workspaceId]?.[0] || null);
+      setActiveView('Announcements');
     } else {
       setActiveView('Home');
       setActiveBoard(null);

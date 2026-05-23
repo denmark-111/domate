@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useWorkspace } from '../context/WorkspaceContext';
+import { Home, ListTodo, MessageSquare, Megaphone, Plus } from 'lucide-react';
 
 const Sidebar = () => {
   const [isWorkspaceMenuOpen, setIsWorkspaceMenuOpen] = useState(false);
@@ -83,32 +84,25 @@ const Sidebar = () => {
             </div>
 
             <nav className="px-4 space-y-1">
-              <button 
-                onClick={() => setActiveView('Boards')}
-                className={`w-full text-left px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-3 transition-all ${
-                  activeView === 'Boards' ? 'bg-blue-600 text-white shadow-md shadow-blue-100' : 'text-gray-600 hover:bg-gray-200/50'
-                }`}
-              >
-                <span className="text-base">📋</span> Boards
-              </button>
+
               
               {activeWorkspace.type === 'team' && (
                 <>
-                  <button 
-                    onClick={() => setActiveView('Chat')}
-                    className={`w-full text-left px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-3 transition-all ${
-                      activeView === 'Chat' ? 'bg-blue-600 text-white shadow-md shadow-blue-100' : 'text-gray-600 hover:bg-gray-200/50'
-                    }`}
-                  >
-                    <span className="text-base">💬</span> Chat
-                  </button>
                   <button 
                     onClick={() => setActiveView('Announcements')}
                     className={`w-full text-left px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-3 transition-all ${
                       activeView === 'Announcements' ? 'bg-blue-600 text-white shadow-md shadow-blue-100' : 'text-gray-600 hover:bg-gray-200/50'
                     }`}
                   >
-                    <span className="text-base">📢</span> Announcements
+                    <Megaphone size={20} /> Announcements
+                  </button>
+                  <button 
+                    onClick={() => setActiveView('Chat')}
+                    className={`w-full text-left px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-3 transition-all ${
+                      activeView === 'Chat' ? 'bg-blue-600 text-white shadow-md shadow-blue-100' : 'text-gray-600 hover:bg-gray-200/50'
+                    }`}
+                  >
+                    <MessageSquare size={20} /> Chat
                   </button>
                 </>
               )}
@@ -117,18 +111,20 @@ const Sidebar = () => {
             <div className="mt-8 px-4">
               <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 px-2 flex justify-between items-center">
                 <span>Boards</span>
-                <button className="text-gray-400 hover:text-blue-600 hover:bg-blue-50 w-5 h-5 flex items-center justify-center rounded transition-colors">+</button>
+                <button className="text-gray-400 hover:text-blue-600 hover:bg-blue-50 w-5 h-5 flex items-center justify-center rounded transition-colors">
+                  <Plus size={20} />
+                </button>
               </div>
               <div className="space-y-1">
                 {boards.map((board) => (
                   <button
                     key={board}
                     onClick={() => {
-                      setActiveView('Boards');
+                      setActiveView('Board');
                       setActiveBoard(board);
                     }}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm truncate transition-colors font-medium ${
-                      activeView === 'Boards' && activeBoard === board 
+                      activeView === 'Board' && activeBoard === board 
                         ? 'text-blue-600 bg-blue-50/50 font-bold' 
                         : 'text-gray-500 hover:bg-gray-200/50 hover:text-gray-700'
                     }`}
@@ -149,7 +145,7 @@ const Sidebar = () => {
                   isHome ? 'bg-blue-600 text-white shadow-md shadow-blue-100' : 'text-gray-600 hover:bg-gray-200/50'
                 }`}
               >
-                <span className="text-base">🏠</span> Home
+                <Home size={20} /> Home
               </button>
               <button 
                 onClick={() => navigate('/tasks')}
@@ -157,7 +153,7 @@ const Sidebar = () => {
                   isTasks ? 'bg-blue-600 text-white shadow-md shadow-blue-100' : 'text-gray-600 hover:bg-gray-200/50'
                 }`}
               >
-                <span className="text-base">✅</span> Tasks
+                <ListTodo size={20} /> Tasks
               </button>
             </nav>
 

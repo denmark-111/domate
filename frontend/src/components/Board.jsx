@@ -47,7 +47,7 @@ const Column = ({ title, tasks }) => (
   </div>
 );
 
-const KanbanBoard = () => {
+const Board = () => {
   const data = [
     {
       title: 'To Do',
@@ -87,4 +87,4 @@ const KanbanBoard = () => {
   );
 };
 
-export default KanbanBoard;
+export default Board;
