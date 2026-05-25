@@ -62,18 +62,18 @@ const CreateBoardForm = ({ workspaceName, onClose, onSubmit }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl shadow-lg w-full max-w-md">
+      <div className="bg-[var(--color-bg-primary)] rounded-2xl shadow-lg w-full max-w-md">
         {/* Header */}
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900">Create Board</h2>
-          <p className="text-sm text-gray-500 mt-1">Add a new board to {workspaceName}</p>
+        <div className="p-6 border-b border-[var(--color-border-primary)]">
+          <h2 className="text-xl font-bold text-[var(--color-text-primary)]">Create Board</h2>
+          <p className="text-sm text-[var(--color-text-secondary)] mt-1">Add a new board to {workspaceName}</p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Name */}
           <div>
-            <label htmlFor="name" className="block text-sm font-semibold text-gray-900 mb-2">
+            <label htmlFor="name" className="block text-sm font-semibold text-[var(--color-text-primary)] mb-2">
               Name *
             </label>
             <input
@@ -83,18 +83,18 @@ const CreateBoardForm = ({ workspaceName, onClose, onSubmit }) => {
               value={formData.name}
               onChange={handleInputChange}
               placeholder="e.g., Development, Marketing, Q2 Planning"
-              className={`w-full px-4 py-2 rounded-lg border-2 outline-none focus:border-blue-500 transition-colors ${
-                errors.name ? 'border-red-500 bg-red-50' : 'border-gray-200 bg-white'
+              className={`w-full px-4 py-2 rounded-lg border-2 outline-none focus:border-[var(--color-border-blue-500)] transition-colors ${
+                errors.name ? 'border-[var(--color-border-red-500)] bg-[var(--color-bg-red-50)]' : 'border-[var(--color-border-primary)] bg-[var(--color-bg-primary)]'
               }`}
             />
             {errors.name && (
-              <p className="text-red-600 text-sm mt-1">{errors.name}</p>
+              <p className="text-[var(--color-text-red-600)] text-sm mt-1">{errors.name}</p>
             )}
           </div>
 
           {/* Description */}
           <div>
-            <label htmlFor="description" className="block text-sm font-semibold text-gray-900 mb-2">
+            <label htmlFor="description" className="block text-sm font-semibold text-[var(--color-text-primary)] mb-2">
               Description
             </label>
             <textarea
@@ -104,14 +104,14 @@ const CreateBoardForm = ({ workspaceName, onClose, onSubmit }) => {
               onChange={handleInputChange}
               placeholder="What is this board for?"
               rows="3"
-              className="w-full px-4 py-2 rounded-lg border-2 border-gray-200 bg-white outline-none focus:border-blue-500 transition-colors resize-none"
+              className="w-full px-4 py-2 rounded-lg border-2 border-[var(--color-border-primary)] bg-[var(--color-bg-primary)] outline-none focus:border-[var(--color-border-blue-500)] transition-colors resize-none"
             />
           </div>
 
           {/* Error Message */}
           {errors.submit && (
-            <div className="p-3 rounded-lg bg-red-50 border border-red-200">
-              <p className="text-red-700 text-sm">{errors.submit}</p>
+            <div className="p-3 rounded-lg bg-[var(--color-bg-red-50)] border border-[var(--color-border-red-200)]">
+              <p className="text-[var(--color-text-red-700)] text-sm">{errors.submit}</p>
             </div>
           )}
 
@@ -120,14 +120,14 @@ const CreateBoardForm = ({ workspaceName, onClose, onSubmit }) => {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 rounded-lg border-2 border-gray-200 bg-white hover:bg-gray-50 transition-colors font-medium text-gray-900"
+              className="flex-1 px-4 py-2 rounded-lg border-2 border-[var(--color-border-primary)] bg-[var(--color-bg-primary)] hover:bg-[var(--color-bg-secondary)] transition-colors font-medium text-[var(--color-text-primary)]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 transition-colors font-medium text-white disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2 rounded-lg bg-[var(--color-bg-blue-button)] hover:bg-[var(--color-bg-blue-button-hover)] disabled:bg-gray-400 transition-colors font-medium text-white disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
                 <>

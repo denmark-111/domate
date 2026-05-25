@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { WorkspaceProvider } from './context/WorkspaceContext';
+import { ThemeContextProvider } from './context/ThemeContext';
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
 import HomeDashboard from './components/HomeDashboard';
@@ -10,7 +11,7 @@ import Workspace from './components/Workspace';
 const AppContent = ({ viewType }) => {
   return (
     <WorkspaceProvider>
-      <div className="flex h-screen bg-white text-gray-900 font-sans">
+      <div className="flex h-screen font-sans">
         <Sidebar />
 
         <div className="flex-1 flex flex-col overflow-hidden">
@@ -29,11 +30,13 @@ const AppContent = ({ viewType }) => {
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<AppContent viewType="home" />} />
-        <Route path="/tasks" element={<AppContent viewType="tasks" />} />
-        <Route path="/workspaces/:workspaceId" element={<AppContent viewType="workspace" />} />
-      </Routes>
+      <ThemeContextProvider>
+        <Routes>
+          <Route path="/" element={<AppContent viewType="home" />} />
+          <Route path="/tasks" element={<AppContent viewType="tasks" />} />
+          <Route path="/workspaces/:workspaceId" element={<AppContent viewType="workspace" />} />
+        </Routes>
+      </ThemeContextProvider>
     </Router>
   );
 }

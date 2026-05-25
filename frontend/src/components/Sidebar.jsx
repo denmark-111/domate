@@ -30,17 +30,17 @@ const Sidebar = () => {
   const isTasks = location.pathname === '/tasks';
 
   return (
-    <aside className="w-64 bg-gray-50 border-r border-gray-200 flex flex-col h-screen">
+    <aside className="w-64 bg-[var(--color-bg-secondary)] border-r border-[var(--color-border-primary)] flex flex-col h-screen">
       {/* Home / Logo Section */}
-      <div className="p-6 border-b border-gray-200 bg-white">
+      <div className="p-6 border-b border-[var(--color-border-primary)] bg-[var(--color-bg-primary)]">
         <button 
           onClick={() => navigate('/')}
           className="flex items-center gap-3 group"
         >
-          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold shadow-md group-hover:rotate-12 transition-transform">
+          <div className="w-8 h-8 rounded-lg bg-[var(--color-bg-blue-button)] flex items-center justify-center text-white font-bold shadow-md group-hover:rotate-12 transition-transform">
             B
           </div>
-          <h1 className="text-xl font-bold text-gray-800 tracking-tight">Board-Done</h1>
+          <h1 className="text-xl font-bold text-[var(--color-text-primary)] tracking-tight">Board-Done</h1>
         </button>
       </div>
 
@@ -48,36 +48,36 @@ const Sidebar = () => {
         {activeWorkspace ? (
           /* --- WORKSPACE VIEW SIDEBAR --- */
           <>
-            <div className="relative px-4 py-4 border-b border-gray-100 mb-4">
+            <div className="relative px-4 py-4 border-b border-[var(--color-border-gray-100)] mb-4">
               <button 
                 onClick={() => setIsWorkspaceMenuOpen(!isWorkspaceMenuOpen)}
-                className="w-full flex items-center justify-between p-2 rounded-lg bg-white shadow-sm border border-gray-200 transition-colors group"
+                className="w-full flex items-center justify-between p-2 rounded-lg bg-[var(--color-bg-primary)] shadow-sm border border-[var(--color-border-primary)] transition-colors group"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-6 h-6 rounded bg-blue-100 text-blue-700 flex items-center justify-center text-[10px] font-bold">
+                  <div className="w-6 h-6 rounded bg-[var(--color-bg-blue-100)] text-[var(--color-text-blue-700)] flex items-center justify-center text-[10px] font-bold">
                     {activeWorkspace.name[0]}
                   </div>
                   <div className="text-left min-w-0">
-                    <h1 className="text-xs font-bold text-gray-900 truncate">
+                    <h1 className="text-xs font-bold text-[var(--color-text-primary)] truncate">
                       {activeWorkspace.name}
                     </h1>
                   </div>
                 </div>
-                <span className="text-gray-400 group-hover:text-gray-600 transition-colors text-[10px]">▼</span>
+                <span className="text-[var(--color-text-secondary)] group-hover:text-[var(--color-text-tertiary)] transition-colors text-[10px]">▼</span>
               </button>
 
               {isWorkspaceMenuOpen && (
-                <div className="absolute top-full left-4 right-4 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 py-1">
-                  <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-50 mb-1">Switch Workspace</div>
+                <div className="absolute top-full left-4 right-4 mt-1 bg-[var(--color-bg-primary)] border border-[var(--color-border-primary)] rounded-lg shadow-xl z-50 py-1">
+                  <div className="px-3 py-2 text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider border-b border-gray-50 mb-1">Switch Workspace</div>
                   {workspaces.map(ws => (
                     <button
                       key={ws.id}
                       onClick={() => handleWorkspaceChange(ws.id)}
-                      className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 hover:bg-blue-50 transition-colors ${
-                        activeWorkspace.id === ws.id ? 'text-blue-600 font-semibold' : 'text-gray-700'
+                      className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 hover:bg-[var(--color-bg-blue-50)] transition-colors ${
+                        activeWorkspace.id === ws.id ? 'text-[var(--color-text-blue-600)] font-semibold' : 'text-[var(--color-text-gray-700)]'
                       }`}
                     >
-                      <div className={`w-1.5 h-1.5 rounded-full ${activeWorkspace.id === ws.id ? 'bg-blue-600' : 'bg-transparent'}`}></div>
+                      <div className={`w-1.5 h-1.5 rounded-full ${activeWorkspace.id === ws.id ? 'bg-[var(--color-bg-blue-button)]' : 'bg-transparent'}`}></div>
                       {ws.name}
                     </button>
                   ))}
@@ -93,7 +93,7 @@ const Sidebar = () => {
                   <button 
                     onClick={() => setActiveView('Announcements')}
                     className={`w-full text-left px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-3 transition-all ${
-                      activeView === 'Announcements' ? 'bg-blue-600 text-white shadow-md shadow-blue-100' : 'text-gray-600 hover:bg-gray-200/50'
+                      activeView === 'Announcements' ? 'bg-[var(--color-bg-blue-button)] text-white shadow-md shadow-[var(--color-bg-blue-50)]' : 'text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)]/50'
                     }`}
                   >
                     <Megaphone size={20} /> Announcements
@@ -101,7 +101,7 @@ const Sidebar = () => {
                   <button 
                     onClick={() => setActiveView('Chat')}
                     className={`w-full text-left px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-3 transition-all ${
-                      activeView === 'Chat' ? 'bg-blue-600 text-white shadow-md shadow-blue-100' : 'text-gray-600 hover:bg-gray-200/50'
+                      activeView === 'Chat' ? 'bg-[var(--color-bg-blue-button)] text-white shadow-md shadow-[var(--color-bg-blue-50)]' : 'text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)]/50'
                     }`}
                   >
                     <MessageSquare size={20} /> Chat
@@ -111,11 +111,11 @@ const Sidebar = () => {
             </nav>
 
             <div className="mt-8 px-4">
-              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 px-2 flex justify-between items-center">
+              <div className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-widest mb-2 px-2 flex justify-between items-center">
                 <span>Boards</span>
                 <button 
                   onClick={() => setShowCreateBoard(true)}
-                  className="text-gray-400 hover:text-blue-600 hover:bg-blue-50 w-5 h-5 flex items-center justify-center rounded transition-colors"
+                  className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-blue-600)] hover:bg-[var(--color-bg-blue-50)] w-5 h-5 flex items-center justify-center rounded transition-colors"
                 >
                   <Plus size={20} />
                 </button>
@@ -130,8 +130,8 @@ const Sidebar = () => {
                     }}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm truncate transition-colors font-medium ${
                       activeView === 'Board' && activeBoard === board 
-                        ? 'text-blue-600 bg-blue-50/50 font-bold' 
-                        : 'text-gray-500 hover:bg-gray-200/50 hover:text-gray-700'
+                        ? 'text-[var(--color-text-blue-600)] bg-[var(--color-bg-blue-50)] font-bold' 
+                        : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]/50 hover:text-[var(--color-text-gray-700)]'
                     }`}
                   >
                     # {board}
@@ -147,7 +147,7 @@ const Sidebar = () => {
               <button 
                 onClick={() => navigate('/')}
                 className={`w-full text-left px-3 py-2 rounded-lg font-bold text-sm flex items-center gap-3 transition-all ${
-                  isHome ? 'bg-blue-600 text-white shadow-md shadow-blue-100' : 'text-gray-600 hover:bg-gray-200/50'
+                  isHome ? 'bg-[var(--color-bg-blue-button)] text-white shadow-md shadow-[var(--color-bg-blue-50)]' : 'text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)]/50'
                 }`}
               >
                 <Home size={20} /> Home
@@ -155,7 +155,7 @@ const Sidebar = () => {
               <button 
                 onClick={() => navigate('/tasks')}
                 className={`w-full text-left px-3 py-2 rounded-lg font-bold text-sm flex items-center gap-3 transition-all ${
-                  isTasks ? 'bg-blue-600 text-white shadow-md shadow-blue-100' : 'text-gray-600 hover:bg-gray-200/50'
+                  isTasks ? 'bg-[var(--color-bg-blue-button)] text-white shadow-md shadow-[var(--color-bg-blue-50)]' : 'text-[var(--color-text-tertiary)] hover:bg-[var(--color-bg-tertiary)]/50'
                 }`}
               >
                 <ListTodo size={20} /> Tasks
@@ -163,23 +163,23 @@ const Sidebar = () => {
             </nav>
 
             <div>
-              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4 px-3 flex justify-between items-center">
+              <div className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-widest mb-4 px-3 flex justify-between items-center">
                 <span>My Workspaces</span>
-                <button className="text-gray-400 hover:text-blue-600">+</button>
+                <button className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-blue-600)]">+</button>
               </div>
               <div className="space-y-2">
                 {workspaces.map(ws => (
                   <button
                     key={ws.id}
                     onClick={() => handleWorkspaceChange(ws.id)}
-                    className="w-full text-left px-3 py-3 rounded-xl border border-transparent bg-white shadow-sm hover:border-blue-200 hover:shadow-md transition-all flex items-center gap-3"
+                    className="w-full text-left px-3 py-3 rounded-xl border border-transparent bg-[var(--color-bg-primary)] shadow-sm hover:border-[var(--color-border-blue-200)] hover:shadow-md transition-all flex items-center gap-3"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs font-bold">
+                    <div className="w-8 h-8 rounded-lg bg-[var(--color-bg-blue-50)] text-[var(--color-text-blue-600)] flex items-center justify-center text-xs font-bold">
                       {ws.name[0]}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-bold text-gray-900 truncate">{ws.name}</p>
-                      <p className="text-[10px] text-gray-500 uppercase font-semibold">{ws.type}</p>
+                      <p className="text-xs font-bold text-[var(--color-text-primary)] truncate">{ws.name}</p>
+                      <p className="text-[10px] text-[var(--color-text-secondary)] uppercase font-semibold">{ws.type}</p>
                     </div>
                   </button>
                 ))}

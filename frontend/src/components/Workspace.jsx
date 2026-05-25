@@ -20,20 +20,20 @@ const Workspace = () => {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Workspace Content Area */}
-      <div className="flex-1 overflow-hidden flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {activeView === 'Board' ? (
           <Board boardName={activeBoard} />
         ) : (
-          <div className="flex-1 flex items-center justify-center bg-gray-50">
-            <div className="max-w-md text-center p-8 bg-white rounded-2xl shadow-sm border border-gray-100">
+          <div className="flex-1 flex items-center justify-center bg-[var(--color-bg-secondary)]">
+            <div className="max-w-md text-center p-8 bg-[var(--color-bg-card)] rounded-2xl shadow-sm border border-[var(--color-border-gray-100)]">
               <div className="text-6xl mb-6">{activeView === 'Chat' ? '💬' : '📢'}</div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
+              <h3 className="text-xl font-bold text-[var(--color-text-primary)] mb-2">
                 {activeView} for {activeWorkspace.name}
               </h3>
-              <p className="text-gray-500 mb-6 text-sm">
+              <p className="text-[var(--color-text-secondary)] mb-6 text-sm">
                 This {activeView.toLowerCase()} channel is private to the workspace.
               </p>
-              <div className="inline-block px-4 py-2 bg-blue-50 text-blue-700 rounded-full text-[10px] font-bold uppercase tracking-wider">
+              <div className="inline-block px-4 py-2 bg-[var(--color-bg-blue-50)] text-[var(--color-text-blue-700)] rounded-full text-[10px] font-bold uppercase tracking-wider">
                 Coming Soon
               </div>
             </div>
@@ -58,3 +58,4 @@ const Workspace = () => {
 };
 
 export default Workspace;
+

@@ -1,5 +1,80 @@
 @import "tailwindcss";
 
+:root {
+  /* Light theme colors */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f9fafb; /* gray-50 */
+  --color-bg-tertiary: #f3f4f6; /* gray-100 */
+  --color-bg-card: #ffffff;
+  --color-bg-card-hover: #f9fafb;
+  --color-bg-blue-button: #2563eb; /* blue-600 */
+  --color-bg-blue-button-hover: #1d4ed8; /* blue-700 */
+  --color-bg-gray-button: #e5e7eb; /* gray-200 */
+  --color-bg-gray-button-hover: #d1d5db; /* gray-300 */
+  --color-bg-blue-50: #eff6ff; /* blue-50 */
+  --color-bg-red-50: #fef2f2; /* red-50 */
+  --color-bg-purple-100: #f3e8ff; /* purple-100 */
+  --color-bg-green-100: #dcfce7; /* green-100 */
+  --color-bg-blue-100: #dbeafe; /* blue-100 */
+
+  --color-text-primary: #111827; /* gray-900 */
+  --color-text-secondary: #4b5563; /* gray-500 */
+  --color-text-tertiary: #6b7280; /* gray-600 */
+  --color-text-blue-600: #2563eb; /* blue-600 */
+  --color-text-blue-700: #1d4ed8; /* blue-700 */
+  --color-text-gray-700: #4b5563; /* gray-700 */
+  --color-text-red-600: #dc2626; /* red-600 */
+  --color-text-red-700: #b91c1c; /* red-700 */
+  --color-text-purple-700: #7e22ce; /* purple-700 */
+  --color-text-green-700: #15803d; /* green-700 */
+
+  --color-border-primary: #e5e7eb; /* gray-200 */
+  --color-border-blue-300: #93c5fd; /* blue-300 */
+  --color-border-blue-200: #bfdbfe; /* blue-200 */
+  --color-border-red-500: #ef4444; /* red-500 */
+  --color-border-red-200: #fecaca; /* red-200 */
+  --color-border-gray-300: #d1d5db; /* gray-300 */
+  --color-border-gray-100: #f3f4f6; /* gray-100 */
+  --color-border-blue-500: #3b82f6; /* blue-500 */
+}
+
+html[data-theme='dark'] {
+  /* Dark theme colors */
+  --color-bg-primary: #1a202c; /* charcoal/dark blue */
+  --color-bg-secondary: #2d3748; /* darker gray-800 */
+  --color-bg-tertiary: #4a5568; /* gray-700 */
+  --color-bg-card: #2d3748;
+  --color-bg-card-hover: #4a5568;
+  --color-bg-blue-button: #63b3ed; /* light blue */
+  --color-bg-blue-button-hover: #4299e1; /* slightly darker light blue */
+  --color-bg-gray-button: #a0aec0; /* gray-400 */
+  --color-bg-gray-button-hover: #cbd5e0; /* gray-300 */
+  --color-bg-blue-50: #2a4365; /* darker blue */
+  --color-bg-red-50: #4c1111; /* darker red */
+  --color-bg-purple-100: #4a196e; /* darker purple */
+  --color-bg-green-100: #1b4a2e; /* darker green */
+
+  --color-text-primary: #e2e8f0; /* light gray */
+  --color-text-secondary: #a0aec0; /* gray-400 */
+  --color-text-tertiary: #cbd5e0; /* gray-300 */
+  --color-text-blue-600: #63b3ed; /* light blue */
+  --color-text-blue-700: #4299e1;
+  --color-text-gray-700: #a0aec0;
+  --color-text-red-600: #fc8181; /* light red */
+  --color-text-red-700: #e53e3e;
+  --color-text-purple-700: #d6bcfa; /* light purple */
+  --color-text-green-700: #81e6d9; /* light green */
+
+  --color-border-primary: #4a5568; /* gray-700 */
+  --color-border-blue-300: #63b3ed;
+  --color-border-blue-200: #90cdf4;
+  --color-border-red-500: #fc8181;
+  --color-border-red-200: #feb2b2;
+  --color-border-gray-300: #a0aec0;
+  --color-border-gray-100: #2d3748;
+  --color-border-blue-500: #63b3ed;
+}
+
 @theme {
   --font-sans: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
 }
@@ -10,4 +85,8 @@ body,
   height: 100%;
   margin: 0;
   padding: 0;
+  background-color: var(--color-bg-primary); /* Apply themed background to html/body */
+  color: var(--color-text-primary); /* Apply themed text color to html/body */
+  transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition for theme change */
 }
+
