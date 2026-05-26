@@ -1,81 +1,107 @@
 @import "tailwindcss";
 
+/* Light theme - default */
 :root {
-  /* Light theme colors */
-  --color-bg-primary: #ffffff;
-  --color-bg-secondary: #f9fafb; /* gray-50 */
-  --color-bg-tertiary: #f3f4f6; /* gray-100 */
-  --color-bg-card: #ffffff;
-  --color-bg-card-hover: #f9fafb;
-  --color-bg-blue-button: #2563eb; /* blue-600 */
-  --color-bg-blue-button-hover: #1d4ed8; /* blue-700 */
-  --color-bg-gray-button: #e5e7eb; /* gray-200 */
-  --color-bg-gray-button-hover: #d1d5db; /* gray-300 */
-  --color-bg-blue-50: #eff6ff; /* blue-50 */
-  --color-bg-red-50: #fef2f2; /* red-50 */
-  --color-bg-purple-100: #f3e8ff; /* purple-100 */
-  --color-bg-green-100: #dcfce7; /* green-100 */
-  --color-bg-blue-100: #dbeafe; /* blue-100 */
-
-  --color-text-primary: #111827; /* gray-900 */
-  --color-text-secondary: #4b5563; /* gray-500 */
-  --color-text-tertiary: #6b7280; /* gray-600 */
-  --color-text-blue-600: #2563eb; /* blue-600 */
-  --color-text-blue-700: #1d4ed8; /* blue-700 */
-  --color-text-gray-700: #4b5563; /* gray-700 */
-  --color-text-red-600: #dc2626; /* red-600 */
-  --color-text-red-700: #b91c1c; /* red-700 */
-  --color-text-purple-700: #7e22ce; /* purple-700 */
-  --color-text-green-700: #15803d; /* green-700 */
-
-  --color-border-primary: #e5e7eb; /* gray-200 */
-  --color-border-blue-300: #93c5fd; /* blue-300 */
-  --color-border-blue-200: #bfdbfe; /* blue-200 */
-  --color-border-red-500: #ef4444; /* red-500 */
-  --color-border-red-200: #fecaca; /* red-200 */
-  --color-border-gray-300: #d1d5db; /* gray-300 */
-  --color-border-gray-100: #f3f4f6; /* gray-100 */
-  --color-border-blue-500: #3b82f6; /* blue-500 */
+  --bg: #ffffff;
+  --bg-secondary: #f9fafb;
+  --bg-tertiary: #f3f4f6;
+  --text: #111827;
+  --text-secondary: #4b5563;
+  --text-tertiary: #6b7280;
+  --text-accent: #2563eb;
+  --button: #2563eb;
+  --button-hover: #1d4ed8;
+  --button-secondary: #e5e7eb;
+  --button-secondary-hover: #d1d5db;
+  --button-secondary-text: #4b5563;
+  --border: #e5e7eb;
+  --border-light: #f3f4f6;
+  --input-bg: #eff6ff;
+  --input-border: #93c5fd;
+  --input-border-light: #bfdbfe;
+  --input-border-focus: #3b82f6;
+  --error-bg: #fef2f2;
+  --error-border: #ef4444;
+  --error-text: #dc2626;
+  --label-feature-bg: #dbeafe;
+  --label-feature-text: #1d4ed8;
+  --label-bug-bg: #fef2f2;
+  --label-bug-text: #b91c1c;
+  --label-done-bg: #dcfce7;
+  --label-done-text: #15803d;
+  --label-team-bg: #f3e8ff;
+  --label-team-text: #7e22ce;
+  --label-personal-bg: #dcfce7;
+  --label-personal-text: #15803d;
 }
 
+/* Dark theme */
 html[data-theme='dark'] {
-  /* Dark theme colors */
-  --color-bg-primary: #1a202c; /* charcoal/dark blue */
-  --color-bg-secondary: #2d3748; /* darker gray-800 */
-  --color-bg-tertiary: #4a5568; /* gray-700 */
-  --color-bg-card: #2d3748;
-  --color-bg-card-hover: #4a5568;
-  --color-bg-blue-button: #63b3ed; /* light blue */
-  --color-bg-blue-button-hover: #4299e1; /* slightly darker light blue */
-  --color-bg-gray-button: #a0aec0; /* gray-400 */
-  --color-bg-gray-button-hover: #cbd5e0; /* gray-300 */
-  --color-bg-blue-50: #2a4365; /* darker blue */
-  --color-bg-red-50: #4c1111; /* darker red */
-  --color-bg-purple-100: #4a196e; /* darker purple */
-  --color-bg-green-100: #1b4a2e; /* darker green */
-
-  --color-text-primary: #e2e8f0; /* light gray */
-  --color-text-secondary: #a0aec0; /* gray-400 */
-  --color-text-tertiary: #cbd5e0; /* gray-300 */
-  --color-text-blue-600: #63b3ed; /* light blue */
-  --color-text-blue-700: #4299e1;
-  --color-text-gray-700: #a0aec0;
-  --color-text-red-600: #fc8181; /* light red */
-  --color-text-red-700: #e53e3e;
-  --color-text-purple-700: #d6bcfa; /* light purple */
-  --color-text-green-700: #81e6d9; /* light green */
-
-  --color-border-primary: #4a5568; /* gray-700 */
-  --color-border-blue-300: #63b3ed;
-  --color-border-blue-200: #90cdf4;
-  --color-border-red-500: #fc8181;
-  --color-border-red-200: #feb2b2;
-  --color-border-gray-300: #a0aec0;
-  --color-border-gray-100: #2d3748;
-  --color-border-blue-500: #63b3ed;
+  --bg: #1a202c;
+  --bg-secondary: #2d3748;
+  --bg-tertiary: #4a5568;
+  --text: #e2e8f0;
+  --text-secondary: #a0aec0;
+  --text-tertiary: #cbd5e0;
+  --text-accent: #63b3ed;
+  --button: #63b3ed;
+  --button-hover: #4299e1;
+  --button-secondary: #a0aec0;
+  --button-secondary-hover: #cbd5e0;
+  --button-secondary-text: #1a202c;
+  --border: #4a5568;
+  --border-light: #2d3748;
+  --input-bg: #2a4365;
+  --input-border: #63b3ed;
+  --input-border-light: #4299e1;
+  --input-border-focus: #63b3ed;
+  --error-bg: #4c1111;
+  --error-border: #fc8181;
+  --error-text: #fc8181;
+  --label-feature-bg: #2a4365;
+  --label-feature-text: #90cdf4;
+  --label-bug-bg: #4c1111;
+  --label-bug-text: #fc8181;
+  --label-done-bg: #1b4a2e;
+  --label-done-text: #81e6d9;
+  --label-team-bg: #4a196e;
+  --label-team-text: #d6bcfa;
+  --label-personal-bg: #1b4a2e;
+  --label-personal-text: #81e6d9;
 }
 
 @theme {
+  --color-bg: var(--bg);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-tertiary: var(--bg-tertiary);
+  --color-text: var(--text);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-text-accent: var(--text-accent);
+  --color-button: var(--button);
+  --color-button-hover: var(--button-hover);
+  --color-button-secondary: var(--button-secondary);
+  --color-button-secondary-hover: var(--button-secondary-hover);
+  --color-button-secondary-text: var(--button-secondary-text);
+  --color-border: var(--border);
+  --color-border-light: var(--border-light);
+  --color-input-bg: var(--input-bg);
+  --color-input-border: var(--input-border);
+  --color-input-border-light: var(--input-border-light);
+  --color-input-border-focus: var(--input-border-focus);
+  --color-error-bg: var(--error-bg);
+  --color-error-border: var(--error-border);
+  --color-error-text: var(--error-text);
+  --color-label-feature-bg: var(--label-feature-bg);
+  --color-label-feature-text: var(--label-feature-text);
+  --color-label-bug-bg: var(--label-bug-bg);
+  --color-label-bug-text: var(--label-bug-text);
+  --color-label-done-bg: var(--label-done-bg);
+  --color-label-done-text: var(--label-done-text);
+  --color-label-team-bg: var(--label-team-bg);
+  --color-label-team-text: var(--label-team-text);
+  --color-label-personal-bg: var(--label-personal-bg);
+  --color-label-personal-text: var(--label-personal-text);
   --font-sans: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
 }
 
@@ -85,8 +111,8 @@ body,
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: var(--color-bg-primary); /* Apply themed background to html/body */
-  color: var(--color-text-primary); /* Apply themed text color to html/body */
-  transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition for theme change */
+  background-color: var(--bg);
+  color: var(--text);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
