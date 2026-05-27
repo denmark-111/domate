@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { WorkspaceProvider } from './context/WorkspaceContext';
 import { ThemeContextProvider } from './context/ThemeContext';
 import { AuthContextProvider } from './context/AuthContext';
+import Landing from './components/Landing';
 import Auth from './components/Auth';
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
@@ -35,8 +36,9 @@ function App() {
       <Router>
         <ThemeContextProvider>
           <Routes>
+            <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/" element={<AppContent viewType="home" />} />
+            <Route path="/dashboard" element={<AppContent viewType="home" />} />
             <Route path="/tasks" element={<AppContent viewType="tasks" />} />
             <Route path="/workspaces/:workspaceId" element={<AppContent viewType="workspace" />} />
           </Routes>

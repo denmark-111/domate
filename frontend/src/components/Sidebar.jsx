@@ -26,7 +26,7 @@ const Sidebar = () => {
     setIsWorkspaceMenuOpen(false);
   };
 
-  const isHome = location.pathname === '/';
+  const isHome = location.pathname === '/dashboard';
   const isTasks = location.pathname === '/tasks';
 
   return (
@@ -34,7 +34,7 @@ const Sidebar = () => {
       {/* Home / Logo Section */}
       <div className="p-6 border-b border-border bg-bg">
         <button 
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/dashboard')}
           className="flex items-center gap-3 group"
         >
           <div className="w-8 h-8 rounded-lg bg-button flex items-center justify-center text-white font-bold shadow-md group-hover:rotate-12 transition-transform">
@@ -145,7 +145,7 @@ const Sidebar = () => {
           <div className="px-4 space-y-6">
             <nav className="space-y-1 mt-4">
               <button 
-                onClick={() => navigate('/')}
+                onClick={() => navigate('/dashboard')}
                 className={`w-full text-left px-3 py-2 rounded-lg font-bold text-sm flex items-center gap-3 transition-all ${
                   isHome ? 'bg-button text-white' : 'text-text-tertiary hover:bg-bg-tertiary/50'
                 }`}

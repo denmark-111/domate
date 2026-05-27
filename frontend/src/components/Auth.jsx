@@ -119,7 +119,7 @@ const Auth = () => {
         
         // Redirect after a short delay
         setTimeout(() => {
-          navigate('/');
+          navigate('/dashboard');
         }, 1500);
       } else {
         setErrors({ submit: result.error || `${isLoginMode ? 'Login' : 'Registration'} failed. Please try again.` });
@@ -139,7 +139,7 @@ const Auth = () => {
       if (result.success) {
         setSubmitMessage(`${provider} login successful! Redirecting...`);
         setTimeout(() => {
-          navigate('/');
+          navigate('/dashboard');
         }, 1500);
       } else {
         setErrors({ submit: `${provider} login failed. Please try again.` });
