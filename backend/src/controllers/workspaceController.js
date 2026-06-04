@@ -1,6 +1,22 @@
 import prisma from "../client.js";
 
-const HADCODED_USER_ID = "550e8400-e29b-41d4-a716-446655440000";
+const TEST_USER_ID = "550e8400-e29b-41d4-a716-446655440000";
+
+export const getWorkspaces = async (req, res) => {
+	try {
+		const workspaces = await prisma.workspace.findMany({
+			where: {
+				ownerId: TEST_USER_ID
+			}
+		});
+		res.status(200).json({
+			data: workspaces
+		});
+	} catch (error) {
+		console.error("Error fetching workspaces:", error);
+		res.status(500).json({ message: "Internal server error" });
+	}
+};
 
 export const createWorkspace = async (req, res) => {
 	const { name, description } = req.validated.body;
@@ -10,10 +26,13 @@ export const createWorkspace = async (req, res) => {
 			data: {
 				name,
 				description,
-				ownerId: HADCODED_USER_ID
+				ownerId: TEST_USER_ID
 			}
 		});
-		res.status(201).json(workspace);
+		res.status(201).json({
+			message: "Workspace created successfully",
+			data: workspace
+		});
 	} catch (error) {
 		console.error("Error creating workspace:", error);
 		res.status(500).json({ message: "Internal server error" });
