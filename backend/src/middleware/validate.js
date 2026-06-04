@@ -30,10 +30,8 @@ export const validate = (schema) => {
       });
     }
 
-    // Assign validated data back to req
-    req.body = result.data.body;
-    req.params = result.data.params;
-    req.query = result.data.query;
+    // Attach the validated data to the request object for use in controllers
+    req.validated = result.data;
 
     next();
   };

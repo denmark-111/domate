@@ -3,7 +3,7 @@ import prisma from "../client.js";
 const HADCODED_USER_ID = "550e8400-e29b-41d4-a716-446655440000";
 
 export const createWorkspace = async (req, res) => {
-	const { name, description } = req.body;
+	const { name, description } = req.validated.body;
 
 	try{
 		const workspace = await prisma.workspace.create({
