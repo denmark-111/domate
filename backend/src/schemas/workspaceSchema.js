@@ -13,3 +13,9 @@ export const updateWorkspaceSchema = z.object({
 		description: z.string().max(500).optional(),
 	})
 });
+
+export const workspaceIdParamSchema = z.object({
+	params: z.object({
+		id: z.string().uuid("Invalid workspace ID format")
+	})
+});

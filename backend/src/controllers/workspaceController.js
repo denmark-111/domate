@@ -38,3 +38,22 @@ export const createWorkspace = async (req, res) => {
 		res.status(500).json({ message: "Internal server error" });
 	}
 };
+
+export const getWorkspaceById = async (req, res) => {
+	const { id } = req.validated.params;
+
+	try{
+		const workspace = await prisma.workspace.findUnique({
+			where: { id }
+		});
+		if (!workspace) {
+			return res.status(404).json({ message: "Workspace not found" });
+		}
+		res.status(200).json({
+			data: workspace
+		});
+	} catch (error) {
+		console.error("Error fetching workspace:", error);
+		res.status(500).json({ message: "Internal server error" });
+	}
+};
