@@ -1,4 +1,5 @@
 import prisma from "../client.js";
+import { Prisma } from "@prisma/client";
 
 const TEST_USER_ID = "550e8400-e29b-41d4-a716-446655440000";
 
@@ -54,6 +55,31 @@ export const getWorkspaceById = async (req, res) => {
 		});
 	} catch (error) {
 		console.error("Error fetching workspace:", error);
+		res.status(500).json({ message: "Internal server error" });
+	}
+};
+
+export const updateWorkspace = async (req, res) => {
+	const { id } = req.validated.params;
+	const { name, description } = req.validated.body;
+
+	try{
+		const workspace = await prisma.workspace.update({
+			where: { id },
+			data: {
+				name,
+				description
+			}
+		});
+		res.status(200).json({
+			message: "Workspace updated successfully",
+			data: workspace
+		});
+	} catch (error) {
+		if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+			return res.status(404).json({ message: "Workspace not found"});
+		}
+		console.error("Error updating workspace:", error);
 		res.status(500).json({ message: "Internal server error" });
 	}
 };
