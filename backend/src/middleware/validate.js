@@ -7,30 +7,53 @@ export const validate = (schema) => {
     });
 
     if (!result.success) {
-      const formattedErrors = result.error.issues.reduce((acc, issue) => {
-        const [location, ...rest] = issue.path;
+      const errors = {};
 
-        // If it's a body error, strip 'body.' and just use the field path
-        // If it's query/params, keep the location context
-        const pathKey = location === "body" 
-          ? rest.join(".") 
-          : `${location}.${rest.join(".")}`;
+      for (const issue of result.error.issues) {
+        const [location, ...pathParts] = issue.path;
 
-        if (!acc[pathKey]) {
-          acc[pathKey] = [];
+        let message = issue.message;
+
+        // Handle the case where the entire body is missing
+        if (
+          location === "body" &&
+          pathParts.length === 0 &&
+          issue.code === "invalid_type" &&
+          issue.input === undefined
+        ) {
+          message = "Request body is required";
         }
 
-        acc[pathKey].push(issue.message);
-        return acc;
-      }, {});
+        let field;
 
-      return res.status(400).json({
+        if (location === "body") {
+          // body.name -> name
+          field = pathParts.join(".");
+        } else {
+          // params.id -> params.id
+          // query.page -> query.page
+          field = `${location}.${pathParts.join(".")}`;
+        }
+
+        // Handle object-level errors
+        if (!field) {
+          field = location || "general";
+        }
+
+        if (!errors[field]) {
+          errors[field] = [];
+        }
+
+        errors[field].push(message);
+      }
+
+      return res.status(422).json({
         message: "Validation failed",
-        errors: formattedErrors,
+        errors,
       });
     }
 
-    // Attach the validated data to the request object for use in controllers
+    // Attach the validated data to the request object
     req.validated = result.data;
 
     next();
