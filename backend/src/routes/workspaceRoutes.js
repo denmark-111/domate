@@ -1,5 +1,5 @@
 import express from "express";
-import { getWorkspaces, createWorkspace, getWorkspaceById, updateWorkspace } from "../controllers/workspaceController.js";
+import { getWorkspaces, createWorkspace, getWorkspaceById, updateWorkspace, deleteWorkspace } from "../controllers/workspaceController.js";
 import { validate } from  "../middleware/validate.js";
 import { createWorkspaceSchema, workspaceIdParamSchema, updateWorkspaceSchema } from "../schemas/workspaceSchema.js";
 
@@ -9,5 +9,6 @@ router.get('/', getWorkspaces);
 router.post('/', validate(createWorkspaceSchema), createWorkspace);
 router.get('/:id', validate(workspaceIdParamSchema), getWorkspaceById);
 router.put('/:id', validate(updateWorkspaceSchema), updateWorkspace);
+router.delete('/:id', validate(workspaceIdParamSchema), deleteWorkspace);
 
 export default router;

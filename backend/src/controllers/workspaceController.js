@@ -77,9 +77,28 @@ export const updateWorkspace = async (req, res) => {
 		});
 	} catch (error) {
 		if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
-			return res.status(404).json({ message: "Workspace not found"});
+			return res.status(404).json({ message: "Workspace not found" });
 		}
 		console.error("Error updating workspace:", error);
+		res.status(500).json({ message: "Internal server error" });
+	}
+};
+
+export const deleteWorkspace = async (req, res) => {
+	const { id } = req.validated.params;
+
+	try {
+		await prisma.workspace.delete({
+			where: { id }
+		});
+		res.status(200).json({
+			message: "Workspace deleted successfully"
+		});
+	} catch (error) {
+		if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+			return res.status(404).json({ message: "Workspace not found" });
+		}
+		console.error("Error deleting workspace:", error);
 		res.status(500).json({ message: "Internal server error" });
 	}
 };
