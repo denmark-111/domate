@@ -8,10 +8,10 @@ const router = express.Router();
 
 router.get('/', getWorkspaces);
 router.post('/', validate(createWorkspaceSchema), createWorkspace);
-router.get('/:id', validate(workspaceIdParamSchema), getWorkspaceById);
-router.put('/:id', validate(updateWorkspaceSchema), updateWorkspace);
-router.delete('/:id', validate(workspaceIdParamSchema), deleteWorkspace);
+router.get('/:workspaceId', validate(workspaceIdParamSchema), getWorkspaceById);
+router.put('/:workspaceId', validate(updateWorkspaceSchema), updateWorkspace);
+router.delete('/:workspaceId', validate(workspaceIdParamSchema), deleteWorkspace);
 
-router.use('/:id/boards', validate(workspaceIdParamSchema), boardRouter);
+router.use('/:workspaceId/boards', validate(workspaceIdParamSchema), boardRouter);
 
 export default router;

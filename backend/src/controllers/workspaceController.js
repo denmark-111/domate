@@ -41,11 +41,11 @@ export const createWorkspace = async (req, res) => {
 };
 
 export const getWorkspaceById = async (req, res) => {
-	const { id } = req.validated.params;
+	const { workspaceId } = req.validated.params;
 
 	try{
 		const workspace = await prisma.workspace.findUnique({
-			where: { id }
+			where: { id: workspaceId }
 		});
 		if (!workspace) {
 			return res.status(404).json({ message: "Workspace not found" });
@@ -60,12 +60,12 @@ export const getWorkspaceById = async (req, res) => {
 };
 
 export const updateWorkspace = async (req, res) => {
-	const { id } = req.validated.params;
+	const { workspaceId } = req.validated.params;
 	const { name, description } = req.validated.body;
 
 	try{
 		const workspace = await prisma.workspace.update({
-			where: { id },
+			where: { id: workspaceId },
 			data: {
 				name,
 				description
@@ -85,11 +85,11 @@ export const updateWorkspace = async (req, res) => {
 };
 
 export const deleteWorkspace = async (req, res) => {
-	const { id } = req.validated.params;
+	const { workspaceId } = req.validated.params;
 
 	try {
 		await prisma.workspace.delete({
-			where: { id }
+			where: { id: workspaceId }
 		});
 		res.status(200).json({
 			message: "Workspace deleted successfully"

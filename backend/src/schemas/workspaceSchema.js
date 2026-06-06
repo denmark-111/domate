@@ -9,7 +9,7 @@ export const createWorkspaceSchema = z.object({
 
 export const updateWorkspaceSchema = z.object({
 	params: z.object({
-		id: z.string().uuid("Invalid workspace ID format")
+		workspaceId: z.string().uuid("Invalid workspace ID format")
 	}),
 	body: z.object({
 		name: z.string().min(1, "Workspace name is required").max(255).optional(),
@@ -19,6 +19,6 @@ export const updateWorkspaceSchema = z.object({
 
 export const workspaceIdParamSchema = z.object({
 	params: z.object({
-		id: z.string().uuid("Invalid workspace ID format")
+		workspaceId: z.string().uuid("Invalid workspace ID format")
 	})
 });

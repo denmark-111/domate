@@ -2,7 +2,7 @@ import prisma from "../client.js";
 import { Prisma } from "@prisma/client";
 
 export const getBoards = async (req, res) => {
-    const workspaceId = req.validated.params.id;
+    const { workspaceId } = req.validated.params;
 
 	try {
 		const boards = await prisma.board.findMany({
@@ -20,8 +20,7 @@ export const getBoards = async (req, res) => {
 };
 
 export const createBoard = async (req, res) => {
-    console.log(req.validated.params.id);
-    const workspaceId = req.validated.params.id;
+    const { workspaceId } = req.validated.params;
     const { name, description } = req.validated.body;
 
     try{
