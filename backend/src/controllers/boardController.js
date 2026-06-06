@@ -40,3 +40,22 @@ export const createBoard = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 }
+
+export const getBoardById = async (req, res) =>{
+    const { boardId } = req.validated.params;
+
+    try{
+        const board = await prisma.board.findUnique({
+            where: { id: boardId }
+        });
+        if (!board) {
+            return res.status(404).json({ message: "Board not found" });
+        }
+        res.status(200).json({
+            data: board
+        });
+    } catch (error) {
+        console.error("Error fetching board:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+}

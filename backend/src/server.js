@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import workspaceRoutes from "./routes/workspaceRoutes.js";
+import { router as boardRoutes } from "./routes/boardRoutes.js";
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api/workspaces', workspaceRoutes);
+app.use('/api/boards', boardRoutes);
 
 const PORT = process.env.PORT || 5000;
 

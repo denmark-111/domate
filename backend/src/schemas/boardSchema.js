@@ -9,7 +9,7 @@ export const createBoardSchema = z.object({
 
 export const updateBoardSchema = z.object({
     params: z.object({
-        id: z.string().uuid("Invalid board ID format")
+        boardId: z.string().uuid("Invalid board ID format")
     }),
     body: z.object({
         name: z.string().min(1, "Board name is required").max(255).optional(),
@@ -19,6 +19,6 @@ export const updateBoardSchema = z.object({
 
 export const boardIdParamSchema = z.object({
     params: z.object({
-        id: z.string().uuid("Invalid board ID format")
+        boardId: z.string().uuid("Invalid board ID format")
     })
 });
