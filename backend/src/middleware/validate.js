@@ -54,7 +54,11 @@ export const validate = (schema) => {
     }
 
     // Attach the validated data to the request object
-    req.validated = result.data;
+    // Merge to preserve data from multiple validation middlewares
+    req.validated = {
+      ...(req.validated || {}),
+      ...result.data,
+    };
 
     next();
   };

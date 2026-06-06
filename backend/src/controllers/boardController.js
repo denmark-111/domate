@@ -1,0 +1,43 @@
+import prisma from "../client.js";
+import { Prisma } from "@prisma/client";
+
+export const getBoards = async (req, res) => {
+    const workspaceId = req.validated.params.id;
+
+	try {
+		const boards = await prisma.board.findMany({
+			where: {
+				workspaceId
+			}
+		});
+		res.status(200).json({
+			data: boards
+		});
+	} catch (error) {
+		console.error("Error fetching boards:", error);
+		res.status(500).json({ message: "Internal server error" });
+	}
+};
+
+export const createBoard = async (req, res) => {
+    console.log(req.validated.params.id);
+    const workspaceId = req.validated.params.id;
+    const { name, description } = req.validated.body;
+
+    try{
+        const board = await prisma.board.create({
+            data: {
+                name,
+                description,
+                workspaceId
+            }
+        })
+        res.status(201).json({
+            message: "Board created successfully",
+            data: board
+        });
+    } catch (error) {
+        console.error("Error creating board:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+}
