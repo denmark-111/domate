@@ -12,6 +12,7 @@ router.get('/:workspaceId', validate(workspaceIdParamSchema), getWorkspaceById);
 router.put('/:workspaceId', validate(updateWorkspaceSchema), updateWorkspace);
 router.delete('/:workspaceId', validate(workspaceIdParamSchema), deleteWorkspace);
 
+// mount nested board routes
 router.use('/:workspaceId/boards', validate(workspaceIdParamSchema), boardRouter);
 
 export default router;

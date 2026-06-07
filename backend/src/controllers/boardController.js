@@ -59,3 +59,47 @@ export const getBoardById = async (req, res) =>{
         res.status(500).json({ message: "Internal server error" });
     }
 }
+
+export const updateBoard = async (req, res) => {
+    const { boardId } = req.validated.params;
+    const { name, description } = req.validated.body;
+
+    try{
+        const board = await prisma.board.update({
+            where: { id: boardId },
+            data: {
+                name,
+                description
+            }
+        });
+        res.status(200).json({
+            message: "Board updated successfully.",
+            data: board
+        })
+    } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+            return res.status(404).json({ message: "Board not found" });
+        }
+        console.error("Error updating board:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+export const deleteBoard = async (req, res) => {
+    const { boardId } = req.validated.params;
+
+    try{
+        await prisma.board.delete({
+            where: { id: boardId }
+        })
+		res.status(200).json({
+			message: "Board deleted successfully"
+		});
+    } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+            return res.status(404).json({ message: "Board not found" });
+        }
+        console.error("Error deleting board:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+}
