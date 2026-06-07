@@ -2,6 +2,7 @@ import express from "express";
 import { getBoards, createBoard, getBoardById, updateBoard, deleteBoard } from "../controllers/boardController.js";
 import { validate } from  "../middleware/validate.js";
 import { createBoardSchema, updateBoardSchema, boardIdParamSchema } from "../schemas/boardSchema.js";
+import { nestedRouter as listRouter } from "./listRoutes.js";
 
 export const router = express.Router();
 export const nestedRouter = express.Router({ mergeParams: true });
@@ -14,3 +15,6 @@ nestedRouter.post('/', validate(createBoardSchema), createBoard);
 router.get('/:boardId', validate(boardIdParamSchema), getBoardById);
 router.put('/:boardId', validate(updateBoardSchema), updateBoard);
 router.delete('/:boardId', validate(boardIdParamSchema), deleteBoard);
+
+// mount nested list routes
+router.use('/:boardId/lists', validate(boardIdParamSchema), listRouter);

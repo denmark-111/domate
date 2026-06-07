@@ -17,11 +17,11 @@ model Workspace {
   description String?
 
   ownerId     String   @db.Uuid
+
+  boards      Board[]
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
-  boards      Board[]
 
   @@index([ownerId])
 }
@@ -34,8 +34,25 @@ model Board {
   workspaceId String    @db.Uuid
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
+  lists       List[]
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
   @@index([workspaceId])
+}
+
+model List {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  position  Int
+
+  boardId   String   @db.Uuid
+  board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([boardId])
+  @@index([boardId, position])
 }
