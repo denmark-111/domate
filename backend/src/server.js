@@ -3,6 +3,7 @@ import express from "express";
 import workspaceRoutes from "./routes/workspaceRoutes.js";
 import { router as boardRoutes } from "./routes/boardRoutes.js";
 import { router as listRoutes } from "./routes/listRoutes.js";
+import { router as taskRoutes } from "./routes/taskRoutes.js";
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.get('/health', (req, res) => {
 app.use('/api/workspaces', workspaceRoutes);
 app.use('/api/boards', boardRoutes);
 app.use('/api/lists', listRoutes);
+app.use('/api/tasks', taskRoutes);
 
 const PORT = process.env.PORT || 5000;
 
