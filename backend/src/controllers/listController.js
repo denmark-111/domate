@@ -65,23 +65,71 @@ export const updateList = async (req, res) => {
     const { name, position } = req.validated.body;
 
     try {
-        const list = await prisma.list.update({
-            where: { id: listId },
-            data: {
-                name,
-                position
-            }
+        const existingList = await prisma.list.findUnique({
+            where: { id: listId }
         });
-        res.status(200).json({
-            message: "List updated successfully.",
-            data: list
-        });
-    } catch (error) {
-        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+
+        if (!existingList) {
             return res.status(404).json({ message: "List not found" });
         }
+
+        const updatedList = await prisma.$transaction(async (tx) => {
+
+            if (position !== undefined && position !== existingList.position) {
+                const oldPosition = existingList.position;
+
+                if (oldPosition < position) {
+                    // Moving right
+                    await tx.list.updateMany({
+                        where: {
+                            boardId: existingList.boardId,
+                            position: {
+                                gt: oldPosition,
+                                lte: position
+                            }
+                        },
+                        data: {
+                            position: {
+                                decrement: 1
+                            }
+                        }
+                    });
+                } else {
+                    // Moving left
+                    await tx.list.updateMany({
+                        where: {
+                            boardId: existingList.boardId,
+                            position: {
+                                gte: position,
+                                lt: oldPosition
+                            }
+                        },
+                        data: {
+                            position: {
+                                increment: 1
+                            }
+                        }
+                    });
+                }
+            }
+
+            return await tx.list.update({
+                where: { id: listId },
+                data: {
+                    name,
+                    position
+                }
+            });
+        });
+
+        return res.status(200).json({
+            message: "List updated successfully.",
+            data: updatedList
+        });
+
+    } catch (error) {
         console.error("Error updating list:", error);
-        res.status(500).json({ message: "Internal server error" });
+        return res.status(500).json({ message: "Internal server error" });
     }
 };
 
