@@ -24,3 +24,13 @@ export const taskIdParamSchema = z.object({
         taskId: z.string().uuid("Invalid task ID format")
     })
 });
+
+export const moveTaskSchema = z.object({
+    params: z.object({
+        taskId: z.string().uuid("Invalid task ID format")
+    }),
+    body: z.object({
+        listId: z.string().uuid("Invalid list ID format"),
+        position: z.number().int().min(0)
+    })
+});
