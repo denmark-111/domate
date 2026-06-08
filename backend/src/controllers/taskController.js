@@ -24,9 +24,18 @@ export const getTasks = async (req, res) => {
 
 export const createTask = async (req, res) => {
     const { listId } = req.validated.params;
-    const { name, description, position } = req.validated.body;
+    const { name, description } = req.validated.body;
 
     try {
+        // Get the highest position in the list
+        const lastTask = await prisma.task.findFirst({
+            where: { listId },
+            orderBy: { position: 'desc' }
+        });
+
+        // Set position to last task's position + 1, or 0 if no tasks exist
+        const position = lastTask ? lastTask.position + 1 : 0;
+
         const task = await prisma.task.create({
             data: {
                 name,

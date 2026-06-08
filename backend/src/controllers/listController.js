@@ -24,9 +24,18 @@ export const getLists = async (req, res) => {
 
 export const createList = async (req, res) => {
     const { boardId } = req.validated.params;
-    const { name, position } = req.validated.body;
+    const { name } = req.validated.body;
 
     try {
+        // Get the highest position in the board
+        const lastList = await prisma.list.findFirst({
+            where: { boardId },
+            orderBy: { position: 'desc' }
+        });
+
+        // Set position to last list's position + 1, or 0 if no lists exist
+        const position = lastList ? lastList.position + 1 : 0;
+
         const list = await prisma.list.create({
             data: {
                 name,
