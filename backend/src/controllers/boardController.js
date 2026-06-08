@@ -46,7 +46,17 @@ export const getBoardById = async (req, res) =>{
 
     try{
         const board = await prisma.board.findUnique({
-            where: { id: boardId }
+            where: { id: boardId },
+            include: {
+                lists: {
+                    orderBy: { position: "asc" },
+                    include: {
+                        tasks: {
+                            orderBy: { position: "asc" }
+                        }
+                    }
+                }
+            }
         });
         if (!board) {
             return res.status(404).json({ message: "Board not found" });

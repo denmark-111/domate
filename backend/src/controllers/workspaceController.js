@@ -1,6 +1,7 @@
 import prisma from "../client.js";
 import { Prisma } from "@prisma/client";
 
+// temporary user while auth is not implemented
 const TEST_USER_ID = "550e8400-e29b-41d4-a716-446655440000";
 
 export const getWorkspaces = async (req, res) => {
