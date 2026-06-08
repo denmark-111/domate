@@ -14,8 +14,7 @@ export const updateTaskSchema = z.object({
     }),
     body: z.object({
         name: z.string().min(1, "Task name is required").max(255).optional(),
-        description: z.string().max(500).optional(),
-        position: z.number().int().min(0).optional()
+        description: z.string().max(500).optional()
     })
 });
 

@@ -63,15 +63,14 @@ export const getTaskById = async (req, res) => {
 
 export const updateTask = async (req, res) => {
     const { taskId } = req.validated.params;
-    const { name, description, position } = req.validated.body;
+    const { name, description } = req.validated.body;
 
     try {
         const task = await prisma.task.update({
             where: { id: taskId },
             data: {
                 name,
-                description,
-                position
+                description
             }
         });
         res.status(200).json({
