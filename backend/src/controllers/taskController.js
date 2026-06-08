@@ -8,6 +8,9 @@ export const getTasks = async (req, res) => {
         const tasks = await prisma.task.findMany({
             where: {
                 listId
+            },
+            orderBy: {
+                position: 'asc'
             }
         });
         res.status(200).json({
