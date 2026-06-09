@@ -14,6 +14,10 @@ export const notFoundHandler = (req, res) => {
 export const apiErrorHandler = (err, req, res, next) => {
   console.error("Unhandled error:", err);
 
+  if (res.headersSent) {
+    return next(err);
+  }
+
   if (err instanceof ApiError) {
     return res.status(err.status).json({ message: err.message });
   }
