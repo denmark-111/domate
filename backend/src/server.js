@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import { apiErrorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 import workspaceRoutes from "./routes/workspaceRoutes.js";
 import { router as boardRoutes } from "./routes/boardRoutes.js";
 import { router as listRoutes } from "./routes/listRoutes.js";
@@ -22,21 +23,8 @@ app.use('/api/boards', boardRoutes);
 app.use('/api/lists', listRoutes);
 app.use('/api/tasks', taskRoutes);
 
-app.use((req, res) => {
-  res.status(404).json({ message: "Route not found" });
-});
-
-app.use((err, req, res, next) => {
-  console.error("Unhandled error:", err);
-  const status = err.status || 500;
-  const response = {
-    message: process.env.NODE_ENV === 'production' ? "Internal server error" : err.message
-  };
-  if (process.env.NODE_ENV !== 'production') {
-    response.stack = err.stack;
-  }
-  res.status(status).json(response);
-});
+app.use(notFoundHandler);
+app.use(apiErrorHandler);
 
 const PORT = process.env.PORT || 5000;
 

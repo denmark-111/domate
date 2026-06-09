@@ -3,14 +3,15 @@ import { getWorkspaces, createWorkspace, getWorkspaceById, updateWorkspace, dele
 import { validate } from  "../middleware/validate.js";
 import { createWorkspaceSchema, workspaceIdParamSchema, updateWorkspaceSchema } from "../schemas/workspaceSchema.js";
 import { nestedRouter as boardRouter } from "./boardRoutes.js";
+import { asyncHandler } from "../middleware/asyncHandler.js";
 
 const router = express.Router();
 
-router.get('/', getWorkspaces);
-router.post('/', validate(createWorkspaceSchema), createWorkspace);
-router.get('/:workspaceId', validate(workspaceIdParamSchema), getWorkspaceById);
-router.put('/:workspaceId', validate(updateWorkspaceSchema), updateWorkspace);
-router.delete('/:workspaceId', validate(workspaceIdParamSchema), deleteWorkspace);
+router.get('/', asyncHandler(getWorkspaces));
+router.post('/', validate(createWorkspaceSchema), asyncHandler(createWorkspace));
+router.get('/:workspaceId', validate(workspaceIdParamSchema), asyncHandler(getWorkspaceById));
+router.put('/:workspaceId', validate(updateWorkspaceSchema), asyncHandler(updateWorkspace));
+router.delete('/:workspaceId', validate(workspaceIdParamSchema), asyncHandler(deleteWorkspace));
 
 // mount nested board routes
 router.use('/:workspaceId/boards', validate(workspaceIdParamSchema), boardRouter);
