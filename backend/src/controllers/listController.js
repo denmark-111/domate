@@ -149,9 +149,26 @@ export const deleteList = async (req, res) => {
     const { listId } = req.validated.params;
 
     try {
-        await prisma.list.delete({
-            where: { id: listId }
+        await prisma.$transaction(async (tx) => {
+            const list = await tx.list.delete({
+                where: { id: listId }
+            });
+
+            await tx.list.updateMany({
+                where: {
+                    boardId: list.boardId,
+                    position: {
+                        gt: list.position
+                    }
+                },
+                data: {
+                    position: {
+                        decrement: 1
+                    }
+                }
+            });
         });
+
         res.status(200).json({
             message: "List deleted successfully"
         });

@@ -102,9 +102,26 @@ export const deleteTask = async (req, res) => {
     const { taskId } = req.validated.params;
 
     try {
-        await prisma.task.delete({
-            where: { id: taskId }
+        await prisma.$transaction(async (tx) => {
+            const task = await tx.task.delete({
+                where: { id: taskId }
+            });
+
+            await tx.task.updateMany({
+                where: {
+                    listId: task.listId,
+                    position: {
+                        gt: task.position
+                    }
+                },
+                data: {
+                    position: {
+                        decrement: 1
+                    }
+                }
+            });
         });
+
         res.status(200).json({
             message: "Task deleted successfully"
         });
