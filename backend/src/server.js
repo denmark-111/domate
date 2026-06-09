@@ -22,6 +22,22 @@ app.use('/api/boards', boardRoutes);
 app.use('/api/lists', listRoutes);
 app.use('/api/tasks', taskRoutes);
 
+app.use((req, res) => {
+  res.status(404).json({ message: "Route not found" });
+});
+
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err);
+  const status = err.status || 500;
+  const response = {
+    message: process.env.NODE_ENV === 'production' ? "Internal server error" : err.message
+  };
+  if (process.env.NODE_ENV !== 'production') {
+    response.stack = err.stack;
+  }
+  res.status(status).json(response);
+});
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
