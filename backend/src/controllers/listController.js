@@ -27,6 +27,14 @@ export const createList = async (req, res) => {
     const { name } = req.validated.body;
 
     try {
+        const boardExists = await prisma.board.findUnique({
+            where: { id: boardId }
+        });
+
+        if (!boardExists) {
+            return res.status(404).json({ message: "Board not found" });
+        }
+
         // Get the highest position in the board
         const lastList = await prisma.list.findFirst({
             where: { boardId },

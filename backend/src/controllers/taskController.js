@@ -27,6 +27,14 @@ export const createTask = async (req, res) => {
     const { name, description } = req.validated.body;
 
     try {
+        const listExists = await prisma.list.findUnique({
+            where: { id: listId }
+        });
+
+        if (!listExists) {
+            return res.status(404).json({ message: "List not found" });
+        }
+
         // Get the highest position in the list
         const lastTask = await prisma.task.findFirst({
             where: { listId },
