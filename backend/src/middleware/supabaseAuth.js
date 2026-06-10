@@ -41,10 +41,6 @@ export function supabaseAuthMiddleware(options = {}) {
       req.supabase.user = {
         id: payload.sub,
         email: payload.email,
-        aud: payload.aud,
-        iss: payload.iss,
-        exp: payload.exp,
-        raw: payload,
       };
 
       return next();

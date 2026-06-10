@@ -1,7 +1,7 @@
 -- setup_auth.sql
 -- setup_auth.sql
--- Idempotent SQL to create triggers that insert into public.userprofile when a new
--- row is added to auth.users (Supabase Auth). The actual `userprofile` table is
+-- Idempotent SQL to create triggers that insert into public.User when a new
+-- row is added to auth.users (Supabase Auth). The actual `User` table is
 -- expected to be managed by Prisma (prisma/schema.prisma).
 
 BEGIN;
@@ -13,14 +13,14 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  INSERT INTO public.userprofile (
+  INSERT INTO public."User" (
     id,
     email,
-    full_name,
-    avatar_url,
-    raw_user_meta,
-    created_at,
-    updated_at
+    "fullName",
+    "avatarUrl",
+    "rawUserMeta",
+    "createdAt",
+    "updatedAt"
   )
   VALUES (
     NEW.id,
@@ -34,10 +34,10 @@ BEGIN
   ON CONFLICT (id)
   DO UPDATE SET
     email = EXCLUDED.email,
-    full_name = COALESCE(EXCLUDED.full_name, userprofile.full_name),
-    avatar_url = COALESCE(EXCLUDED.avatar_url, userprofile.avatar_url),
-    raw_user_meta = COALESCE(EXCLUDED.raw_user_meta, userprofile.raw_user_meta),
-    updated_at = NOW();
+    "fullName" = COALESCE(EXCLUDED."fullName", "User"."fullName"),
+    "avatarUrl" = COALESCE(EXCLUDED."avatarUrl", "User"."avatarUrl"),
+    "rawUserMeta" = COALESCE(EXCLUDED."rawUserMeta", "User"."rawUserMeta"),
+    "updatedAt" = NOW();
 
   RETURN NEW;
 END;
