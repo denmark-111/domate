@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import { apiErrorHandler, notFoundHandler } from "./middleware/errorHandler.js";
+import { initSupabaseJwks, supabaseAuthMiddleware } from './middleware/supabaseAuth.js';
 import workspaceRoutes from "./routes/workspaceRoutes.js";
 import { router as boardRoutes } from "./routes/boardRoutes.js";
 import { router as listRoutes } from "./routes/listRoutes.js";
@@ -10,6 +11,13 @@ const app = express();
 
 app.use(express.json());
 
+// Initialize Supabase JWKS once on startup (used by the auth middleware)
+if (process.env.SUPABASE_URL) {
+  initSupabaseJwks(process.env.SUPABASE_URL);
+} else {
+  console.warn('SUPABASE_URL not set - auth middleware will not be initialized');
+}
+
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'ok',
@@ -18,10 +26,10 @@ app.get('/health', (req, res) => {
   })
 });
 
-app.use('/api/workspaces', workspaceRoutes);
-app.use('/api/boards', boardRoutes);
-app.use('/api/lists', listRoutes);
-app.use('/api/tasks', taskRoutes);
+app.use('/api/workspaces', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), workspaceRoutes);
+app.use('/api/boards', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), boardRoutes);
+app.use('/api/lists', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), listRoutes);
+app.use('/api/tasks', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), taskRoutes);
 
 app.use(notFoundHandler);
 app.use(apiErrorHandler);

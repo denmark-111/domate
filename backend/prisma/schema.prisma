@@ -74,3 +74,15 @@ model Task {
   @@index([listId])
   @@index([listId, position])
 }
+
+model UserProfile {
+  id           String   @id @default(uuid()) @db.Uuid
+  email        String?  @db.Text
+  fullName     String?  @db.Text   @map("full_name")
+  avatarUrl    String?  @db.Text   @map("avatar_url")
+  rawUserMeta  Json?                 @map("raw_user_meta")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt     @map("updated_at")
+
+  @@map("userprofile")
+}
