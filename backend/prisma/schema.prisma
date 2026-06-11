@@ -16,14 +16,10 @@ model Workspace {
   name        String
   description String?
 
-  ownerId     String   @db.Uuid
-
   boards      Board[]
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
-  @@index([ownerId])
 }
 
 model Board {

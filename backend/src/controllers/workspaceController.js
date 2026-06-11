@@ -1,14 +1,7 @@
 import prisma from "../client.js";
 
-// temporary user while auth is not implemented
-const TEST_USER_ID = "550e8400-e29b-41d4-a716-446655440000";
-
 export const getWorkspaces = async (req, res, next) => {
-    const workspaces = await prisma.workspace.findMany({
-        where: {
-            ownerId: TEST_USER_ID
-        }
-    });
+    const workspaces = await prisma.workspace.findMany();
 
     res.status(200).json({
         data: workspaces
@@ -21,8 +14,7 @@ export const createWorkspace = async (req, res, next) => {
     const workspace = await prisma.workspace.create({
         data: {
             name,
-            description,
-            ownerId: TEST_USER_ID
+            description
         }
     });
 
