@@ -11,15 +11,39 @@ datasource db {
   provider = "postgresql"
 }
 
+enum WorkspaceRole {
+  OWNER
+  MEMBER
+}
+
 model Workspace {
   id          String   @id @default(uuid()) @db.Uuid
   name        String
   description String?
 
   boards      Board[]
-  
+  memberships WorkspaceMember[]
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model WorkspaceMember {
+  id          String        @id @default(uuid()) @db.Uuid
+  role        WorkspaceRole @default(MEMBER)
+
+  workspaceId String        @db.Uuid
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  userId      String        @db.Uuid
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@unique([workspaceId, userId])
+  @@index([workspaceId])
+  @@index([userId])
 }
 
 model Board {
@@ -57,7 +81,7 @@ model List {
 
 model Task {
   id          String   @id @default(uuid()) @db.Uuid
-  name       String
+  name        String
   description String?
   position    Int
 
@@ -72,11 +96,14 @@ model Task {
 }
 
 model User {
-  id          String   @id @db.Uuid
-  email       String?  @db.Text
-  fullName    String?  @db.Text
-  avatarUrl   String?  @db.Text
-  rawUserMeta Json?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                   String            @id @db.Uuid
+  email                String?           @db.Text
+  fullName             String?           @db.Text
+  avatarUrl            String?           @db.Text
+  rawUserMeta          Json?
+
+  workspaceMemberships WorkspaceMember[]
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 }

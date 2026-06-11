@@ -1,7 +1,17 @@
 import prisma from "../client.js";
 
 export const getWorkspaces = async (req, res, next) => {
-    const workspaces = await prisma.workspace.findMany();
+    const userId = req.supabase.user.id;
+
+    const workspaces = await prisma.workspace.findMany({
+        where: {
+            memberships: {
+                some: {
+                    userId
+                }
+            }
+        }
+    });
 
     res.status(200).json({
         data: workspaces
@@ -9,12 +19,19 @@ export const getWorkspaces = async (req, res, next) => {
 };
 
 export const createWorkspace = async (req, res, next) => {
+    const userId = req.supabase.user.id;
     const { name, description } = req.validated.body;
 
     const workspace = await prisma.workspace.create({
         data: {
             name,
-            description
+            description,
+            memberships: {
+                create: {
+                    userId,
+                    role: "OWNER"
+                }
+            }
         }
     });
 
