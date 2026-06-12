@@ -12,11 +12,12 @@ const app = express();
 app.use(express.json());
 
 // Initialize Supabase JWKS once on startup (used by the auth middleware)
-if (process.env.SUPABASE_URL) {
-  initSupabaseJwks(process.env.SUPABASE_URL);
-} else {
-  console.warn('SUPABASE_URL not set - auth middleware will not be initialized');
+if (!process.env.SUPABASE_URL) {
+  console.error('SUPABASE_URL is required and was not provided. Aborting startup.');
+  process.exit(1);
 }
+
+initSupabaseJwks(process.env.SUPABASE_URL);
 
 app.get('/health', (req, res) => {
   res.status(200).json({
