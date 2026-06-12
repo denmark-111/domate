@@ -18,14 +18,6 @@ export const createBoard = async (req, res, next) => {
     const { workspaceId } = req.validated.params;
     const { name, description } = req.validated.body;
 
-    const workspaceExists = await prisma.workspace.findUnique({
-        where: { id: workspaceId }
-    });
-
-    if (!workspaceExists) {
-        return res.status(404).json({ message: "Workspace not found" });
-    }
-
     const board = await prisma.board.create({
         data: {
             name,

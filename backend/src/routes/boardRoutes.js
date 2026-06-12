@@ -4,6 +4,7 @@ import { validate } from  "../middleware/validate.js";
 import { createBoardSchema, updateBoardSchema, boardIdParamSchema } from "../schemas/boardSchema.js";
 import { nestedRouter as listRouter } from "./listRoutes.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
+import { requireBoardWorkspaceMember } from "../middleware/authorize.js";
 
 export const router = express.Router();
 export const nestedRouter = express.Router({ mergeParams: true });
@@ -13,9 +14,9 @@ nestedRouter.get('/', asyncHandler(getBoards));
 nestedRouter.post('/', validate(createBoardSchema), asyncHandler(createBoard));
 
 // main board routes under /boards
-router.get('/:boardId', validate(boardIdParamSchema), asyncHandler(getBoardById));
-router.put('/:boardId', validate(updateBoardSchema), asyncHandler(updateBoard));
-router.delete('/:boardId', validate(boardIdParamSchema), asyncHandler(deleteBoard));
+router.get('/:boardId', validate(boardIdParamSchema), requireBoardWorkspaceMember, asyncHandler(getBoardById));
+router.put('/:boardId', validate(updateBoardSchema), requireBoardWorkspaceMember, asyncHandler(updateBoard));
+router.delete('/:boardId', validate(boardIdParamSchema), requireBoardWorkspaceMember, asyncHandler(deleteBoard));
 
 // mount nested list routes
-router.use('/:boardId/lists', validate(boardIdParamSchema), listRouter);
+router.use('/:boardId/lists', validate(boardIdParamSchema), requireBoardWorkspaceMember, listRouter);

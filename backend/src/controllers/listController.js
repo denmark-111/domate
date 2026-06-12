@@ -21,14 +21,6 @@ export const createList = async (req, res, next) => {
     const { boardId } = req.validated.params;
     const { name } = req.validated.body;
 
-    const boardExists = await prisma.board.findUnique({
-        where: { id: boardId }
-    });
-
-    if (!boardExists) {
-        return res.status(404).json({ message: "Board not found" });
-    }
-
     const lastList = await prisma.list.findFirst({
         where: { boardId },
         orderBy: { position: 'desc' }
