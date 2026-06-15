@@ -10,6 +10,7 @@ import Topbar from './components/Topbar';
 import HomeDashboard from './components/HomeDashboard';
 import Tasks from './components/Tasks';
 import Workspace from './components/Workspace';
+import RequireAuth from './components/RequireAuth';
 
 const AppContent = ({ viewType }) => {
   return (
@@ -38,9 +39,9 @@ function App() {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={<AppContent viewType="home" />} />
-            <Route path="/tasks" element={<AppContent viewType="tasks" />} />
-            <Route path="/workspaces/:workspaceId" element={<AppContent viewType="workspace" />} />
+            <Route path="/dashboard" element={<RequireAuth><AppContent viewType="home" /></RequireAuth>} />
+            <Route path="/tasks" element={<RequireAuth><AppContent viewType="tasks" /></RequireAuth>} />
+            <Route path="/workspaces/:workspaceId" element={<RequireAuth><AppContent viewType="workspace" /></RequireAuth>} />
           </Routes>
         </ThemeContextProvider>
       </Router>

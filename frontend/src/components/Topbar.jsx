@@ -1,11 +1,13 @@
 import React from 'react';
-import { Bell, Settings, Search, Sun, Moon } from 'lucide-react'; // Import Sun and Moon icons
+import { Bell, Settings, Search, Sun, Moon, LogOut } from 'lucide-react'; // Import Sun and Moon icons
 import { useWorkspace } from '../context/WorkspaceContext';
 import { useTheme } from '../context/ThemeContext'; // Import useTheme hook
+import { useAuth } from '../context/AuthContext';
 
 const Topbar = () => {
   const { activeWorkspace, activeView, activeBoard } = useWorkspace();
   const { theme, toggleTheme } = useTheme(); // Use the theme context
+  const { user, logout } = useAuth();
 
   return (
     <header className="h-16 border-b border-border bg-bg flex items-center justify-between px-8 z-10">
@@ -40,15 +42,20 @@ const Topbar = () => {
           </button>
         </div>
         
-        <button className="flex items-center gap-3 p-1 rounded-full hover:bg-bg-secondary transition-colors group">
-          <div className="text-right hidden sm:block">
-            <p className="text-sm font-bold text-text leading-none">John Doe</p>
-            <p className="text-[10px] text-text-secondary font-medium mt-1">Product Designer</p>
+        <div className="flex items-center gap-3">
+          <div className="text-right hidden sm:block mr-2">
+            <p className="text-sm font-bold text-text leading-none">{user?.fullName || user?.email || 'Guest'}</p>
+            <p className="text-[10px] text-text-secondary font-medium mt-1">{user ? 'Active' : 'Not signed in'}</p>
           </div>
           <div className="w-9 h-9 rounded-full bg-button flex items-center justify-center text-white text-xs font-bold shadow-sm border-2 border-white group-hover:scale-105 transition-transform">
-            JD
+            {(user?.fullName || user?.email || 'G').slice(0,2).toUpperCase()}
           </div>
-        </button>
+          {user && (
+            <button onClick={logout} className="p-2 ml-2 rounded-md hover:bg-bg-tertiary transition-colors" title="Sign out">
+              <LogOut size={18} />
+            </button>
+          )}
+        </div>
       </div>
     </header>
   );

@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { authService } from '../lib/authService.js';
+import { supabase } from '../lib/supabaseClient.js';
 
 const AuthContext = createContext();
 
@@ -7,118 +9,88 @@ export const AuthContextProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Check if user is logged in (from localStorage or session)
   useEffect(() => {
-    const checkAuth = () => {
+    const restoreSession = async () => {
       try {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
+        const { data } = await supabase.auth.getSession();
+        if (data?.session) {
+          const currentUser = data.session.user;
+          setUser({
+            id: currentUser.id,
+            email: currentUser.email,
+            fullName: currentUser.user_metadata?.full_name || currentUser.email,
+            provider: currentUser.app_metadata.provider || 'email',
+          });
           setIsAuthenticated(true);
         }
       } catch (error) {
-        console.error('Error restoring auth state:', error);
-        localStorage.removeItem('user');
+        console.error('Error restoring session:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    checkAuth();
+    restoreSession();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email,
+          fullName: session.user.user_metadata?.full_name || session.user.email,
+          provider: session.user.app_metadata.provider || 'email',
+        });
+        setIsAuthenticated(true);
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = async (email, password) => {
-    try {
-      setIsLoading(true);
-      // In production, call your backend API
-      // const response = await fetch('/api/auth/login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ email, password })
-      // });
-      // const data = await response.json();
-      
-      // Mock login
-      const userData = {
-        id: `user_${Date.now()}`,
-        email,
-        fullName: email.split('@')[0],
-        provider: 'email'
-      };
-
-      localStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData);
-      setIsAuthenticated(true);
-      return { success: true, user: userData };
-    } catch (error) {
-      console.error('Login error:', error);
-      return { success: false, error: error.message };
-    } finally {
+    setIsLoading(true);
+    const result = await authService.signIn({ email, password });
+    if (!result.success) {
       setIsLoading(false);
+      return result;
     }
+
+    const sessionUser = result.data.session.user;
+    const userData = {
+      id: sessionUser.id,
+      email: sessionUser.email,
+      fullName: sessionUser.user_metadata?.full_name || sessionUser.email,
+      provider: sessionUser.app_metadata.provider || 'email',
+    };
+
+    setUser(userData);
+    setIsAuthenticated(true);
+    setIsLoading(false);
+    return { success: true, user: userData };
   };
 
   const register = async (fullName, email, password) => {
-    try {
-      setIsLoading(true);
-      // In production, call your backend API
-      // const response = await fetch('/api/auth/register', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ fullName, email, password })
-      // });
-      // const data = await response.json();
-
-      // Mock registration
-      const userData = {
-        id: `user_${Date.now()}`,
-        email,
-        fullName,
-        provider: 'email'
-      };
-
-      localStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData);
-      setIsAuthenticated(true);
-      return { success: true, user: userData };
-    } catch (error) {
-      console.error('Registration error:', error);
-      return { success: false, error: error.message };
-    } finally {
-      setIsLoading(false);
-    }
+    setIsLoading(true);
+    const result = await authService.signUp({ email, password, fullName });
+    setIsLoading(false);
+    return result;
   };
 
   const loginWithOAuth = async (provider) => {
-    try {
-      setIsLoading(true);
-      // In production, redirect to OAuth endpoints
-      // window.location.href = `/api/auth/${provider}`;
-      
-      // Mock OAuth login
-      const userData = {
-        id: `user_${Date.now()}`,
-        email: `user@${provider}.com`,
-        fullName: 'OAuth User',
-        provider
-      };
-
-      localStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData);
-      setIsAuthenticated(true);
-      return { success: true, user: userData };
-    } catch (error) {
-      console.error(`${provider} OAuth error:`, error);
-      return { success: false, error: error.message };
-    } finally {
-      setIsLoading(false);
-    }
+    setIsLoading(true);
+    const result = await authService.signInWithProvider(provider);
+    setIsLoading(false);
+    return result;
   };
 
-  const logout = () => {
-    localStorage.removeItem('user');
+  const logout = async () => {
+    setIsLoading(true);
+    await authService.signOut();
     setUser(null);
     setIsAuthenticated(false);
+    setIsLoading(false);
   };
 
   return (
@@ -130,7 +102,7 @@ export const AuthContextProvider = ({ children }) => {
         login,
         register,
         loginWithOAuth,
-        logout
+        logout,
       }}
     >
       {children}
