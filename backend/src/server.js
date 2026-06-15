@@ -6,6 +6,7 @@ import workspaceRoutes from "./routes/workspaceRoutes.js";
 import { router as boardRoutes } from "./routes/boardRoutes.js";
 import { router as listRoutes } from "./routes/listRoutes.js";
 import { router as taskRoutes } from "./routes/taskRoutes.js";
+import profileRoutes from "./routes/profileRoutes.js";
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use('/api/workspaces', supabaseAuthMiddleware({ audience: process.env.SUPABA
 app.use('/api/boards', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), boardRoutes);
 app.use('/api/lists', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), listRoutes);
 app.use('/api/tasks', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), taskRoutes);
+app.use('/api/profile', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), profileRoutes);
 
 app.use(notFoundHandler);
 app.use(apiErrorHandler);
