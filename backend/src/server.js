@@ -1,4 +1,5 @@
 import "dotenv/config";
+import cors from "cors";
 import express from "express";
 import { apiErrorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 import { initSupabaseJwks, supabaseAuthMiddleware } from './middleware/supabaseAuth.js';
@@ -9,6 +10,18 @@ import { router as taskRoutes } from "./routes/taskRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
 
 const app = express();
+
+const corsOrigin = process.env.NODE_ENV === "production" ? process.env.CORS_ORIGIN : process.env.CORS_ORIGIN || "http://localhost:5173";
+
+if (!corsOrigin) {
+  console.error('CORS_ORIGIN is required in production. Aborting startup.');
+  process.exit(1);
+}
+
+app.use(cors({
+  origin: corsOrigin,
+  credentials: true
+}));
 
 app.use(express.json());
 
