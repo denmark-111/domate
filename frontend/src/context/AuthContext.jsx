@@ -4,6 +4,33 @@ import { supabase } from '../lib/supabaseClient.js';
 
 const AuthContext = createContext();
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
+const fetchUserProfile = async (session) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/profile`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    if (response.ok) {
+      const { data } = await response.json();
+      return {
+        ...data,
+        provider: session.user?.app_metadata?.provider || 'email'
+      };
+    } else {
+      console.error('Failed to fetch user profile:', response.statusText);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    return null;
+  }
+};
+
 export const AuthContextProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -14,14 +41,21 @@ export const AuthContextProvider = ({ children }) => {
       try {
         const { data } = await supabase.auth.getSession();
         if (data?.session) {
-          const currentUser = data.session.user;
-          setUser({
-            id: currentUser.id,
-            email: currentUser.email,
-            fullName: currentUser.user_metadata?.full_name || currentUser.email,
-            provider: currentUser.app_metadata.provider || 'email',
-          });
-          setIsAuthenticated(true);
+          const profile = await fetchUserProfile(data.session);
+          if (profile) {
+            setUser(profile);
+            setIsAuthenticated(true);
+          } else {
+            // Fallback to session data if profile fetch fails
+            const currentUser = data.session.user;
+            setUser({
+              id: currentUser.id,
+              email: currentUser.email,
+              fullName: currentUser.user_metadata?.full_name || currentUser.email,
+              provider: currentUser.app_metadata?.provider || 'email',
+            });
+            setIsAuthenticated(true);
+          }
         }
       } catch (error) {
         console.error('Error restoring session:', error);
@@ -31,15 +65,23 @@ export const AuthContextProvider = ({ children }) => {
     };
 
     restoreSession();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
-        setUser({
-          id: session.user.id,
-          email: session.user.email,
-          fullName: session.user.user_metadata?.full_name || session.user.email,
-          provider: session.user.app_metadata.provider || 'email',
-        });
-        setIsAuthenticated(true);
+        const profile = await fetchUserProfile(session);
+        if (profile) {
+          setUser(profile);
+          setIsAuthenticated(true);
+        } else {
+          // Fallback
+          setUser({
+            id: session.user.id,
+            email: session.user.email,
+            fullName: session.user.user_metadata?.full_name || session.user.email,
+            provider: session.user.app_metadata?.provider || 'email',
+          });
+          setIsAuthenticated(true);
+        }
       } else {
         setUser(null);
         setIsAuthenticated(false);
@@ -57,13 +99,21 @@ export const AuthContextProvider = ({ children }) => {
       return result;
     }
 
-    const sessionUser = result.data.session.user;
-    const userData = {
-      id: sessionUser.id,
-      email: sessionUser.email,
-      fullName: sessionUser.user_metadata?.full_name || sessionUser.email,
-      provider: sessionUser.app_metadata.provider || 'email',
-    };
+    const session = result.data.session;
+    const profile = await fetchUserProfile(session);
+    let userData;
+
+    if (profile) {
+      userData = profile;
+    } else {
+      const sessionUser = session.user;
+      userData = {
+        id: sessionUser.id,
+        email: sessionUser.email,
+        fullName: sessionUser.user_metadata?.full_name || sessionUser.email,
+        provider: sessionUser.app_metadata?.provider || 'email',
+      };
+    }
 
     setUser(userData);
     setIsAuthenticated(true);
