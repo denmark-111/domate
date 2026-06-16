@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -30,6 +30,13 @@ const ArrowRightIcon = () => (
   </svg>
 );
 
+const SpinnerIcon = () => (
+  <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+  </svg>
+);
+
 const Auth = () => {
   const navigate = useNavigate();
   const { login, register, loginWithOAuth } = useAuth();
@@ -42,6 +49,7 @@ const Auth = () => {
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [oauthProvider, setOauthProvider] = useState('');
   const [submitMessage, setSubmitMessage] = useState('');
 
   const handleInputChange = (e) => {
@@ -96,6 +104,7 @@ const Auth = () => {
     }
 
     setIsSubmitting(true);
+    setOauthProvider('');
     setSubmitMessage('');
 
     try {
@@ -109,21 +118,12 @@ const Auth = () => {
 
       if (result.success) {
         if (isLoginMode) {
-          setSubmitMessage('Login successful! Redirecting...');
-          setTimeout(() => {
-            navigate('/dashboard');
-          }, 1500);
+          navigate('/dashboard');
         } else {
           const hasSession = result.data?.session;
-          setSubmitMessage(
-            hasSession
-              ? 'Registration successful! Redirecting...'
-              : 'Account created. Check your email to confirm your account.'
-          );
+          setSubmitMessage(hasSession ? '' : 'Account created. Check your email to confirm your account.');
           if (hasSession) {
-            setTimeout(() => {
-              navigate('/dashboard');
-            }, 1500);
+            navigate('/dashboard');
           }
         }
       } else {
@@ -139,13 +139,15 @@ const Auth = () => {
 
   const handleOAuth = async (provider) => {
     setIsSubmitting(true);
+    setOauthProvider(provider);
+    setErrors({});
+    setSubmitMessage('');
+
+    let shouldStayLoading = false;
     try {
       const result = await loginWithOAuth(provider);
       if (result.success) {
-        setSubmitMessage(`${provider} login successful! Redirecting...`);
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 1500);
+        shouldStayLoading = true;
       } else {
         setErrors({ submit: `${provider} login failed. Please try again.` });
       }
@@ -153,7 +155,10 @@ const Auth = () => {
       console.error(`${provider} OAuth error:`, error);
       setErrors({ submit: `${provider} login failed. Please try again.` });
     } finally {
-      setIsSubmitting(false);
+      if (!shouldStayLoading) {
+        setIsSubmitting(false);
+        setOauthProvider('');
+      }
     }
   };
 
@@ -207,10 +212,20 @@ const Auth = () => {
         <div className="space-y-3 mb-8">
           <button
             onClick={() => handleOAuth('google')}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-border rounded-lg hover:bg-bg-secondary transition-colors font-medium text-text"
+            disabled={isSubmitting}
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-border rounded-lg hover:bg-bg-secondary transition-colors font-medium text-text disabled:cursor-not-allowed disabled:opacity-70"
           >
-            <GoogleIcon />
-            Continue with Google
+            {oauthProvider === 'google' ? (
+              <>
+                <SpinnerIcon />
+                Connecting to Google...
+              </>
+            ) : (
+              <>
+                <GoogleIcon />
+                Continue with Google
+              </>
+            )}
           </button>
         </div>
 
@@ -372,11 +387,8 @@ const Auth = () => {
           >
             {isSubmitting ? (
               <>
-                <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                {isLoginMode ? 'Logging in...' : 'Creating account...'}
+                <SpinnerIcon />
+                {oauthProvider ? 'Please wait...' : isLoginMode ? 'Logging in...' : 'Creating account...'}
               </>
             ) : (
               <>
