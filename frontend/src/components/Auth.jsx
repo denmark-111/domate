@@ -52,6 +52,18 @@ const Auth = () => {
   const [oauthProvider, setOauthProvider] = useState('');
   const [submitMessage, setSubmitMessage] = useState('');
 
+  const handleModeSwitch = (mode) => {
+    setIsLoginMode(mode);
+    setFormData({
+      email: '',
+      password: '',
+      confirmPassword: '',
+      fullName: ''
+    });
+    setErrors({});
+    setSubmitMessage('');
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -124,6 +136,13 @@ const Auth = () => {
           setSubmitMessage(hasSession ? '' : 'Account created. Check your email to confirm your account.');
           if (hasSession) {
             navigate('/dashboard');
+          } else {
+            setFormData({
+              email: '',
+              password: '',
+              confirmPassword: '',
+              fullName: ''
+            });
           }
         }
       } else {
@@ -179,11 +198,7 @@ const Auth = () => {
         {/* Tabs */}
         <div className="flex gap-2 mb-8 bg-bg-secondary p-1 rounded-lg">
           <button
-            onClick={() => {
-              setIsLoginMode(true);
-              setErrors({});
-              setSubmitMessage('');
-            }}
+            onClick={() => handleModeSwitch(true)}
             className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${
               isLoginMode
                 ? 'bg-button text-white'
@@ -193,11 +208,7 @@ const Auth = () => {
             Login
           </button>
           <button
-            onClick={() => {
-              setIsLoginMode(false);
-              setErrors({});
-              setSubmitMessage('');
-            }}
+            onClick={() => handleModeSwitch(false)}
             className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${
               !isLoginMode
                 ? 'bg-button text-white'
@@ -403,11 +414,7 @@ const Auth = () => {
         <p className="text-center text-text-secondary text-sm mt-6">
           {isLoginMode ? "Don't have an account? " : 'Already have an account? '}
           <button
-            onClick={() => {
-              setIsLoginMode(!isLoginMode);
-              setErrors({});
-              setSubmitMessage('');
-            }}
+            onClick={() => handleModeSwitch(!isLoginMode)}
             className="text-text-accent font-semibold hover:underline"
           >
             {isLoginMode ? 'Sign up' : 'Login'}
