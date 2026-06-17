@@ -137,10 +137,21 @@ export const AuthContextProvider = ({ children }) => {
 
   const logout = async () => {
     setIsLoading(true);
-    await authService.signOut();
-    setUser(null);
-    setIsAuthenticated(false);
-    setIsLoading(false);
+
+    try {
+      const result = await authService.signOut();
+
+      if (!result.success) {
+        return result;
+      }
+
+      setUser(null);
+      setIsAuthenticated(false);
+
+      return result;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
