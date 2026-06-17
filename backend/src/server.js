@@ -1,4 +1,5 @@
 import "dotenv/config";
+import cors from "cors";
 import express from "express";
 import { apiErrorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 import { initSupabaseJwks, supabaseAuthMiddleware } from './middleware/supabaseAuth.js';
@@ -6,8 +7,21 @@ import workspaceRoutes from "./routes/workspaceRoutes.js";
 import { router as boardRoutes } from "./routes/boardRoutes.js";
 import { router as listRoutes } from "./routes/listRoutes.js";
 import { router as taskRoutes } from "./routes/taskRoutes.js";
+import profileRoutes from "./routes/profileRoutes.js";
 
 const app = express();
+
+const corsOrigin = process.env.NODE_ENV === "production" ? process.env.CORS_ORIGIN : process.env.CORS_ORIGIN || "http://localhost:5173";
+
+if (!corsOrigin) {
+  console.error('CORS_ORIGIN is required in production. Aborting startup.');
+  process.exit(1);
+}
+
+app.use(cors({
+  origin: corsOrigin,
+  credentials: true
+}));
 
 app.use(express.json());
 
@@ -31,6 +45,7 @@ app.use('/api/workspaces', supabaseAuthMiddleware({ audience: process.env.SUPABA
 app.use('/api/boards', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), boardRoutes);
 app.use('/api/lists', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), listRoutes);
 app.use('/api/tasks', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), taskRoutes);
+app.use('/api/profile', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), profileRoutes);
 
 app.use(notFoundHandler);
 app.use(apiErrorHandler);

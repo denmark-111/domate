@@ -1,124 +1,157 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { authService } from '../lib/authService.js';
+import { supabase } from '../lib/supabaseClient.js';
 
 const AuthContext = createContext();
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
+const fetchUserProfile = async (session) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/profile`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    if (response.ok) {
+      const { data } = await response.json();
+      return {
+        ...data,
+        provider: session.user?.app_metadata?.provider || 'email'
+      };
+    } else {
+      console.error('Failed to fetch user profile:', response.statusText);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    return null;
+  }
+};
 
 export const AuthContextProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Check if user is logged in (from localStorage or session)
   useEffect(() => {
-    const checkAuth = () => {
+    const restoreSession = async () => {
       try {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
-          setIsAuthenticated(true);
+        const { data } = await supabase.auth.getSession();
+        if (data?.session) {
+          const profile = await fetchUserProfile(data.session);
+          if (profile) {
+            setUser(profile);
+            setIsAuthenticated(true);
+          } else {
+            // Fallback to session data if profile fetch fails
+            const currentUser = data.session.user;
+            setUser({
+              id: currentUser.id,
+              email: currentUser.email,
+              fullName: currentUser.user_metadata?.full_name || currentUser.email,
+              provider: currentUser.app_metadata?.provider || 'email',
+            });
+            setIsAuthenticated(true);
+          }
         }
       } catch (error) {
-        console.error('Error restoring auth state:', error);
-        localStorage.removeItem('user');
+        console.error('Error restoring session:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    checkAuth();
+    restoreSession();
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        const profile = await fetchUserProfile(session);
+        if (profile) {
+          setUser(profile);
+          setIsAuthenticated(true);
+        } else {
+          // Fallback
+          setUser({
+            id: session.user.id,
+            email: session.user.email,
+            fullName: session.user.user_metadata?.full_name || session.user.email,
+            provider: session.user.app_metadata?.provider || 'email',
+          });
+          setIsAuthenticated(true);
+        }
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = async (email, password) => {
-    try {
-      setIsLoading(true);
-      // In production, call your backend API
-      // const response = await fetch('/api/auth/login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ email, password })
-      // });
-      // const data = await response.json();
-      
-      // Mock login
-      const userData = {
-        id: `user_${Date.now()}`,
-        email,
-        fullName: email.split('@')[0],
-        provider: 'email'
-      };
-
-      localStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData);
-      setIsAuthenticated(true);
-      return { success: true, user: userData };
-    } catch (error) {
-      console.error('Login error:', error);
-      return { success: false, error: error.message };
-    } finally {
+    setIsLoading(true);
+    const result = await authService.signIn({ email, password });
+    if (!result.success) {
       setIsLoading(false);
+      return result;
     }
+
+    const session = result.data.session;
+    const profile = await fetchUserProfile(session);
+    let userData;
+
+    if (profile) {
+      userData = profile;
+    } else {
+      const sessionUser = session.user;
+      userData = {
+        id: sessionUser.id,
+        email: sessionUser.email,
+        fullName: sessionUser.user_metadata?.full_name || sessionUser.email,
+        provider: sessionUser.app_metadata?.provider || 'email',
+      };
+    }
+
+    setUser(userData);
+    setIsAuthenticated(true);
+    setIsLoading(false);
+    return { success: true, user: userData };
   };
 
   const register = async (fullName, email, password) => {
-    try {
-      setIsLoading(true);
-      // In production, call your backend API
-      // const response = await fetch('/api/auth/register', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ fullName, email, password })
-      // });
-      // const data = await response.json();
-
-      // Mock registration
-      const userData = {
-        id: `user_${Date.now()}`,
-        email,
-        fullName,
-        provider: 'email'
-      };
-
-      localStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData);
-      setIsAuthenticated(true);
-      return { success: true, user: userData };
-    } catch (error) {
-      console.error('Registration error:', error);
-      return { success: false, error: error.message };
-    } finally {
-      setIsLoading(false);
-    }
+    setIsLoading(true);
+    const result = await authService.signUp({ email, password, fullName });
+    setIsLoading(false);
+    return result;
   };
 
   const loginWithOAuth = async (provider) => {
-    try {
-      setIsLoading(true);
-      // In production, redirect to OAuth endpoints
-      // window.location.href = `/api/auth/${provider}`;
-      
-      // Mock OAuth login
-      const userData = {
-        id: `user_${Date.now()}`,
-        email: `user@${provider}.com`,
-        fullName: 'OAuth User',
-        provider
-      };
+    setIsLoading(true);
+    const result = await authService.signInWithProvider(provider);
+    setIsLoading(false);
+    return result;
+  };
 
-      localStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData);
-      setIsAuthenticated(true);
-      return { success: true, user: userData };
-    } catch (error) {
-      console.error(`${provider} OAuth error:`, error);
-      return { success: false, error: error.message };
+  const logout = async () => {
+    setIsLoading(true);
+
+    try {
+      const result = await authService.signOut();
+
+      if (!result.success) {
+        return result;
+      }
+
+      setUser(null);
+      setIsAuthenticated(false);
+
+      return result;
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const logout = () => {
-    localStorage.removeItem('user');
-    setUser(null);
-    setIsAuthenticated(false);
   };
 
   return (
@@ -130,7 +163,7 @@ export const AuthContextProvider = ({ children }) => {
         login,
         register,
         loginWithOAuth,
-        logout
+        logout,
       }}
     >
       {children}
