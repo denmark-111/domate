@@ -39,7 +39,7 @@ const TaskCard = ({ task, onClick }) => {
   );
 };
 
-const Column = ({ title, tasks, onAddTask, isAddingTask, onCancelAddTask, onTaskClick }) => (
+const Column = ({ id, title, tasks, onAddTask, isAddingTask, onCancelAddTask, onTaskClick, onSubmitTask }) => (
   <div className="w-80 flex-shrink-0 flex flex-col gap-4">
     <div className="flex items-center justify-between px-2">
       <div className="flex items-center gap-2">
@@ -60,7 +60,7 @@ const Column = ({ title, tasks, onAddTask, isAddingTask, onCancelAddTask, onTask
       
       {!isAddingTask ? (
         <button
-          onClick={() => onAddTask(title)}
+          onClick={() => onAddTask(id)}
           className="w-full py-2 text-sm text-text-secondary hover:bg-bg-tertiary rounded-md border-2 border-dashed border-border transition-colors"
         >
           + Add Task
@@ -69,7 +69,7 @@ const Column = ({ title, tasks, onAddTask, isAddingTask, onCancelAddTask, onTask
         <AddTaskForm
           columnTitle={title}
           onSubmit={(data) => {
-            console.log('Adding task:', data);
+            onSubmitTask(id, data);
             onCancelAddTask();
           }}
           onCancel={onCancelAddTask}
@@ -91,11 +91,14 @@ const Board = () => {
         const res = await boardService.getBoardById(activeBoard.id);
         if (res.success && res.data) {
           // Map backend 'lists' to 'data' state format
-          const formattedLists = (res.data.lists || []).map(list => ({
-            id: list.id,
-            title: list.name,
-            tasks: list.tasks || []
-          }));
+          const formattedLists = (res.data.lists || [])
+            .sort((a, b) => a.position - b.position)
+            .map(list => ({
+              id: list.id,
+              title: list.name,
+              position: list.position,
+              tasks: (list.tasks || []).sort((a, b) => a.position - b.position)
+            }));
           setData(formattedLists);
         } else {
           setData([]);
@@ -111,12 +114,28 @@ const Board = () => {
   const [selectedTask, setSelectedTask] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleAddTask = (columnTitle) => {
-    setAddingTaskIn(columnTitle);
+  const handleAddTask = (listId) => {
+    setAddingTaskIn(listId);
   };
 
   const handleCancelAddTask = () => {
     setAddingTaskIn(null);
+  };
+
+  const handleSubmitTask = async (listId, taskData) => {
+    const res = await boardService.createTask(listId, { name: taskData.title, description: '' });
+    if (res.success) {
+      const newTask = res.data;
+      setData(prevData => prevData.map(col => {
+        if (col.id === listId) {
+          return {
+            ...col,
+            tasks: [...col.tasks, newTask].sort((a, b) => a.position - b.position)
+          };
+        }
+        return col;
+      }));
+    }
   };
 
   const handleTaskClick = (task) => {
@@ -133,13 +152,19 @@ const Board = () => {
     setSelectedTask(updatedTask);
   };
 
-  const handleAddList = (listData) => {
-    const newList = {
-      title: listData.title,
-      tasks: []
-    };
-    setData([...data, newList]);
-    setShowAddList(false);
+  const handleAddList = async (listData) => {
+    if (!activeBoard?.id) return;
+    const res = await boardService.createList(activeBoard.id, { name: listData.title });
+    if (res.success) {
+      const newList = {
+        id: res.data.id,
+        title: res.data.name,
+        position: res.data.position,
+        tasks: []
+      };
+      setData(prevData => [...prevData, newList].sort((a, b) => a.position - b.position));
+      setShowAddList(false);
+    }
   };
 
   return (
@@ -154,12 +179,14 @@ const Board = () => {
             data.map((col) => (
               <Column
                 key={col.id || col.title}
+                id={col.id}
                 title={col.title}
                 tasks={col.tasks}
                 onAddTask={handleAddTask}
-                isAddingTask={addingTaskIn === col.title}
+                isAddingTask={addingTaskIn === col.id}
                 onCancelAddTask={handleCancelAddTask}
                 onTaskClick={handleTaskClick}
+                onSubmitTask={handleSubmitTask}
               />
             ))
           )}

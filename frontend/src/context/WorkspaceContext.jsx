@@ -81,6 +81,14 @@ export const WorkspaceProvider = ({ children }) => {
     return res;
   };
 
+  const createBoard = async (workspaceId, data) => {
+    const res = await boardService.createBoard(workspaceId, data);
+    if (res.success) {
+      setBoards(prev => [...prev, res.data]);
+    }
+    return res;
+  };
+
   return (
     <WorkspaceContext.Provider value={{
       activeWorkspace,
@@ -94,7 +102,8 @@ export const WorkspaceProvider = ({ children }) => {
       showCreateBoard,
       setShowCreateBoard,
       createWorkspace,
-      updateWorkspace
+      updateWorkspace,
+      createBoard
     }}>
       {children}
     </WorkspaceContext.Provider>

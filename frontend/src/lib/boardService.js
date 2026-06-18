@@ -35,5 +35,56 @@ export const boardService = {
       console.error('Error in getBoardById:', error);
       return { success: false, error: error.message };
     }
+  },
+
+  createBoard: async (workspaceId, data) => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`${API_BASE_URL}/workspaces/${workspaceId}/boards`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Failed to create board');
+      const result = await response.json();
+      return { success: true, data: result.data };
+    } catch (error) {
+      console.error('Error in createBoard:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  createList: async (boardId, data) => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`${API_BASE_URL}/boards/${boardId}/lists`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Failed to create list');
+      const result = await response.json();
+      return { success: true, data: result.data };
+    } catch (error) {
+      console.error('Error in createList:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  createTask: async (listId, data) => {
+    try {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`${API_BASE_URL}/lists/${listId}/tasks`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Failed to create task');
+      const result = await response.json();
+      return { success: true, data: result.data };
+    } catch (error) {
+      console.error('Error in createTask:', error);
+      return { success: false, error: error.message };
+    }
   }
 };

@@ -7,7 +7,7 @@ import { useWorkspace } from '../context/WorkspaceContext';
 
 const Workspace = () => {
   const navigate = useNavigate();
-  const { activeWorkspace, isLoadingWorkspaces, activeView, activeBoard, showCreateBoard, setShowCreateBoard } = useWorkspace();
+  const { activeWorkspace, isLoadingWorkspaces, activeView, activeBoard, showCreateBoard, setShowCreateBoard, createBoard } = useWorkspace();
 
   // Only redirect if workspaces have finished loading and the workspace truly doesn't exist
   useEffect(() => {
@@ -49,10 +49,11 @@ const Workspace = () => {
         <CreateBoardForm
           workspaceName={activeWorkspace.name}
           onClose={() => setShowCreateBoard(false)}
-          onSubmit={(board) => {
-            console.log('Board created:', board);
-            // Handle board creation here
-            setShowCreateBoard(false);
+          onSubmit={async (data) => {
+            const res = await createBoard(activeWorkspace.id, data);
+            if (!res.success) {
+              throw new Error(res.error || 'Failed to create board');
+            }
           }}
         />
       )}
