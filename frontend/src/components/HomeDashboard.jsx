@@ -2,21 +2,38 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWorkspace } from '../context/WorkspaceContext';
 import CreateWorkspaceForm from './CreateWorkspaceForm';
+import { useAuth } from '../context/AuthContext';
 
 const HomeDashboard = () => {
   const { workspaces } = useWorkspace();
   const navigate = useNavigate();
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const { user } = useAuth();
 
   return (
     <div className="flex-1 overflow-y-auto bg-bg-secondary p-8 sm:p-12">
       <div className="max-w-5xl mx-auto">
         <header className="mb-12">
-          <h1 className="text-3xl font-extrabold text-text mb-2">Welcome back, John</h1>
+          <h1 className="text-3xl font-extrabold text-text mb-2">Welcome back, {user?.fullName || user?.email || 'Guest'}</h1>
           <p className="text-text-secondary">Select a workspace to start collaborating or managing your tasks.</p>
         </header>
 
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Create New Workspace Button */}
+          <button
+            onClick={() => setShowCreateForm(true)}
+            className="group p-6 rounded-2xl border-2 border-dashed border-border hover:border-input-border-focus hover:bg-input-bg transition-all text-left flex flex-col items-center justify-center h-48 gap-3"
+          >
+            <div className="w-12 h-12 rounded-full border-2 border-dashed border-text-secondary group-hover:border-input-border-focus flex items-center justify-center text-2xl text-text-secondary group-hover:text-text-accent transition-all">
+              +
+            </div>
+            <div className="text-center">
+              <h3 className="text-sm font-bold text-text">Create Workspace</h3>
+              <p className="text-xs text-text-secondary mt-1">Add a new team or personal space</p>
+            </div>
+          </button>
+
+          {/* Workspaces */}
           {workspaces.map((ws) => (
             <button
               key={ws.id}
@@ -45,19 +62,6 @@ const HomeDashboard = () => {
             </button>
           ))}
 
-          {/* Create New Workspace Button */}
-          <button
-            onClick={() => setShowCreateForm(true)}
-            className="group p-6 rounded-2xl border-2 border-dashed border-border hover:border-input-border-focus hover:bg-input-bg transition-all text-left flex flex-col items-center justify-center h-48 gap-3"
-          >
-            <div className="w-12 h-12 rounded-full border-2 border-dashed border-text-secondary group-hover:border-input-border-focus flex items-center justify-center text-2xl text-text-secondary group-hover:text-text-accent transition-all">
-              +
-            </div>
-            <div className="text-center">
-              <h3 className="text-sm font-bold text-text">Create Workspace</h3>
-              <p className="text-xs text-text-secondary mt-1">Add a new team or personal space</p>
-            </div>
-          </button>
         </section>
 
         {/* Recent Activity or Pinned Boards could go here later */}
