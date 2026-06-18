@@ -4,7 +4,6 @@ import { useWorkspace } from '../context/WorkspaceContext';
 import { Home, ListTodo, MessageSquare, Megaphone, Plus, Info } from 'lucide-react';
 
 const Sidebar = () => {
-  const [isWorkspaceMenuOpen, setIsWorkspaceMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -50,8 +49,10 @@ const Sidebar = () => {
           <>
             <div className="relative px-4 py-4 border-b border-border-light mb-4">
               <button 
-                onClick={() => setIsWorkspaceMenuOpen(!isWorkspaceMenuOpen)}
-                className="w-full flex items-center justify-between p-2 rounded-lg bg-bg shadow-sm border border-border transition-colors group"
+                onClick={() => setActiveView('Overview')}
+                className={`w-full flex items-center justify-between p-2 rounded-lg shadow-sm border transition-colors group ${
+                  activeView === 'Overview' ? 'bg-input-bg border-border text-text-accent' : 'bg-bg border-border'
+                }`}
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-6 h-6 rounded bg-label-feature-bg text-label-feature-text flex items-center justify-center text-[10px] font-bold">
@@ -63,37 +64,10 @@ const Sidebar = () => {
                     </h1>
                   </div>
                 </div>
-                <span className="text-text-secondary group-hover:text-text-tertiary transition-colors text-[10px]">▼</span>
               </button>
-
-              {isWorkspaceMenuOpen && (
-                <div className="absolute top-full left-4 right-4 mt-1 bg-bg border border-border rounded-lg shadow-xl z-50 py-1">
-                  <div className="px-3 py-2 text-[10px] font-bold text-text-secondary uppercase tracking-wider border-b border-gray-50 mb-1">Switch Workspace</div>
-                  {workspaces.map(ws => (
-                    <button
-                      key={ws.id}
-                      onClick={() => handleWorkspaceChange(ws.id)}
-                      className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 hover:bg-input-bg transition-colors ${
-                        activeWorkspace.id === ws.id ? 'text-text-accent font-semibold' : 'text-button-secondary-text'
-                      }`}
-                    >
-                      <div className={`w-1.5 h-1.5 rounded-full ${activeWorkspace.id === ws.id ? 'bg-button' : 'bg-transparent'}`}></div>
-                      {ws.name}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
 
             <nav className="px-4 space-y-1">
-              <button 
-                onClick={() => setActiveView('Overview')}
-                className={`w-full text-left px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-3 transition-all ${
-                  activeView === 'Overview' ? 'bg-button text-white' : 'text-text-tertiary hover:bg-bg-tertiary/50'
-                }`}
-              >
-                <Info size={20} /> Overview
-              </button>
               
               {activeWorkspace.type?.toLowerCase() === 'team' && (
                 <>
@@ -172,7 +146,6 @@ const Sidebar = () => {
             <div>
               <div className="text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-4 px-3 flex justify-between items-center">
                 <span>My Workspaces</span>
-                <button className="text-text-secondary hover:text-text-accent">+</button>
               </div>
               <div className="space-y-2">
                 {workspaces.map(ws => (
