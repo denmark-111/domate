@@ -88,7 +88,7 @@ const Sidebar = () => {
             <nav className="px-4 space-y-1">
 
               
-              {activeWorkspace.type === 'team' && (
+              {activeWorkspace.type?.toLowerCase() === 'team' && (
                 <>
                   <button 
                     onClick={() => setActiveView('Announcements')}
