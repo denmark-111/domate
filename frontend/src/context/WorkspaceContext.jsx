@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { mockBoards } from '../data/mockData';
 import { workspaceService } from '../lib/workspaceService';
+import { boardService } from '../lib/boardService';
 import { useAuth } from './AuthContext';
 
 const WorkspaceContext = createContext();
@@ -14,6 +15,7 @@ export const WorkspaceProvider = ({ children }) => {
   const [isLoadingWorkspaces, setIsLoadingWorkspaces] = useState(true);
   const [activeView, setActiveView] = useState('Overview');
   const [activeBoard, setActiveBoard] = useState(null);
+  const [boards, setBoards] = useState([]);
   const [showCreateBoard, setShowCreateBoard] = useState(false);
 
   // Fetch workspaces on load or when auth changes
@@ -39,18 +41,28 @@ export const WorkspaceProvider = ({ children }) => {
     ? workspaces.find(w => w.id === workspaceId) 
     : null;
 
-  // Get boards for the active workspace
-  const boards = workspaceId ? (mockBoards[workspaceId] || ['Development', 'Marketing', 'Product Roadmap']) : [];
-
   // Reset local workspace state when the workspace itself changes
   useEffect(() => {
     if (workspaceId) {
       setActiveView('Overview');
+      
+      const fetchBoards = async () => {
+        const res = await boardService.getWorkspaceBoards(workspaceId);
+        if (res.success) {
+          setBoards(res.data);
+        } else {
+          setBoards([]);
+        }
+      };
+      if (isAuthenticated) {
+        fetchBoards();
+      }
     } else {
       setActiveView('Home');
       setActiveBoard(null);
+      setBoards([]);
     }
-  }, [workspaceId]);
+  }, [workspaceId, isAuthenticated]);
 
   const createWorkspace = async (data) => {
     const res = await workspaceService.createWorkspace(data);

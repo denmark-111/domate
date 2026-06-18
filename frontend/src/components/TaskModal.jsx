@@ -33,7 +33,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
         {/* Header */}
         <div className="sticky top-0 flex items-center justify-between p-6 border-b border-border bg-bg">
           <div className="flex-1 pr-4">
-            <h2 className="text-xl font-bold text-text mb-2">{task.title}</h2>
+            <h2 className="text-xl font-bold text-text mb-2">{task.name || task.title}</h2>
             <p className="text-sm text-text-secondary">{task.column}</p>
           </div>
           <button

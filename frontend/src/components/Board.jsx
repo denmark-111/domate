@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AddTaskForm from './AddTaskForm';
 import AddListForm from './AddListForm';
 import TaskModal from './TaskModal';
+import { useWorkspace } from '../context/WorkspaceContext';
+import { boardService } from '../lib/boardService';
 
 const TaskCard = ({ task, onClick }) => {
   const commentCount = Array.isArray(task.comments) ? task.comments.length : 0;
@@ -23,14 +25,14 @@ const TaskCard = ({ task, onClick }) => {
         ))}
       </div>
       <p className="text-sm text-text font-medium mb-4 group-hover:text-text-accent transition-colors">
-        {task.title}
+        {task.name || task.title}
       </p>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-text-secondary">
           <span className="text-xs">💬 {commentCount}</span>
         </div>
         <div className="w-6 h-6 rounded-full bg-button border-2 border-bg flex items-center justify-center text-[8px] text-white font-bold">
-          {task.assigneeInitials}
+          {task.assigneeInitials || '?'}
         </div>
       </div>
     </div>
@@ -78,86 +80,31 @@ const Column = ({ title, tasks, onAddTask, isAddingTask, onCancelAddTask, onTask
 );
 
 const Board = () => {
-  const [data, setData] = useState([
-    {
-      title: 'To Do',
-      tasks: [
-        { 
-          id: 1, 
-          title: 'Define workspace data model', 
-          labels: [
-            { id: 1, name: 'Database', color: 'red' },
-            { id: 2, name: 'Backend', color: 'orange' },
-          ],
-          description: 'Create comprehensive data model for workspace structure including users, permissions, and workspace settings.',
-          dueDate: '2026-06-15',
-          assigneeInitials: 'JD',
-          assignedMembers: [{ id: 1, name: 'John Doe', initials: 'JD' }],
-          attachments: [{ id: 1, name: 'workspace-schema.pdf', size: '245 KB' }],
-          comments: [
-            { id: 1, text: 'Let\'s discuss this in the next sprint planning', author: 'Sarah', time: '2 days ago' }
-          ]
-        },
-        { 
-          id: 2, 
-          title: 'Fix sidebar overflow bug',  
-          labels: [
-            { id: 1, name: 'Frontend', color: 'blue' },
-          ],
-          description: 'The sidebar content overflows when there are many workspace items. Need to implement scrolling.',
-          dueDate: '2026-05-31',
-          assigneeInitials: 'JD',
-          assignedMembers: [{ id: 1, name: 'John Doe', initials: 'JD' }],
-          attachments: [],
-          comments: []
-        },
-      ]
-    },
-    {
-      title: 'In Progress',
-      tasks: [
-        { 
-          id: 3, 
-          title: 'Implement Kanban drag and drop', 
-          labels: [
-            { id: 1, name: 'Database', color: 'red' },
-            { id: 2, name: 'Backend', color: 'orange' },
-            { id: 3, name: 'Frontend', color: 'blue' },
-          ],
-          description: 'Add drag and drop functionality to move tasks between columns. Support for mobile touch events.',
-          dueDate: '2026-06-20',
-          assigneeInitials: 'AS',
-          assignedMembers: [{ id: 2, name: 'Alex Smith', initials: 'AS' }],
-          attachments: [{ id: 2, name: 'dnd-implementation.md', size: '128 KB' }],
-          comments: [
-            { id: 1, text: 'Consider using react-beautiful-dnd library', author: 'Dev Lead', time: '1 week ago' },
-            { id: 2, text: 'Great suggestion! Already researched it', author: 'Alex Smith', time: '5 days ago' }
-          ]
-        },
-      ]
-    },
-    {
-      title: 'Done',
-      tasks: [
-        { 
-          id: 4, 
-          title: 'Initial layout implementation', 
-          labels: [
-            { id: 1, name: 'Frontend', color: 'blue' },
-            { id: 2, name: 'Design', color: 'purple' },
-          ],
-          description: 'Set up the basic layout with Sidebar, Topbar, and main content area.',
-          dueDate: '2026-05-20',
-          assigneeInitials: 'JD',
-          assignedMembers: [{ id: 1, name: 'John Doe', initials: 'JD' }],
-          attachments: [],
-          comments: [
-            { id: 1, text: 'Looks great! Ready for the next phase', author: 'Project Manager', time: '10 days ago' }
-          ]
-        },
-      ]
-    }
-  ]);
+  const { activeBoard } = useWorkspace();
+  const [data, setData] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchBoardData = async () => {
+      if (activeBoard?.id) {
+        setIsLoading(true);
+        const res = await boardService.getBoardById(activeBoard.id);
+        if (res.success && res.data) {
+          // Map backend 'lists' to 'data' state format
+          const formattedLists = (res.data.lists || []).map(list => ({
+            id: list.id,
+            title: list.name,
+            tasks: list.tasks || []
+          }));
+          setData(formattedLists);
+        } else {
+          setData([]);
+        }
+        setIsLoading(false);
+      }
+    };
+    fetchBoardData();
+  }, [activeBoard]);
 
   const [addingTaskIn, setAddingTaskIn] = useState(null);
   const [showAddList, setShowAddList] = useState(false);
@@ -199,17 +146,23 @@ const Board = () => {
     <>
       <section className="flex-1 overflow-x-auto p-8 bg-bg-secondary">
         <div className="flex gap-6 h-full">
-          {data.map((col) => (
-            <Column
-              key={col.title}
-              title={col.title}
-              tasks={col.tasks}
-              onAddTask={handleAddTask}
-              isAddingTask={addingTaskIn === col.title}
-              onCancelAddTask={handleCancelAddTask}
-              onTaskClick={handleTaskClick}
-            />
-          ))}
+          {isLoading ? (
+            <div className="flex items-center justify-center w-full h-full text-text-secondary">
+              Loading board...
+            </div>
+          ) : (
+            data.map((col) => (
+              <Column
+                key={col.id || col.title}
+                title={col.title}
+                tasks={col.tasks}
+                onAddTask={handleAddTask}
+                isAddingTask={addingTaskIn === col.title}
+                onCancelAddTask={handleCancelAddTask}
+                onTaskClick={handleTaskClick}
+              />
+            ))
+          )}
           
           {!showAddList ? (
             <div className="w-80 flex-shrink-0">

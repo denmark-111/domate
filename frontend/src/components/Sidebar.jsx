@@ -104,18 +104,18 @@ const Sidebar = () => {
               <div className="space-y-1">
                 {boards.map((board) => (
                   <button
-                    key={board}
+                    key={board.id}
                     onClick={() => {
                       setActiveView('Board');
                       setActiveBoard(board);
                     }}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm truncate transition-colors font-medium ${
-                      activeView === 'Board' && activeBoard === board 
+                      activeView === 'Board' && activeBoard?.id === board.id 
                         ? 'text-text-accent bg-input-bg font-bold' 
                         : 'text-text-secondary hover:bg-bg-tertiary/50 hover:text-button-secondary-text'
                     }`}
                   >
-                    # {board}
+                    # {board.name}
                   </button>
                 ))}
               </div>
