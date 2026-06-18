@@ -1,5 +1,6 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 // Icons
 const CheckIcon = () => (
@@ -28,6 +29,11 @@ const SparkIcon = () => (
 
 const Landing = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  // Redirect authenticated users to dashboard
+  if (isLoading) return null;
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 
   const features = [
     {

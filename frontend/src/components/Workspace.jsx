@@ -7,16 +7,16 @@ import { useWorkspace } from '../context/WorkspaceContext';
 
 const Workspace = () => {
   const navigate = useNavigate();
-  const { activeWorkspace, activeView, activeBoard, showCreateBoard, setShowCreateBoard } = useWorkspace();
+  const { activeWorkspace, isLoadingWorkspaces, activeView, activeBoard, showCreateBoard, setShowCreateBoard } = useWorkspace();
 
-  // Redirect if workspace not found or still loading
+  // Only redirect if workspaces have finished loading and the workspace truly doesn't exist
   useEffect(() => {
-    if (!activeWorkspace) {
-      navigate('/');
+    if (!isLoadingWorkspaces && !activeWorkspace) {
+      navigate('/dashboard');
     }
-  }, [activeWorkspace, navigate]);
+  }, [isLoadingWorkspaces, activeWorkspace, navigate]);
 
-  if (!activeWorkspace) return null;
+  if (isLoadingWorkspaces || !activeWorkspace) return null;
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
