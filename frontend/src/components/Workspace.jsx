@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Board from './Board';
 import CreateBoardForm from './CreateBoardForm';
+import WorkspaceOverview from './WorkspaceOverview';
 import { useWorkspace } from '../context/WorkspaceContext';
 
 const Workspace = () => {
@@ -23,6 +24,8 @@ const Workspace = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         {activeView === 'Board' ? (
           <Board boardName={activeBoard} />
+        ) : activeView === 'Overview' ? (
+          <WorkspaceOverview />
         ) : (
           <div className="flex-1 flex items-center justify-center bg-bg-secondary">
             <div className="max-w-md text-center p-8 bg-bg-secondary rounded-2xl shadow-sm border border-border-light">

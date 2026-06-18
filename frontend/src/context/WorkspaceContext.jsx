@@ -12,7 +12,7 @@ export const WorkspaceProvider = ({ children }) => {
   
   const [workspaces, setWorkspaces] = useState([]);
   const [isLoadingWorkspaces, setIsLoadingWorkspaces] = useState(true);
-  const [activeView, setActiveView] = useState('Announcements');
+  const [activeView, setActiveView] = useState('Overview');
   const [activeBoard, setActiveBoard] = useState(null);
   const [showCreateBoard, setShowCreateBoard] = useState(false);
 
@@ -45,7 +45,7 @@ export const WorkspaceProvider = ({ children }) => {
   // Reset local workspace state when the workspace itself changes
   useEffect(() => {
     if (workspaceId) {
-      setActiveView('Announcements');
+      setActiveView('Overview');
     } else {
       setActiveView('Home');
       setActiveBoard(null);

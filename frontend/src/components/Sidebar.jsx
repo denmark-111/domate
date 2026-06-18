@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useWorkspace } from '../context/WorkspaceContext';
-import { Home, ListTodo, MessageSquare, Megaphone, Plus } from 'lucide-react';
+import { Home, ListTodo, MessageSquare, Megaphone, Plus, Info } from 'lucide-react';
 
 const Sidebar = () => {
   const [isWorkspaceMenuOpen, setIsWorkspaceMenuOpen] = useState(false);
@@ -86,7 +86,14 @@ const Sidebar = () => {
             </div>
 
             <nav className="px-4 space-y-1">
-
+              <button 
+                onClick={() => setActiveView('Overview')}
+                className={`w-full text-left px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-3 transition-all ${
+                  activeView === 'Overview' ? 'bg-button text-white' : 'text-text-tertiary hover:bg-bg-tertiary/50'
+                }`}
+              >
+                <Info size={20} /> Overview
+              </button>
               
               {activeWorkspace.type?.toLowerCase() === 'team' && (
                 <>
