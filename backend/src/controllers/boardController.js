@@ -1,5 +1,16 @@
 import prisma from "../client.js";
 
+const fullBoardInclude = {
+    lists: {
+        orderBy: { position: "asc" },
+        include: {
+            tasks: {
+                orderBy: { position: "asc" }
+            }
+        }
+    }
+}
+
 export const getBoards = async (req, res, next) => {
     const { workspaceId } = req.validated.params;
 
@@ -23,7 +34,8 @@ export const createBoard = async (req, res, next) => {
             name,
             description,
             workspaceId
-        }
+        },
+        include: fullBoardInclude
     });
 
     res.status(201).json({
@@ -37,16 +49,7 @@ export const getBoardById = async (req, res, next) => {
 
     const board = await prisma.board.findUnique({
         where: { id: boardId },
-        include: {
-            lists: {
-                orderBy: { position: "asc" },
-                include: {
-                    tasks: {
-                        orderBy: { position: "asc" }
-                    }
-                }
-            }
-        }
+        include: fullBoardInclude
     });
 
     if (!board) {
@@ -67,11 +70,12 @@ export const updateBoard = async (req, res, next) => {
         data: {
             name,
             description
-        }
+        },
+        include: fullBoardInclude
     });
 
     res.status(200).json({
-        message: "Board updated successfully.",
+        message: "Board updated successfully",
         data: board
     });
 };
