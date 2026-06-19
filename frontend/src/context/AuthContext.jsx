@@ -1,30 +1,17 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { authService } from '../lib/authService.js';
+import { authService, profileService } from '../services/index.js';
 import { supabase } from '../lib/supabaseClient.js';
 
 const AuthContext = createContext();
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-
 const fetchUserProfile = async (session) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/profile`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${session.access_token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    if (response.ok) {
-      const { data } = await response.json();
-      return {
-        ...data,
-        provider: session.user?.app_metadata?.provider || 'email'
-      };
-    } else {
-      console.error('Failed to fetch user profile:', response.statusText);
-      return null;
-    }
+    const res = await profileService.getProfile();
+    if (!res.success) return null;
+    return {
+      ...res.data,
+      provider: session.user?.app_metadata?.provider || 'email',
+    };
   } catch (error) {
     console.error('Error fetching user profile:', error);
     return null;

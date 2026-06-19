@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient.js';
+import { supabase } from '../lib/supabaseClient.js';
 
 const safeError = (error) => error?.message || 'Authentication failed';
 

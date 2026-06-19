@@ -22,7 +22,6 @@ const Sidebar = () => {
 
   const handleWorkspaceChange = (wsId) => {
     navigate(`/workspaces/${wsId}`);
-    setIsWorkspaceMenuOpen(false);
   };
 
   const isHome = location.pathname === '/dashboard';

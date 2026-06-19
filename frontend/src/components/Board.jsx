@@ -3,7 +3,7 @@ import AddTaskForm from './AddTaskForm';
 import AddListForm from './AddListForm';
 import TaskModal from './TaskModal';
 import { useWorkspace } from '../context/WorkspaceContext';
-import { boardService } from '../lib/boardService';
+import { boardService } from '../services/index.js';
 
 const TaskCard = ({ task, onClick }) => {
   const commentCount = Array.isArray(task.comments) ? task.comments.length : 0;

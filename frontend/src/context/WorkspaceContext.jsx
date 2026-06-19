@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { mockBoards } from '../data/mockData';
-import { workspaceService } from '../lib/workspaceService';
-import { boardService } from '../lib/boardService';
+import { workspaceService, boardService } from '../services/index.js';
 import { useAuth } from './AuthContext';
 
 const WorkspaceContext = createContext();

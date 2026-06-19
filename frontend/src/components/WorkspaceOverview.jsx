@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { useAuth } from '../context/AuthContext';
 import { Settings, Info, Save, Edit3, X } from 'lucide-react';
-import { workspaceService } from '../lib/workspaceService';
+import { workspaceService } from '../services/index.js';
 
 const WorkspaceOverview = () => {
   const { activeWorkspace, updateWorkspace } = useWorkspace();
