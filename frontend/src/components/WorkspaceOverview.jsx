@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { useAuth } from '../context/AuthContext';
-import { Settings, Info, Save, Edit3, X, Trash2 } from 'lucide-react';
+import { Info, Save, Edit3, X, Trash2 } from 'lucide-react';
 import { workspaceService, boardService } from '../services/index.js';
+import ConfirmModal from './ConfirmModal';
 
 const WorkspaceOverview = () => {
   const { activeWorkspace, updateWorkspace, deleteWorkspace } = useWorkspace();
@@ -77,20 +78,28 @@ const WorkspaceOverview = () => {
     }
   };
 
-  const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this workspace? This action cannot be undone.')) return;
+  const [showDeleteWorkspace, setShowDeleteWorkspace] = useState(false);
+  const [showDeleteBoard, setShowDeleteBoard] = useState(false);
+  const [isDeletingWorkspace, setIsDeletingWorkspace] = useState(false);
+
+  const handleDeleteWorkspace = async () => {
+    setIsDeletingWorkspace(true);
     const result = await deleteWorkspace(displayWorkspace.id);
     if (result.success) {
       window.location.href = '/dashboard';
     } else {
       setError(result.error || 'Failed to delete workspace');
     }
+    setIsDeletingWorkspace(false);
+    setShowDeleteWorkspace(false);
   };
 
   const [editingBoardId, setEditingBoardId] = useState(null);
   const [boardForm, setBoardForm] = useState({ name: '', description: '' });
   const [boardError, setBoardError] = useState('');
   const [isSavingBoard, setIsSavingBoard] = useState(false);
+  const [deletingBoardId, setDeletingBoardId] = useState(null);
+  const [isDeletingBoard, setIsDeletingBoard] = useState(false);
 
   const startEditBoard = (board) => {
     setEditingBoardId(board.id);
@@ -115,6 +124,20 @@ const WorkspaceOverview = () => {
     setIsSavingBoard(false);
   };
 
+  const handleDeleteBoard = async (boardId) => {
+    setIsDeletingBoard(true);
+    setDeletingBoardId(boardId);
+    const res = await boardService.deleteBoard(boardId);
+    if (res.success) {
+      setFullWorkspace(prev => ({
+        ...prev,
+        boards: prev.boards.filter(b => b.id !== boardId)
+      }));
+    }
+    setIsDeletingBoard(false);
+    setDeletingBoardId(null);
+  };
+
   if (!displayWorkspace) return null;
 
   return (
@@ -137,7 +160,7 @@ const WorkspaceOverview = () => {
                 <Edit3 size={16} /> Edit
               </button>
               <button
-                onClick={handleDelete}
+                onClick={() => setShowDeleteWorkspace(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg text-sm font-bold text-red-600 transition-colors"
               >
                 <Trash2 size={16} /> Delete
@@ -313,16 +336,9 @@ const WorkspaceOverview = () => {
                       <Edit3 size={16} />
                     </button>
                     <button
-                      onClick={async () => {
-                        if (confirm('Delete this board?')) {
-                          const res = await deleteBoard(board.id);
-                          if (res.success) {
-                            setFullWorkspace(prev => ({
-                              ...prev,
-                              boards: prev.boards.filter(b => b.id !== board.id)
-                            }));
-                          }
-                        }
+                      onClick={() => {
+                        setDeletingBoardId(board.id);
+                        setShowDeleteBoard(true);
                       }}
                       className="p-2 text-red-500 hover:bg-red-50 rounded transition-colors"
                       title="Delete board"
@@ -335,6 +351,28 @@ const WorkspaceOverview = () => {
             </div>
           </div>
         )}
+
+        <ConfirmModal
+          isOpen={showDeleteBoard}
+          onClose={() => {
+            setShowDeleteBoard(false);
+            setDeletingBoardId(null);
+          }}
+          onConfirm={() => handleDeleteBoard(deletingBoardId)}
+          title="Delete Board"
+          message="Are you sure you want to delete this board? All lists and tasks within it will be removed. This action cannot be undone."
+          isLoading={isDeletingBoard}
+        />
+
+        <ConfirmModal
+          isOpen={showDeleteWorkspace}
+          onClose={() => setShowDeleteWorkspace(false)}
+          onConfirm={handleDeleteWorkspace}
+          title="Delete Workspace"
+          message="Are you sure you want to delete this workspace? This action cannot be undone."
+          confirmLabel="Delete Workspace"
+          isLoading={isDeletingWorkspace}
+        />
 
         {/* Team Members Section */}
         {displayWorkspace.type === 'team' && (
