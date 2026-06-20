@@ -7,7 +7,7 @@ import { boardService, listService, taskService } from '../../services/index.js'
 import { Info } from 'lucide-react';
 
 const Board = () => {
-  const { activeBoard, updateTask, deleteTask, moveTask, updateList, deleteList, updateBoard } = useWorkspace();
+  const { activeBoard, setActiveBoard, updateTask, deleteTask, moveTask, updateList, deleteList, updateBoard } = useWorkspace();
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -33,7 +33,7 @@ const Board = () => {
       }
     };
     fetchBoardData();
-  }, [activeBoard]);
+  }, [activeBoard?.id]);
 
   const [addingTaskIn, setAddingTaskIn] = useState(null);
   const [showAddList, setShowAddList] = useState(false);
@@ -97,28 +97,6 @@ const Board = () => {
     }
   };
 
-  const startEditBoard = () => {
-    setBoardForm({ name: activeBoard?.name || '', description: activeBoard?.description || '' });
-    setEditingBoard(true);
-    setBoardError('');
-  };
-
-  const handleSaveBoard = async (e) => {
-    e.preventDefault();
-    if (!boardForm.name.trim()) {
-      setBoardError('Board name is required');
-      return;
-    }
-    setIsSavingBoard(true);
-    const res = await updateBoard(activeBoard.id, boardForm);
-    if (res.success) {
-      setEditingBoard(false);
-    } else {
-      setBoardError(res.error || 'Failed to update board');
-    }
-    setIsSavingBoard(false);
-  };
-
   const handleAddList = async (listData) => {
     if (!activeBoard?.id) return;
     const res = await listService.createList(activeBoard.id, { name: listData.title });
@@ -150,9 +128,21 @@ const Board = () => {
   };
 
   const openBoardDetail = () => {
-    if (!editingBoard) {
-      setBoardForm({ name: activeBoard?.name || '', description: activeBoard?.description || '' });
-      setIsBoardDetailOpen(true);
+    setBoardForm({ name: activeBoard?.name || '', description: activeBoard?.description || '' });
+    setEditingBoard(false);
+    setBoardError('');
+    setIsBoardDetailOpen(true);
+  };
+
+  const closeBoardDetail = () => {
+    setIsBoardDetailOpen(false);
+    setEditingBoard(false);
+    setBoardError('');
+  };
+
+  const handleBoardDetailBackdropPointerDown = (e) => {
+    if (e.target === e.currentTarget) {
+      closeBoardDetail();
     }
   };
 
@@ -165,6 +155,7 @@ const Board = () => {
     setIsSavingBoard(true);
     const res = await updateBoard(activeBoard.id, boardForm);
     if (res.success) {
+      setActiveBoard({ ...activeBoard, ...res.data });
       setIsBoardDetailOpen(false);
       setEditingBoard(false);
     } else {
@@ -267,8 +258,8 @@ const Board = () => {
       </section>
 
       {isBoardDetailOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setIsBoardDetailOpen(false)}>
-          <div className="bg-bg border border-border rounded-xl shadow-xl w-full max-w-lg mx-4" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onPointerDown={handleBoardDetailBackdropPointerDown}>
+          <div className="bg-bg border border-border rounded-xl shadow-xl w-full max-w-lg mx-4">
             {!editingBoard ? (
               <div className="p-6 space-y-4">
                 <div>
@@ -287,7 +278,7 @@ const Board = () => {
                     Edit Details
                   </button>
                   <button
-                    onClick={() => setIsBoardDetailOpen(false)}
+                    onClick={closeBoardDetail}
                     className="px-4 py-2 bg-button-secondary text-button-secondary-text hover:bg-button-secondary-hover text-sm font-medium rounded transition-colors"
                   >
                     Close
