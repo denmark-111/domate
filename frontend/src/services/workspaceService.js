@@ -46,4 +46,16 @@ export const workspaceService = {
       return { success: false, error: error.message };
     }
   },
+
+  deleteWorkspace: async (id) => {
+    try {
+      const result = await apiCall(`/workspaces/${id}`, {
+        method: 'DELETE',
+      });
+      return { success: true, message: result.message };
+    } catch (error) {
+      console.error('Error in deleteWorkspace:', error);
+      return { success: false, error: error.message };
+    }
+  },
 };

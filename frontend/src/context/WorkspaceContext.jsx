@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { mockBoards } from '../data/mockData';
-import { workspaceService, boardService } from '../services/index.js';
+import { workspaceService, boardService, listService, taskService } from '../services/index.js';
 import { useAuth } from './AuthContext';
 
 const WorkspaceContext = createContext();
@@ -88,6 +87,51 @@ export const WorkspaceProvider = ({ children }) => {
     return res;
   };
 
+  const updateBoard = async (boardId, data) => {
+    const res = await boardService.updateBoard(boardId, data);
+    if (res.success) {
+      setBoards(prev => prev.map(b => b.id === boardId ? { ...b, ...res.data } : b));
+    }
+    return res;
+  };
+
+  const deleteBoard = async (boardId) => {
+    const res = await boardService.deleteBoard(boardId);
+    if (res.success) {
+      setBoards(prev => prev.filter(b => b.id !== boardId));
+    }
+    return res;
+  };
+
+  const deleteWorkspace = async (id) => {
+    const res = await workspaceService.deleteWorkspace(id);
+    if (res.success) {
+      setWorkspaces(prev => prev.filter(w => w.id !== id));
+    }
+    return res;
+  };
+
+  const updateList = async (listId, data) => {
+    return await listService.updateList(listId, data);
+  };
+
+  const deleteList = async (listId) => {
+    const res = await listService.deleteList(listId);
+    return res;
+  };
+
+  const updateTask = async (taskId, data) => {
+    return await taskService.updateTask(taskId, data);
+  };
+
+  const deleteTask = async (taskId) => {
+    return await taskService.deleteTask(taskId);
+  };
+
+  const moveTask = async (taskId, data) => {
+    return await taskService.moveTask(taskId, data);
+  };
+
   return (
     <WorkspaceContext.Provider value={{
       activeWorkspace,
@@ -102,7 +146,15 @@ export const WorkspaceProvider = ({ children }) => {
       setShowCreateBoard,
       createWorkspace,
       updateWorkspace,
-      createBoard
+      deleteWorkspace,
+      createBoard,
+      updateBoard,
+      deleteBoard,
+      updateList,
+      deleteList,
+      updateTask,
+      deleteTask,
+      moveTask
     }}>
       {children}
     </WorkspaceContext.Provider>

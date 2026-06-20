@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useWorkspace } from '../context/WorkspaceContext';
-import { Home, ListTodo, MessageSquare, Megaphone, Plus, Info } from 'lucide-react';
+import { Home, ListTodo, MessageSquare, Megaphone, Plus, Info, Trash2 } from 'lucide-react';
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -17,7 +17,8 @@ const Sidebar = () => {
     activeBoard, 
     setActiveBoard,
     showCreateBoard,
-    setShowCreateBoard
+    setShowCreateBoard,
+    deleteBoard
   } = useWorkspace();
 
   const handleWorkspaceChange = (wsId) => {
@@ -102,20 +103,33 @@ const Sidebar = () => {
               </div>
               <div className="space-y-1">
                 {boards.map((board) => (
-                  <button
-                    key={board.id}
-                    onClick={() => {
-                      setActiveView('Board');
-                      setActiveBoard(board);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm truncate transition-colors font-medium ${
-                      activeView === 'Board' && activeBoard?.id === board.id 
-                        ? 'text-text-accent bg-input-bg font-bold' 
-                        : 'text-text-secondary hover:bg-bg-tertiary/50 hover:text-button-secondary-text'
-                    }`}
-                  >
-                    # {board.name}
-                  </button>
+                  <div key={board.id} className="group relative">
+                    <button
+                      onClick={() => {
+                        setActiveView('Board');
+                        setActiveBoard(board);
+                      }}
+                      className={`w-full text-left px-3 py-2 pr-8 rounded-lg text-sm truncate transition-colors font-medium ${
+                        activeView === 'Board' && activeBoard?.id === board.id 
+                          ? 'text-text-accent bg-input-bg font-bold' 
+                          : 'text-text-secondary hover:bg-bg-tertiary/50 hover:text-button-secondary-text'
+                      }`}
+                    >
+                      # {board.name}
+                    </button>
+                    <button
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        if (confirm('Delete this board?')) {
+                          await deleteBoard(board.id);
+                        }
+                      }}
+                      className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 text-red-500 hover:bg-red-50 rounded transition-all"
+                      title="Delete board"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                 ))}
               </div>
             </div>

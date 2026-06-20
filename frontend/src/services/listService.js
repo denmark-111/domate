@@ -1,35 +1,22 @@
 import { apiCall } from './apiConfig.js';
 
-export const boardService = {
-  getWorkspaceBoards: async (workspaceId) => {
+export const listService = {
+  getBoardLists: async (boardId) => {
     try {
-      const data = await apiCall(`/workspaces/${workspaceId}/boards`);
+      const data = await apiCall(`/boards/${boardId}/lists`);
       return { success: true, data };
     } catch (error) {
-      console.error('Error in getWorkspaceBoards:', error);
+      console.error('Error in getBoardLists:', error);
       return { success: false, error: error.message };
     }
   },
 
-  getBoardById: async (boardId) => {
+  getListById: async (listId) => {
     try {
-      const data = await apiCall(`/boards/${boardId}`);
+      const data = await apiCall(`/lists/${listId}`);
       return { success: true, data };
     } catch (error) {
-      console.error('Error in getBoardById:', error);
-      return { success: false, error: error.message };
-    }
-  },
-
-  createBoard: async (workspaceId, data) => {
-    try {
-      const result = await apiCall(`/workspaces/${workspaceId}/boards`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
-      return { success: true, data: result };
-    } catch (error) {
-      console.error('Error in createBoard:', error);
+      console.error('Error in getListById:', error);
       return { success: false, error: error.message };
     }
   },
@@ -47,27 +34,27 @@ export const boardService = {
     }
   },
 
-  updateBoard: async (boardId, data) => {
+  updateList: async (listId, data) => {
     try {
-      const result = await apiCall(`/boards/${boardId}`, {
+      const result = await apiCall(`/lists/${listId}`, {
         method: 'PUT',
         body: JSON.stringify(data),
       });
       return { success: true, data: result };
     } catch (error) {
-      console.error('Error in updateBoard:', error);
+      console.error('Error in updateList:', error);
       return { success: false, error: error.message };
     }
   },
 
-  deleteBoard: async (boardId) => {
+  deleteList: async (listId) => {
     try {
-      const result = await apiCall(`/boards/${boardId}`, {
+      const result = await apiCall(`/lists/${listId}`, {
         method: 'DELETE',
       });
       return { success: true, message: result.message };
     } catch (error) {
-      console.error('Error in deleteBoard:', error);
+      console.error('Error in deleteList:', error);
       return { success: false, error: error.message };
     }
   },

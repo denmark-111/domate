@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { useAuth } from '../context/AuthContext';
-import { Settings, Info, Save, Edit3, X } from 'lucide-react';
-import { workspaceService } from '../services/index.js';
+import { Settings, Info, Save, Edit3, X, Trash2 } from 'lucide-react';
+import { workspaceService, boardService } from '../services/index.js';
 
 const WorkspaceOverview = () => {
-  const { activeWorkspace, updateWorkspace } = useWorkspace();
+  const { activeWorkspace, updateWorkspace, deleteWorkspace } = useWorkspace();
   const { user } = useAuth();
   
   const [isEditing, setIsEditing] = useState(false);
@@ -77,6 +77,44 @@ const WorkspaceOverview = () => {
     }
   };
 
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete this workspace? This action cannot be undone.')) return;
+    const result = await deleteWorkspace(displayWorkspace.id);
+    if (result.success) {
+      window.location.href = '/dashboard';
+    } else {
+      setError(result.error || 'Failed to delete workspace');
+    }
+  };
+
+  const [editingBoardId, setEditingBoardId] = useState(null);
+  const [boardForm, setBoardForm] = useState({ name: '', description: '' });
+  const [boardError, setBoardError] = useState('');
+  const [isSavingBoard, setIsSavingBoard] = useState(false);
+
+  const startEditBoard = (board) => {
+    setEditingBoardId(board.id);
+    setBoardForm({ name: board.name || '', description: board.description || '' });
+    setBoardError('');
+  };
+
+  const handleSaveBoard = async (e) => {
+    e.preventDefault();
+    if (!boardForm.name.trim()) {
+      setBoardError('Board name is required');
+      return;
+    }
+    setIsSavingBoard(true);
+    const res = await updateBoard(editingBoardId, boardForm);
+    if (res.success) {
+      setEditingBoardId(null);
+      setBoardForm({ name: '', description: '' });
+    } else {
+      setBoardError(res.error || 'Failed to update board');
+    }
+    setIsSavingBoard(false);
+  };
+
   if (!displayWorkspace) return null;
 
   return (
@@ -91,12 +129,20 @@ const WorkspaceOverview = () => {
             <p className="text-text-secondary">View and manage your workspace details.</p>
           </div>
           {isOwner && !isEditing && (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-bg-secondary hover:bg-bg-tertiary border border-border rounded-lg text-sm font-bold text-text transition-colors shadow-sm"
-            >
-              <Edit3 size={16} /> Edit Details
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setIsEditing(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-bg-secondary hover:bg-bg-tertiary border border-border rounded-lg text-sm font-bold text-text transition-colors shadow-sm"
+              >
+                <Edit3 size={16} /> Edit
+              </button>
+              <button
+                onClick={handleDelete}
+                className="flex items-center gap-2 px-4 py-2 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg text-sm font-bold text-red-600 transition-colors"
+              >
+                <Trash2 size={16} /> Delete
+              </button>
+            </div>
           )}
         </header>
 
@@ -185,6 +231,110 @@ const WorkspaceOverview = () => {
             </form>
           )}
         </div>
+
+        {/* Edit Board Section */}
+        {editingBoardId && (
+          <div className="bg-bg-secondary rounded-2xl border border-border p-8 shadow-sm mb-8">
+            <h3 className="text-sm font-bold text-text-secondary uppercase tracking-wider mb-4">Edit Board</h3>
+            <form onSubmit={handleSaveBoard} className="space-y-4">
+              <div>
+                <label htmlFor="boardName" className="block text-sm font-bold text-text-secondary uppercase tracking-wider mb-2">
+                  Board Name
+                </label>
+                <input
+                  type="text"
+                  id="boardName"
+                  name="name"
+                  value={boardForm.name}
+                  onChange={(e) => setBoardForm(prev => ({ ...prev, name: e.target.value }))}
+                  className="w-full px-4 py-3 rounded-lg border-2 border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors"
+                  placeholder="Board name"
+                />
+              </div>
+              <div>
+                <label htmlFor="boardDesc" className="block text-sm font-bold text-text-secondary uppercase tracking-wider mb-2">
+                  Description
+                </label>
+                <textarea
+                  id="boardDesc"
+                  name="description"
+                  value={boardForm.description}
+                  onChange={(e) => setBoardForm(prev => ({ ...prev, description: e.target.value }))}
+                  rows="3"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none"
+                  placeholder="Board description"
+                />
+              </div>
+              {boardError && (
+                <div className="p-3 bg-error-bg border border-error-border rounded-lg text-sm text-error-text">
+                  {boardError}
+                </div>
+              )}
+              <div className="flex gap-3 pt-4 border-t border-border">
+                <button
+                  type="button"
+                  onClick={() => setEditingBoardId(null)}
+                  disabled={isSavingBoard}
+                  className="px-6 py-2 rounded-lg font-bold text-text-secondary hover:bg-bg-tertiary transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingBoard}
+                  className="px-6 py-2 rounded-lg font-bold bg-button hover:bg-button-hover text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                >
+                  {isSavingBoard ? 'Saving...' : 'Save Board'}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* Boards List Section */}
+        {displayWorkspace.boards && displayWorkspace.boards.length > 0 && (
+          <div className="bg-bg-secondary rounded-2xl border border-border p-8 shadow-sm mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold text-text-secondary uppercase tracking-wider">Boards</h3>
+            </div>
+            <div className="space-y-3">
+              {displayWorkspace.boards.map((board) => (
+                <div key={board.id} className="flex items-center justify-between p-4 bg-bg rounded-lg border border-border-light">
+                  <div>
+                    <h4 className="text-sm font-bold text-text">{board.name}</h4>
+                    <p className="text-xs text-text-secondary">{board.description || 'No description'}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => startEditBoard(board)}
+                      className="p-2 text-text-secondary hover:text-text-accent hover:bg-bg-tertiary rounded transition-colors"
+                      title="Edit board"
+                    >
+                      <Edit3 size={16} />
+                    </button>
+                    <button
+                      onClick={async () => {
+                        if (confirm('Delete this board?')) {
+                          const res = await deleteBoard(board.id);
+                          if (res.success) {
+                            setFullWorkspace(prev => ({
+                              ...prev,
+                              boards: prev.boards.filter(b => b.id !== board.id)
+                            }));
+                          }
+                        }
+                      }}
+                      className="p-2 text-red-500 hover:bg-red-50 rounded transition-colors"
+                      title="Delete board"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Team Members Section */}
         {displayWorkspace.type === 'team' && (
