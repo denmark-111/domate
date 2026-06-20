@@ -185,6 +185,12 @@ const Board = () => {
   const [isSavingBoard, setIsSavingBoard] = useState(false);
   const [boardError, setBoardError] = useState('');
 
+  useEffect(() => {
+    setEditingBoard(false);
+    setEditingListId(null);
+    setBoardError('');
+  }, [activeBoard?.id]);
+
   const handleAddTask = (listId) => {
     setAddingTaskIn(listId);
   };

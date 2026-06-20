@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Edit3, Save, X } from 'lucide-react';
 
 const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
@@ -8,6 +8,14 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsEditingDetails(false);
+      setNewComment('');
+      setIsAddingComment(false);
+    }
+  }, [isOpen, task?.id]);
 
   if (!isOpen || !task) return null;
 
