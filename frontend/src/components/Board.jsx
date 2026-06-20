@@ -1,149 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import AddTaskForm from './AddTaskForm';
 import AddListForm from './AddListForm';
 import TaskModal from './TaskModal';
-import ConfirmModal from './ConfirmModal';
+import ListColumn from './ListColumn';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { boardService, listService, taskService } from '../services/index.js';
-import { Trash2, Edit3, Info } from 'lucide-react';
-
-const TaskCard = ({ task, onClick, onDelete }) => {
-  const commentCount = Array.isArray(task.comments) ? task.comments.length : 0;
-  const [showDeleteTask, setShowDeleteTask] = useState(false);
-  const [isDeletingTask, setIsDeletingTask] = useState(false);
-
-  const handleDeleteTask = async () => {
-    setIsDeletingTask(true);
-    await onDelete?.(task.id);
-    setIsDeletingTask(false);
-    setShowDeleteTask(false);
-  };
-
-  return (
-    <div
-      onClick={onClick}
-      className="bg-bg-secondary p-4 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer group relative"
-    >
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setShowDeleteTask(true);
-        }}
-        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 text-red-500 hover:bg-red-50 rounded transition-all"
-        title="Delete task"
-      >
-        <Trash2 size={14} />
-      </button>
-      <div className="flex gap-2 mb-3 flex-wrap">
-        {task.labels?.map((label) => (
-          <span
-            key={label.id}
-            className="px-2 py-0.5 text-[10px] font-bold rounded uppercase text-white"
-            style={{ backgroundColor: label.color }}
-          >
-            {label.name}
-          </span>
-        ))}
-      </div>
-      <p className="text-sm text-text font-medium mb-4 group-hover:text-text-accent transition-colors">
-        {task.name || task.title}
-      </p>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-text-secondary">
-          <span className="text-xs">💬 {commentCount}</span>
-        </div>
-        <div className="w-6 h-6 rounded-full bg-button border-2 border-bg flex items-center justify-center text-[8px] text-white font-bold">
-          {task.assigneeInitials || '?'}
-        </div>
-      </div>
-
-      <ConfirmModal
-        isOpen={showDeleteTask}
-        onClose={() => setShowDeleteTask(false)}
-        onConfirm={handleDeleteTask}
-        title="Delete Task"
-        message="Are you sure you want to delete this task? This action cannot be undone."
-        isLoading={isDeletingTask}
-      />
-    </div>
-  );
-};
-
-const Column = ({ id, title, tasks, onAddTask, isAddingTask, onCancelAddTask, onTaskClick, onSubmitTask, onDeleteList, onDeleteTask, onEditList }) => {
-  const [showDeleteList, setShowDeleteList] = useState(false);
-  const [isDeletingList, setIsDeletingList] = useState(false);
-
-  const handleDeleteList = async () => {
-    setIsDeletingList(true);
-    await onDeleteList(id);
-    setIsDeletingList(false);
-    setShowDeleteList(false);
-  };
-
-  return (
-    <div className="w-80 flex-shrink-0 flex flex-col gap-4">
-      <div className="flex items-center justify-between px-2 group/list">
-        <div className="flex items-center gap-2">
-          <h3 className="text-sm font-bold text-text-tertiary uppercase tracking-wider">{title}</h3>
-          <span className="text-xs font-medium text-text-secondary bg-bg-tertiary px-2 py-1 rounded-full">{tasks.length}</span>
-        </div>
-        <div className="flex gap-1">
-          <button
-            onClick={() => onEditList({ id, title })}
-            className="opacity-0 group-hover/list:opacity-100 p-1 text-blue-500 hover:bg-blue-50 rounded transition-all"
-            title="Edit list"
-          >
-            <Edit3 size={14} />
-          </button>
-          <button
-            onClick={() => setShowDeleteList(true)}
-            className="opacity-0 group-hover/list:opacity-100 p-1 text-red-500 hover:bg-red-50 rounded transition-all"
-            title="Delete list"
-          >
-            <Trash2 size={14} />
-          </button>
-        </div>
-      </div>
-
-      <div className="flex-1 flex flex-col gap-3">
-        {tasks.map((task) => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            onClick={() => onTaskClick(task)}
-            onDelete={onDeleteTask}
-          />
-        ))}
-        {!isAddingTask ? (
-          <button
-            onClick={() => onAddTask(id)}
-            className="w-full py-2 text-sm text-text-secondary hover:bg-bg-tertiary rounded-md border-2 border-dashed border-border transition-colors"
-          >
-            + Add Task
-          </button>
-        ) : (
-          <AddTaskForm
-            columnTitle={title}
-            onSubmit={(data) => {
-              onSubmitTask(id, data);
-              onCancelAddTask();
-            }}
-            onCancel={onCancelAddTask}
-          />
-        )}
-      </div>
-
-      <ConfirmModal
-        isOpen={showDeleteList}
-        onClose={() => setShowDeleteList(false)}
-        onConfirm={handleDeleteList}
-        title="Delete List"
-        message="Are you sure you want to delete this list? All tasks within it will be removed. This action cannot be undone."
-        isLoading={isDeletingList}
-      />
-    </div>
-  );
-};
+import { Info } from 'lucide-react';
 
 const Board = () => {
   const { activeBoard, updateTask, deleteTask, moveTask, updateList, deleteList, updateBoard } = useWorkspace();
@@ -333,7 +194,7 @@ const Board = () => {
             </div>
             <div className="flex gap-6 flex-1 min-h-0 p-4 pt-4">
               {data.map((col) => (
-                <Column
+                <ListColumn
                   key={col.id || col.title}
                   id={col.id}
                   title={editingListId === col.id ? '...' : col.title}
