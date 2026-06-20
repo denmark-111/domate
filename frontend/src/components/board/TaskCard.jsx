@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import ConfirmModal from './ConfirmModal';
+import ConfirmModal from '../common/ConfirmModal';
 import { Trash2 } from 'lucide-react';
 
 const TaskCard = ({ task, onClick, onDelete }) => {

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useWorkspace } from '../context/WorkspaceContext';
-import { useAuth } from '../context/AuthContext';
+import { useWorkspace } from '../../context/WorkspaceContext';
+import { useAuth } from '../../context/AuthContext';
 import { Info, Save, Edit3, X, Trash2 } from 'lucide-react';
-import { workspaceService, boardService } from '../services/index.js';
-import ConfirmModal from './ConfirmModal';
+import { workspaceService, boardService } from '../../services/index.js';
+import ConfirmModal from '../common/ConfirmModal';
 
 const WorkspaceOverview = () => {
   const { activeWorkspace, updateWorkspace, deleteWorkspace } = useWorkspace();

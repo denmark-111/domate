@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Board from './Board';
-import CreateBoardForm from './CreateBoardForm';
+import Board from '../board/Board';
+import CreateBoardForm from '../board/CreateBoardForm';
 import WorkspaceOverview from './WorkspaceOverview';
-import { useWorkspace } from '../context/WorkspaceContext';
+import { useWorkspace } from '../../context/WorkspaceContext';
 
 const Workspace = () => {
   const navigate = useNavigate();

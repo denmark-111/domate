@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useWorkspace } from '../context/WorkspaceContext';
-import CreateWorkspaceForm from './CreateWorkspaceForm';
-import { useAuth } from '../context/AuthContext';
+import { useWorkspace } from '../../context/WorkspaceContext';
+import CreateWorkspaceForm from '../workspace/CreateWorkspaceForm';
+import { useAuth } from '../../context/AuthContext';
 
 const HomeDashboard = () => {
   const { workspaces } = useWorkspace();

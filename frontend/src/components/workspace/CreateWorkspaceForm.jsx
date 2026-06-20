@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useWorkspace } from '../context/WorkspaceContext';
+import { useWorkspace } from '../../context/WorkspaceContext';
 
 const CreateWorkspaceForm = ({ onClose }) => {
   const navigate = useNavigate();

@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import AddListForm from './AddListForm';
 import TaskModal from './TaskModal';
 import ListColumn from './ListColumn';
-import { useWorkspace } from '../context/WorkspaceContext';
-import { boardService, listService, taskService } from '../services/index.js';
+import { useWorkspace } from '../../context/WorkspaceContext';
+import { boardService, listService, taskService } from '../../services/index.js';
 import { Info } from 'lucide-react';
 
 const Board = () => {

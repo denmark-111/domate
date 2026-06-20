@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useWorkspace } from '../context/WorkspaceContext';
-import ConfirmModal from './ConfirmModal';
+import { useWorkspace } from '../../context/WorkspaceContext';
+import ConfirmModal from '../common/ConfirmModal';
 import { Home, ListTodo, MessageSquare, Megaphone, Plus, Info, Trash2 } from 'lucide-react';
 
 const Sidebar = () => {

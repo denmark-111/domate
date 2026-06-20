@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import TaskCard from './TaskCard';
 import AddTaskForm from './AddTaskForm';
-import ConfirmModal from './ConfirmModal';
+import ConfirmModal from '../common/ConfirmModal';
 import { Edit3, Trash2 } from 'lucide-react';
 
 const ListColumn = ({ id, title, tasks, onAddTask, isAddingTask, onCancelAddTask, onTaskClick, onSubmitTask, onDeleteList, onDeleteTask, onEditList }) => {
