@@ -5,7 +5,7 @@ import TaskModal from './TaskModal';
 import ConfirmModal from './ConfirmModal';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { boardService, listService, taskService } from '../services/index.js';
-import { Trash2, Edit3 } from 'lucide-react';
+import { Trash2, Edit3, Info } from 'lucide-react';
 
 const TaskCard = ({ task, onClick, onDelete }) => {
   const commentCount = Array.isArray(task.comments) ? task.comments.length : 0;
@@ -179,7 +179,8 @@ const Board = () => {
   const [editingListId, setEditingListId] = useState(null);
   const [listForm, setListForm] = useState({ name: '' });
   const [selectedTask, setSelectedTask] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [isBoardDetailOpen, setIsBoardDetailOpen] = useState(false);
   const [editingBoard, setEditingBoard] = useState(false);
   const [boardForm, setBoardForm] = useState({ name: '', description: '' });
   const [isSavingBoard, setIsSavingBoard] = useState(false);
@@ -189,6 +190,7 @@ const Board = () => {
     setEditingBoard(false);
     setEditingListId(null);
     setBoardError('');
+    setIsBoardDetailOpen(false);
   }, [activeBoard?.id]);
 
   const handleAddTask = (listId) => {
@@ -219,7 +221,7 @@ const Board = () => {
 
   const handleTaskClick = (task) => {
     setSelectedTask(task);
-    setIsModalOpen(true);
+    setIsTaskModalOpen(true);
   };
 
   const handleTaskUpdate = async (updatedTask) => {
@@ -286,147 +288,205 @@ const Board = () => {
     }
   };
 
+  const openBoardDetail = () => {
+    if (!editingBoard) {
+      setBoardForm({ name: activeBoard?.name || '', description: activeBoard?.description || '' });
+      setIsBoardDetailOpen(true);
+    }
+  };
+
+  const handleSaveBoardFromModal = async (e) => {
+    e.preventDefault();
+    if (!boardForm.name.trim()) {
+      setBoardError('Board name is required');
+      return;
+    }
+    setIsSavingBoard(true);
+    const res = await updateBoard(activeBoard.id, boardForm);
+    if (res.success) {
+      setIsBoardDetailOpen(false);
+      setEditingBoard(false);
+    } else {
+      setBoardError(res.error || 'Failed to update board');
+    }
+    setIsSavingBoard(false);
+  };
+
   return (
     <>
-      <section className="flex-1 overflow-x-auto bg-bg-secondary">
-        <div className="p-8 border-b border-border">
-          {!editingBoard ? (
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-extrabold text-text mb-1">{activeBoard?.name}</h1>
-                {activeBoard?.description && (
-                  <p className="text-sm text-text-secondary line-clamp-2">{activeBoard.description}</p>
-                )}
-              </div>
+      <section className="flex-1 min-h-0 flex flex-col overflow-x-auto overflow-y-auto bg-bg-secondary">
+        {isLoading ? (
+          <div className="flex-1 flex items-center justify-center text-text-secondary">
+            Loading board...
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between px-6 py-3 border-b border-border flex-shrink-0">
+              <h1 className="text-lg font-extrabold text-text">{activeBoard?.name}</h1>
               <button
-                onClick={startEditBoard}
-                className="flex items-center gap-2 px-4 py-2 bg-bg hover:bg-bg-tertiary border border-border rounded-lg text-sm font-bold text-text transition-colors shadow-sm"
+                onClick={openBoardDetail}
+                className="p-2 bg-bg hover:bg-bg-tertiary border border-border rounded-lg text-text transition-colors shadow-sm"
+                title="Board Details"
               >
-                Edit Board
+                <Info size={20} />
               </button>
             </div>
-          ) : (
-            <form onSubmit={handleSaveBoard} className="space-y-3">
-              <div>
-                <input
-                  type="text"
-                  value={boardForm.name}
-                  onChange={(e) => setBoardForm((prev) => ({ ...prev, name: e.target.value }))}
-                  className="w-full text-2xl font-extrabold text-text bg-bg-tertiary px-3 py-2 rounded border border-input-border outline-none focus:border-input-border-focus"
-                  placeholder="Board name"
-                  autoFocus
+            <div className="flex gap-6 flex-1 min-h-0 p-4 pt-4">
+              {data.map((col) => (
+                <Column
+                  key={col.id || col.title}
+                  id={col.id}
+                  title={editingListId === col.id ? '...' : col.title}
+                  tasks={col.tasks}
+                  onAddTask={handleAddTask}
+                  isAddingTask={addingTaskIn === col.id}
+                  onCancelAddTask={handleCancelAddTask}
+                  onTaskClick={handleTaskClick}
+                  onSubmitTask={handleSubmitTask}
+                  onDeleteList={async (listId) => {
+                    await deleteList(listId);
+                    setData((prev) => prev.filter((c) => c.id !== listId));
+                  }}
+                  onDeleteTask={async (taskId) => {
+                    await deleteTask(taskId);
+                    setData((prevData) =>
+                      prevData.map((col) => ({
+                        ...col,
+                        tasks: col.tasks.filter((t) => t.id !== taskId)
+                      }))
+                    );
+                  }}
+                  onEditList={(list) => startEditList(list)}
                 />
-              </div>
-              <textarea
-                value={boardForm.description}
-                onChange={(e) => setBoardForm((prev) => ({ ...prev, description: e.target.value }))}
-                rows="2"
-                className="w-full px-3 py-2 rounded border border-input-border bg-bg-tertiary text-sm text-text outline-none focus:border-input-border-focus resize-none"
-                placeholder="Board description"
-              />
-              {boardError && (
-                <div className="p-2 bg-error-bg border border-error-border rounded text-sm text-error-text">
-                  {boardError}
-                </div>
-              )}
-              <div className="flex gap-2">
-                <button
-                  type="submit"
-                  disabled={isSavingBoard}
-                  className="px-4 py-2 bg-button hover:bg-button-hover text-white text-sm font-medium rounded transition-colors disabled:opacity-50"
-                >
-                  {isSavingBoard ? 'Saving...' : 'Save'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setEditingBoard(false)}
-                  className="px-4 py-2 bg-button-secondary text-button-secondary-text hover:bg-button-secondary-hover text-sm font-medium rounded transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
-        <div className="flex gap-6 h-full p-8 pt-6">
-          {isLoading ? (
-            <div className="flex items-center justify-center w-full h-full text-text-secondary">
-              Loading board...
-            </div>
-          ) : (
-            data.map((col) => (
-              <Column
-                key={col.id || col.title}
-                id={col.id}
-                title={editingListId === col.id ? '...' : col.title}
-                tasks={col.tasks}
-                onAddTask={handleAddTask}
-                isAddingTask={addingTaskIn === col.id}
-                onCancelAddTask={handleCancelAddTask}
-                onTaskClick={handleTaskClick}
-                onSubmitTask={handleSubmitTask}
-                onDeleteList={async (listId) => {
-                  await deleteList(listId);
-                  setData((prev) => prev.filter((c) => c.id !== listId));
-                }}
-                onDeleteTask={async (taskId) => {
-                  await deleteTask(taskId);
-                  setData((prevData) =>
-                    prevData.map((col) => ({
-                      ...col,
-                      tasks: col.tasks.filter((t) => t.id !== taskId)
-                    }))
-                  );
-                }}
-                onEditList={(list) => startEditList(list)}
-              />
-            ))
-          )}
+              ))}
 
-          {editingListId ? (
-            <div className="w-80 flex-shrink-0">
-              <form onSubmit={handleSaveList} className="bg-input-bg p-3 rounded-lg border-2 border-input-border space-y-3">
-                <input
-                  type="text"
-                  value={listForm.name}
-                  onChange={(e) => setListForm({ name: e.target.value })}
-                  className="w-full px-3 py-2 rounded border border-input-border-light bg-bg outline-none focus:border-input-border-focus text-sm font-medium text-text"
-                  placeholder="List title..."
-                  autoFocus
-                />
-                <div className="flex gap-2">
+              {editingListId ? (
+                <div className="w-80 flex-shrink-0">
+                  <form onSubmit={handleSaveList} className="bg-input-bg p-3 rounded-lg border-2 border-input-border space-y-3">
+                    <input
+                      type="text"
+                      value={listForm.name}
+                      onChange={(e) => setListForm({ name: e.target.value })}
+                      className="w-full px-3 py-2 rounded border border-input-border-light bg-bg outline-none focus:border-input-border-focus text-sm font-medium text-text"
+                      placeholder="List title..."
+                      autoFocus
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        type="submit"
+                        className="flex-1 px-4 py-2 bg-button hover:bg-button-hover text-white text-sm font-medium rounded transition-colors"
+                      >
+                        Save
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditingListId(null)}
+                        className="flex-1 px-4 py-2 bg-button-secondary text-button-secondary-text hover:bg-button-secondary-hover text-sm font-medium rounded transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              ) : !showAddList ? (
+                <div className="w-80 flex-shrink-0">
+                  <button
+                    onClick={() => setShowAddList(true)}
+                    className="w-full py-3 bg-bg-tertiary hover:bg-bg-tertiary rounded-lg border-2 border-dashed border-border text-text-secondary font-medium transition-colors"
+                  >
+                    + Add List
+                  </button>
+                </div>
+              ) : (
+                <AddListForm onSubmit={handleAddList} onCancel={() => setShowAddList(false)} />
+              )}
+            </div>
+          </>
+        )}
+      </section>
+
+      {isBoardDetailOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setIsBoardDetailOpen(false)}>
+          <div className="bg-bg border border-border rounded-xl shadow-xl w-full max-w-lg mx-4" onClick={(e) => e.stopPropagation()}>
+            {!editingBoard ? (
+              <div className="p-6 space-y-4">
+                <div>
+                  <h2 className="text-xl font-extrabold text-text">{activeBoard?.name}</h2>
+                  {activeBoard?.description ? (
+                    <p className="mt-2 text-sm text-text-secondary whitespace-pre-wrap">{activeBoard.description}</p>
+                  ) : (
+                    <p className="mt-2 text-sm text-text-tertiary italic">No description provided</p>
+                  )}
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    onClick={() => setEditingBoard(true)}
+                    className="px-4 py-2 bg-button hover:bg-button-hover text-white text-sm font-medium rounded transition-colors"
+                  >
+                    Edit Details
+                  </button>
+                  <button
+                    onClick={() => setIsBoardDetailOpen(false)}
+                    className="px-4 py-2 bg-button-secondary text-button-secondary-text hover:bg-button-secondary-hover text-sm font-medium rounded transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSaveBoardFromModal} className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">Board Name</label>
+                  <input
+                    type="text"
+                    value={boardForm.name}
+                    onChange={(e) => setBoardForm((prev) => ({ ...prev, name: e.target.value }))}
+                    className="w-full text-lg font-extrabold text-text bg-bg-tertiary px-3 py-2 rounded border border-input-border outline-none focus:border-input-border-focus"
+                    placeholder="Board name"
+                    autoFocus
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">Description</label>
+                  <textarea
+                    value={boardForm.description}
+                    onChange={(e) => setBoardForm((prev) => ({ ...prev, description: e.target.value }))}
+                    rows="4"
+                    className="w-full px-3 py-2 rounded border border-input-border bg-bg-tertiary text-sm text-text outline-none focus:border-input-border-focus resize-none"
+                    placeholder="Board description"
+                  />
+                </div>
+                {boardError && (
+                  <div className="p-2 bg-error-bg border border-error-border rounded text-sm text-error-text">
+                    {boardError}
+                  </div>
+                )}
+                <div className="flex justify-end gap-2 pt-2">
                   <button
                     type="submit"
-                    className="flex-1 px-4 py-2 bg-button hover:bg-button-hover text-white text-sm font-medium rounded transition-colors"
+                    disabled={isSavingBoard}
+                    className="px-4 py-2 bg-button hover:bg-button-hover text-white text-sm font-medium rounded transition-colors disabled:opacity-50"
                   >
-                    Save
+                    {isSavingBoard ? 'Saving...' : 'Save'}
                   </button>
                   <button
                     type="button"
-                    onClick={() => setEditingListId(null)}
-                    className="flex-1 px-4 py-2 bg-button-secondary text-button-secondary-text hover:bg-button-secondary-hover text-sm font-medium rounded transition-colors"
+                    onClick={() => {
+                      setEditingBoard(false);
+                      setBoardError('');
+                    }}
+                    className="px-4 py-2 bg-button-secondary text-button-secondary-text hover:bg-button-secondary-hover text-sm font-medium rounded transition-colors"
                   >
                     Cancel
                   </button>
                 </div>
               </form>
-            </div>
-          ) : !showAddList ? (
-            <div className="w-80 flex-shrink-0">
-              <button
-                onClick={() => setShowAddList(true)}
-                className="w-full py-3 bg-bg-tertiary hover:bg-bg-tertiary rounded-lg border-2 border-dashed border-border text-text-secondary font-medium transition-colors"
-              >
-                + Add List
-              </button>
-            </div>
-          ) : (
-            <AddListForm onSubmit={handleAddList} onCancel={() => setShowAddList(false)} />
-          )}
+            )}
+          </div>
         </div>
-      </section>
+      )}
 
-      <TaskModal task={selectedTask} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onUpdate={handleTaskUpdate} />
+      <TaskModal task={selectedTask} isOpen={isTaskModalOpen} onClose={() => setIsTaskModalOpen(false)} onUpdate={handleTaskUpdate} />
     </>
   );
 };
