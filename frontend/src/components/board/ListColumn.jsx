@@ -1,12 +1,45 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useDroppable } from '@dnd-kit/core';
+import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import TaskCard from './TaskCard';
 import AddTaskForm from './AddTaskForm';
 import ConfirmModal from '../common/ConfirmModal';
-import { Edit3, Trash2 } from 'lucide-react';
+import { Edit3, GripVertical, Trash2 } from 'lucide-react';
 
-const ListColumn = ({ id, title, tasks, onAddTask, isAddingTask, onCancelAddTask, onTaskClick, onSubmitTask, onDeleteList, onDeleteTask, onEditList }) => {
+const ListColumn = ({
+  id,
+  title,
+  tasks,
+  listSortableId,
+  taskSortableId,
+  taskListDroppableId,
+  onAddTask,
+  isAddingTask,
+  onCancelAddTask,
+  onTaskClick,
+  onSubmitTask,
+  onDeleteList,
+  onDeleteTask,
+  onEditList
+}) => {
   const [showDeleteList, setShowDeleteList] = useState(false);
   const [isDeletingList, setIsDeletingList] = useState(false);
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({
+    id: listSortableId,
+    data: { type: 'list', listId: id }
+  });
+  const { setNodeRef: setTasksNodeRef, isOver } = useDroppable({
+    id: taskListDroppableId,
+    data: { type: 'task-list', listId: id }
+  });
 
   const handleDeleteList = async () => {
     setIsDeletingList(true);
@@ -16,9 +49,25 @@ const ListColumn = ({ id, title, tasks, onAddTask, isAddingTask, onCancelAddTask
   };
 
   return (
-    <div className="w-80 flex-shrink-0 flex flex-col gap-4">
+    <div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition
+      }}
+      className={`w-80 flex-shrink-0 flex flex-col gap-4 ${isDragging ? 'opacity-50' : ''}`}
+    >
       <div className="flex items-center justify-between px-2 group/list">
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="cursor-grab active:cursor-grabbing text-text-secondary hover:text-text transition-colors"
+            title="Move list"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical size={14} />
+          </button>
           <h3 className="text-sm font-bold text-text-tertiary uppercase tracking-wider">{title}</h3>
           <span className="text-xs font-medium text-text-secondary bg-bg-tertiary px-2 py-1 rounded-full">{tasks.length}</span>
         </div>
@@ -40,15 +89,21 @@ const ListColumn = ({ id, title, tasks, onAddTask, isAddingTask, onCancelAddTask
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col gap-3">
-        {tasks.map((task) => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            onClick={() => onTaskClick(task)}
-            onDelete={onDeleteTask}
-          />
-        ))}
+      <div
+        ref={setTasksNodeRef}
+        className={`flex-1 flex flex-col gap-3 rounded-md transition-colors ${isOver ? 'bg-bg-tertiary/70' : ''}`}
+      >
+        <SortableContext items={tasks.map((task) => taskSortableId(task.id))} strategy={verticalListSortingStrategy}>
+          {tasks.map((task) => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              sortableId={taskSortableId(task.id)}
+              onClick={() => onTaskClick(task)}
+              onDelete={onDeleteTask}
+            />
+          ))}
+        </SortableContext>
         {!isAddingTask ? (
           <button
             onClick={() => onAddTask(id)}

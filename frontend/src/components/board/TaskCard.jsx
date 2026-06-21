@@ -1,11 +1,24 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import ConfirmModal from '../common/ConfirmModal';
 import { Trash2 } from 'lucide-react';
 
-const TaskCard = ({ task, onClick, onDelete }) => {
+const TaskCard = ({ task, sortableId, onClick, onDelete }) => {
   const commentCount = Array.isArray(task.comments) ? task.comments.length : 0;
   const [showDeleteTask, setShowDeleteTask] = useState(false);
   const [isDeletingTask, setIsDeletingTask] = useState(false);
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({
+    id: sortableId,
+    data: { type: 'task', taskId: task.id, listId: task.listId }
+  });
 
   const handleDeleteTask = async () => {
     setIsDeletingTask(true);
@@ -16,8 +29,15 @@ const TaskCard = ({ task, onClick, onDelete }) => {
 
   return (
     <div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition
+      }}
       onClick={onClick}
-      className="bg-bg-secondary p-4 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer group relative"
+      className={`bg-bg-secondary p-4 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer group relative ${isDragging ? 'opacity-50' : ''}`}
+      {...attributes}
+      {...listeners}
     >
       <button
         onClick={(e) => {
