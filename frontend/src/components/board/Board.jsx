@@ -142,8 +142,6 @@ const Board = () => {
 
   const [addingTaskIn, setAddingTaskIn] = useState(null);
   const [showAddList, setShowAddList] = useState(false);
-  const [editingListId, setEditingListId] = useState(null);
-  const [listForm, setListForm] = useState({ name: '' });
   const [selectedTask, setSelectedTask] = useState(null);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isBoardDetailOpen, setIsBoardDetailOpen] = useState(false);
@@ -154,7 +152,6 @@ const Board = () => {
 
   useEffect(() => {
     setEditingBoard(false);
-    setEditingListId(null);
     setBoardError('');
     setIsBoardDetailOpen(false);
   }, [activeBoard?.id]);
@@ -217,18 +214,10 @@ const Board = () => {
     }
   };
 
-  const startEditList = (list) => {
-    setEditingListId(list.id);
-    setListForm({ name: list.title });
-  };
-
-  const handleSaveList = async (e) => {
-    e.preventDefault();
-    if (!listForm.name.trim()) return;
-    const res = await updateList(editingListId, { name: listForm.name });
+  const handleSaveList = async (listId, newTitle) => {
+    const res = await updateList(listId, { name: newTitle });
     if (res.success) {
-      setData((prev) => prev.map((col) => (col.id === editingListId ? { ...col, title: listForm.name } : col)));
-      setEditingListId(null);
+      setData((prev) => prev.map((col) => (col.id === listId ? { ...col, title: newTitle } : col)));
     }
   };
 
@@ -376,7 +365,7 @@ const Board = () => {
                     <ListColumn
                       key={col.id || col.title}
                       id={col.id}
-                      title={editingListId === col.id ? '...' : col.title}
+                      title={col.title}
                       tasks={col.tasks}
                       listSortableId={listSortableId(col.id)}
                       taskSortableId={taskSortableId}
@@ -399,40 +388,12 @@ const Board = () => {
                           }))
                         );
                       }}
-                      onEditList={(list) => startEditList(list)}
+                      onSaveList={handleSaveList}
                     />
                   ))}
                 </SortableContext>
 
-                {editingListId ? (
-                  <div className="w-80 flex-shrink-0">
-                    <form onSubmit={handleSaveList} className="bg-input-bg p-3 rounded-lg border-2 border-input-border space-y-3">
-                      <input
-                        type="text"
-                        value={listForm.name}
-                        onChange={(e) => setListForm({ name: e.target.value })}
-                        className="w-full px-3 py-2 rounded border border-input-border-light bg-bg outline-none focus:border-input-border-focus text-sm font-medium text-text"
-                        placeholder="List title..."
-                        autoFocus
-                      />
-                      <div className="flex gap-2">
-                        <button
-                          type="submit"
-                          className="flex-1 px-4 py-2 bg-button hover:bg-button-hover text-white text-sm font-medium rounded transition-colors"
-                        >
-                          Save
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setEditingListId(null)}
-                          className="flex-1 px-4 py-2 bg-button-secondary text-button-secondary-text hover:bg-button-secondary-hover text-sm font-medium rounded transition-colors"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                ) : !showAddList ? (
+                {!showAddList ? (
                   <div className="w-80 flex-shrink-0">
                     <button
                       onClick={() => setShowAddList(true)}
