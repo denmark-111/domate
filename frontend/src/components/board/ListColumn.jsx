@@ -46,9 +46,12 @@ const ListColumn = ({
 
   const handleDeleteList = async () => {
     setIsDeletingList(true);
-    await onDeleteList(id);
-    setIsDeletingList(false);
-    setShowDeleteList(false);
+    try {
+      await onDeleteList(id);
+    } finally {
+      setIsDeletingList(false);
+      setShowDeleteList(false);
+    }
   };
 
   useEffect(() => {
