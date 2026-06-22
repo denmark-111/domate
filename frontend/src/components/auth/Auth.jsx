@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useNavigate, Navigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 // Inline SVG Icons
 const MailIcon = () => (
@@ -39,7 +39,7 @@ const SpinnerIcon = () => (
 
 const Auth = () => {
   const navigate = useNavigate();
-  const { login, register, loginWithOAuth } = useAuth();
+  const { login, register, loginWithOAuth, isAuthenticated, isLoading } = useAuth();
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [formData, setFormData] = useState({
     email: '',
@@ -51,6 +51,10 @@ const Auth = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [oauthProvider, setOauthProvider] = useState('');
   const [submitMessage, setSubmitMessage] = useState('');
+
+  // Redirect already-authenticated users to dashboard
+  if (isLoading) return null;
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 
   const handleModeSwitch = (mode) => {
     setIsLoginMode(mode);

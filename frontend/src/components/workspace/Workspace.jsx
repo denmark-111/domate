@@ -1,21 +1,22 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Board from './Board';
-import CreateBoardForm from './CreateBoardForm';
-import { useWorkspace } from '../context/WorkspaceContext';
+import Board from '../board/Board';
+import CreateBoardForm from '../board/CreateBoardForm';
+import WorkspaceOverview from './WorkspaceOverview';
+import { useWorkspace } from '../../context/WorkspaceContext';
 
 const Workspace = () => {
   const navigate = useNavigate();
-  const { activeWorkspace, activeView, activeBoard, showCreateBoard, setShowCreateBoard } = useWorkspace();
+  const { activeWorkspace, isLoadingWorkspaces, activeView, activeBoard, showCreateBoard, setShowCreateBoard, createBoard } = useWorkspace();
 
-  // Redirect if workspace not found or still loading
+  // Only redirect if workspaces have finished loading and the workspace truly doesn't exist
   useEffect(() => {
-    if (!activeWorkspace) {
-      navigate('/');
+    if (!isLoadingWorkspaces && !activeWorkspace) {
+      navigate('/dashboard');
     }
-  }, [activeWorkspace, navigate]);
+  }, [isLoadingWorkspaces, activeWorkspace, navigate]);
 
-  if (!activeWorkspace) return null;
+  if (isLoadingWorkspaces || !activeWorkspace) return null;
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
@@ -23,6 +24,8 @@ const Workspace = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         {activeView === 'Board' ? (
           <Board boardName={activeBoard} />
+        ) : activeView === 'Overview' ? (
+          <WorkspaceOverview />
         ) : (
           <div className="flex-1 flex items-center justify-center bg-bg-secondary">
             <div className="max-w-md text-center p-8 bg-bg-secondary rounded-2xl shadow-sm border border-border-light">
@@ -46,10 +49,12 @@ const Workspace = () => {
         <CreateBoardForm
           workspaceName={activeWorkspace.name}
           onClose={() => setShowCreateBoard(false)}
-          onSubmit={(board) => {
-            console.log('Board created:', board);
-            // Handle board creation here
-            setShowCreateBoard(false);
+          onSubmit={async (data) => {
+            const res = await createBoard(activeWorkspace.id, data);
+            if (!res.success) {
+              throw new Error(res.error || 'Failed to create board');
+            }
+            return res;
           }}
         />
       )}

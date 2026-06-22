@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useWorkspace } from '../../context/WorkspaceContext';
 
 const CreateWorkspaceForm = ({ onClose }) => {
   const navigate = useNavigate();
+  const { createWorkspace } = useWorkspace();
   const [formData, setFormData] = useState({
     name: '',
     description: ''
@@ -43,20 +45,21 @@ const CreateWorkspaceForm = ({ onClose }) => {
     setIsSubmitting(true);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      const newWorkspace = {
-        id: `w${Date.now()}`,
+      const result = await createWorkspace({
         name: formData.name,
         description: formData.description
-      };
+      });
 
-      console.log('Creating workspace:', newWorkspace);
-      navigate(`/workspaces/${newWorkspace.id}`);
-      onClose?.();
+      if (result.success) {
+        console.log('Workspace created:', result.data);
+        navigate(`/workspaces/${result.data.id}`);
+        onClose?.();
+      } else {
+        throw new Error(result.error || 'Failed to create workspace');
+      }
     } catch (error) {
       console.error('Error creating workspace:', error);
-      setErrors({ submit: 'Failed to create workspace. Please try again.' });
+      setErrors({ submit: error.message || 'Failed to create workspace. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }

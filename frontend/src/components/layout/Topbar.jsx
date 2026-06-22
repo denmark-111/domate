@@ -1,8 +1,8 @@
 import React from 'react';
 import { Bell, Settings, Search, Sun, Moon, LogOut } from 'lucide-react'; // Import Sun and Moon icons
-import { useWorkspace } from '../context/WorkspaceContext';
-import { useTheme } from '../context/ThemeContext'; // Import useTheme hook
-import { useAuth } from '../context/AuthContext';
+import { useWorkspace } from '../../context/WorkspaceContext';
+import { useTheme } from '../../context/ThemeContext'; // Import useTheme hook
+import { useAuth } from '../../context/AuthContext';
 
 const Topbar = () => {
   const { activeWorkspace, activeView, activeBoard } = useWorkspace();

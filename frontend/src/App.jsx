@@ -3,14 +3,14 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { WorkspaceProvider } from './context/WorkspaceContext';
 import { ThemeContextProvider } from './context/ThemeContext';
 import { AuthContextProvider } from './context/AuthContext';
-import Landing from './components/Landing';
-import Auth from './components/Auth';
-import Sidebar from './components/Sidebar';
-import Topbar from './components/Topbar';
-import HomeDashboard from './components/HomeDashboard';
-import Tasks from './components/Tasks';
-import Workspace from './components/Workspace';
-import RequireAuth from './components/RequireAuth';
+import Landing from './components/auth/Landing';
+import Auth from './components/auth/Auth';
+import RequireAuth from './components/auth/RequireAuth';
+import Sidebar from './components/layout/Sidebar';
+import Topbar from './components/layout/Topbar';
+import HomeDashboard from './components/dashboard/HomeDashboard';
+import Tasks from './components/dashboard/Tasks';
+import Workspace from './components/workspace/Workspace';
 
 const AppContent = ({ viewType }) => {
   return (

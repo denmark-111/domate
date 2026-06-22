@@ -41,17 +41,14 @@ const CreateBoardForm = ({ workspaceName, onClose, onSubmit }) => {
     setIsSubmitting(true);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      const newBoard = {
-        id: `board_${Date.now()}`,
+      const success = await onSubmit?.({
         name: formData.name,
         description: formData.description
-      };
-
-      console.log('Creating board:', newBoard);
-      onSubmit?.(newBoard);
-      onClose?.();
+      });
+      
+      if (success !== false) {
+        onClose?.();
+      }
     } catch (error) {
       console.error('Error creating board:', error);
       setErrors({ submit: 'Failed to create board. Please try again.' });

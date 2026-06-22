@@ -1,10 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Edit3, Save, X } from 'lucide-react';
 
 const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
   const [newComment, setNewComment] = useState('');
   const [isAddingComment, setIsAddingComment] = useState(false);
+  const [isEditingDetails, setIsEditingDetails] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsEditingDetails(false);
+      setNewComment('');
+      setIsAddingComment(false);
+    }
+  }, [isOpen, task?.id]);
 
   if (!isOpen || !task) return null;
+
+  const startEditDetails = () => {
+    setEditName(task.name || task.title || '');
+    setEditDescription(task.description || '');
+    setIsEditingDetails(true);
+  };
+
+  const handleSaveDetails = async () => {
+    if (!editName.trim()) return;
+    setIsSaving(true);
+    const updatedTask = {
+      ...task,
+      name: editName.trim(),
+      description: editDescription.trim(),
+    };
+    try {
+      await onUpdate(updatedTask);
+      setIsEditingDetails(false);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleAddComment = () => {
     if (newComment.trim()) {
@@ -33,27 +68,87 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
         {/* Header */}
         <div className="sticky top-0 flex items-center justify-between p-6 border-b border-border bg-bg">
           <div className="flex-1 pr-4">
-            <h2 className="text-xl font-bold text-text mb-2">{task.title}</h2>
-            <p className="text-sm text-text-secondary">{task.column}</p>
+            {isEditingDetails ? (
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="w-full text-xl font-bold text-text bg-bg-tertiary px-3 py-2 rounded border border-input-border outline-none focus:border-input-border-focus"
+                  placeholder="Task name"
+                  autoFocus
+                />
+                <p className="text-sm text-text-secondary">{task.column}</p>
+              </div>
+            ) : (
+              <>
+                <h2 className="text-xl font-bold text-text mb-2 flex items-center gap-3">
+                  {task.name || task.title}
+                  <button
+                    onClick={startEditDetails}
+                    className="p-1 text-text-secondary hover:text-text-accent hover:bg-bg-tertiary rounded transition-colors"
+                    title="Edit task"
+                  >
+                    <Edit3 size={16} />
+                  </button>
+                </h2>
+                <p className="text-sm text-text-secondary">{task.column}</p>
+              </>
+            )}
           </div>
-          <button
-            onClick={onClose}
-            className="text-text-secondary hover:text-text text-2xl font-light transition-colors"
-          >
-            ✕
-          </button>
+          <div className="flex items-center gap-2">
+            {isEditingDetails && (
+              <>
+                <button
+                  onClick={handleSaveDetails}
+                  disabled={isSaving}
+                  className="p-2 text-green-600 hover:bg-green-50 rounded transition-colors"
+                  title="Save"
+                >
+                  <Save size={18} />
+                </button>
+                <button
+                  onClick={() => setIsEditingDetails(false)}
+                  disabled={isSaving}
+                  className="p-2 text-text-secondary hover:bg-bg-tertiary rounded transition-colors"
+                  title="Cancel"
+                >
+                  <X size={18} />
+                </button>
+              </>
+            )}
+            <button
+              onClick={onClose}
+              className="text-text-secondary hover:text-text text-2xl font-light transition-colors"
+            >
+              ✕
+            </button>
+          </div>
         </div>
 
         {/* Content */}
         <div className="p-6 space-y-6">
           {/* Description */}
-          {task.description && (
+          {isEditingDetails ? (
             <div>
-              <h3 className="text-sm font-semibold text-text mb-2">Description</h3>
-              <p className="text-sm text-text-secondary leading-relaxed bg-bg-tertiary p-3 rounded">
-                {task.description}
-              </p>
+              <label className="block text-sm font-semibold text-text mb-2">Description</label>
+              <textarea
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                rows="4"
+                className="w-full px-4 py-3 rounded-lg border-2 border-input-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none text-sm leading-relaxed"
+                placeholder="Add a description..."
+              />
             </div>
+          ) : (
+            task.description && (
+              <div>
+                <h3 className="text-sm font-semibold text-text mb-2">Description</h3>
+                <p className="text-sm text-text-secondary leading-relaxed bg-bg-tertiary p-3 rounded">
+                  {task.description}
+                </p>
+              </div>
+            )
           )}
           
           {/* Labels */}
