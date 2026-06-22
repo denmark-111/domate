@@ -118,23 +118,26 @@ const Board = () => {
     const fetchBoardData = async () => {
       if (activeBoard?.id) {
         setIsLoading(true);
-        const res = await boardService.getBoardById(activeBoard.id);
-        if (res.success && res.data) {
-          const formattedLists = (res.data.lists || [])
-            .sort((a, b) => a.position - b.position)
-            .map((list) => ({
-              id: list.id,
-              title: list.name,
-              position: list.position,
-              tasks: (list.tasks || [])
-                .sort((a, b) => a.position - b.position)
-                .map((task) => ({ ...task, listId: list.id }))
-            }));
-          setData(formattedLists);
-        } else {
-          setData([]);
+        try {
+          const res = await boardService.getBoardById(activeBoard.id);
+          if (res.success && res.data) {
+            const formattedLists = (res.data.lists || [])
+              .sort((a, b) => a.position - b.position)
+              .map((list) => ({
+                id: list.id,
+                title: list.name,
+                position: list.position,
+                tasks: (list.tasks || [])
+                  .sort((a, b) => a.position - b.position)
+                  .map((task) => ({ ...task, listId: list.id }))
+              }));
+            setData(formattedLists);
+          } else {
+            setData([]);
+          }
+        } finally {
+          setIsLoading(false);
         }
-        setIsLoading(false);
       }
     };
     fetchBoardData();
@@ -190,11 +193,10 @@ const Board = () => {
   const handleTaskUpdate = async (updatedTask) => {
     const res = await updateTask(updatedTask.id, { name: updatedTask.name || updatedTask.title, description: updatedTask.description || '' });
     if (res.success) {
-      const newData = data.map((column) => ({
+      setData((prevData) => prevData.map((column) => ({
         ...column,
         tasks: column.tasks.map((t) => (t.id === updatedTask.id ? res.data : t))
-      }));
-      setData(newData);
+      })));
       setSelectedTask(res.data);
     }
   };
@@ -321,15 +323,20 @@ const Board = () => {
       return;
     }
     setIsSavingBoard(true);
-    const res = await updateBoard(activeBoard.id, boardForm);
-    if (res.success) {
-      setActiveBoard({ ...activeBoard, ...res.data });
-      setIsBoardDetailOpen(false);
-      setEditingBoard(false);
-    } else {
-      setBoardError(res.error || 'Failed to update board');
+    try {
+      const res = await updateBoard(activeBoard.id, boardForm);
+      if (res.success) {
+        setActiveBoard({ ...activeBoard, ...res.data });
+        setIsBoardDetailOpen(false);
+        setEditingBoard(false);
+      } else {
+        setBoardError(res.error || 'Failed to update board');
+      }
+    } catch {
+      setBoardError('Failed to update board');
+    } finally {
+      setIsSavingBoard(false);
     }
-    setIsSavingBoard(false);
   };
 
   return (
@@ -376,17 +383,25 @@ const Board = () => {
                       onTaskClick={handleTaskClick}
                       onSubmitTask={handleSubmitTask}
                       onDeleteList={async (listId) => {
-                        await deleteList(listId);
-                        setData((prev) => prev.filter((c) => c.id !== listId));
+                        try {
+                          await deleteList(listId);
+                          setData((prev) => prev.filter((c) => c.id !== listId));
+                        } catch {
+                          // Keep UI state in sync if deletion fails
+                        }
                       }}
                       onDeleteTask={async (taskId) => {
-                        await deleteTask(taskId);
-                        setData((prevData) =>
-                          prevData.map((col) => ({
-                            ...col,
-                            tasks: col.tasks.filter((t) => t.id !== taskId)
-                          }))
-                        );
+                        try {
+                          await deleteTask(taskId);
+                          setData((prevData) =>
+                            prevData.map((col) => ({
+                              ...col,
+                              tasks: col.tasks.filter((t) => t.id !== taskId)
+                            }))
+                          );
+                        } catch {
+                          // Keep UI state in sync if deletion fails
+                        }
                       }}
                       onSaveList={handleSaveList}
                     />
