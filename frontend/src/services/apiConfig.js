@@ -4,22 +4,55 @@ export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:80
 
 export const getAuthHeaders = async () => {
   const { data } = await supabase.auth.getSession();
-  return {
-    'Authorization': `Bearer ${data?.session?.access_token}`,
-    'Content-Type': 'application/json'
+
+  const headers = {
+    'Content-Type': 'application/json',
   };
+
+  const token = data?.session?.access_token;
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  return headers;
 };
 
 export const apiCall = async (endpoint, options = {}) => {
-  const headers = await getAuthHeaders();
+  const baseHeaders = await getAuthHeaders();
+
+  const mergedHeaders = {
+    ...baseHeaders,
+    ...(options.headers || {}),
+  };
+
   if (options.body instanceof FormData) {
-    delete headers['Content-Type'];
+    delete mergedHeaders['Content-Type'];
   }
+
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    headers,
     ...options,
+    headers: mergedHeaders,
   });
-  if (!response.ok) throw new Error(`API error: ${response.statusText}`);
-  const result = await response.json();
-  return result.data || result;
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status} ${response.statusText}`);
+  }
+
+  if (response.status === 204) {
+    return null;
+  }
+
+  const text = await response.text();
+  if (!text) {
+    return null;
+  }
+
+  try {
+    const result = JSON.parse(text);
+    return result?.data ?? result;
+  } catch {
+    // If response isn't valid JSON, return raw text fallback
+    return text;
+  }
 };
