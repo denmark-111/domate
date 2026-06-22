@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useAuth } from '../../context/AuthContext';
 import { Info, Save, Edit3, X, Trash2 } from 'lucide-react';
-import { workspaceService, boardService } from '../../services/index.js';
+import { workspaceService } from '../../services/index.js';
 import ConfirmModal from '../common/ConfirmModal';
 
 const WorkspaceOverview = () => {
-  const { activeWorkspace, updateWorkspace, deleteWorkspace } = useWorkspace();
+  const { activeWorkspace, updateWorkspace, deleteWorkspace, updateBoard, deleteBoard } = useWorkspace();
   const { user } = useAuth();
   
   const [isEditing, setIsEditing] = useState(false);
@@ -116,6 +116,10 @@ const WorkspaceOverview = () => {
     setIsSavingBoard(true);
     const res = await updateBoard(editingBoardId, boardForm);
     if (res.success) {
+      setFullWorkspace(prev => prev ? ({
+        ...prev,
+        boards: prev.boards.map(b => b.id === editingBoardId ? { ...b, ...res.data } : b)
+      }) : prev);
       setEditingBoardId(null);
       setBoardForm({ name: '', description: '' });
     } else {
@@ -127,12 +131,12 @@ const WorkspaceOverview = () => {
   const handleDeleteBoard = async (boardId) => {
     setIsDeletingBoard(true);
     setDeletingBoardId(boardId);
-    const res = await boardService.deleteBoard(boardId);
+    const res = await deleteBoard(boardId);
     if (res.success) {
-      setFullWorkspace(prev => ({
+      setFullWorkspace(prev => prev ? ({
         ...prev,
         boards: prev.boards.filter(b => b.id !== boardId)
-      }));
+      }) : prev);
     }
     setIsDeletingBoard(false);
     setDeletingBoardId(null);
@@ -383,7 +387,7 @@ const WorkspaceOverview = () => {
             ) : displayWorkspace.memberships && displayWorkspace.memberships.length > 0 ? (
               <div className="space-y-3">
                 {displayWorkspace.memberships.map((membership) => (
-                  <div key={membership.user?.id || Math.random()} className="flex items-center justify-between p-3 bg-bg rounded-lg border border-border-light">
+                  <div key={membership.user.id} className="flex items-center justify-between p-3 bg-bg rounded-lg border border-border-light">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-button flex items-center justify-center text-white text-xs font-bold shadow-sm">
                         {(membership.user?.fullName || membership.user?.email || 'U').slice(0, 2).toUpperCase()}
