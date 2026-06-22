@@ -24,13 +24,24 @@ const Sidebar = () => {
   const [showDeleteBoard, setShowDeleteBoard] = useState(false);
   const [deletingBoardId, setDeletingBoardId] = useState(null);
   const [isDeletingBoard, setIsDeletingBoard] = useState(false);
+  const [deleteBoardError, setDeleteBoardError] = useState(null);
 
   const handleDeleteBoard = async () => {
     setIsDeletingBoard(true);
-    await deleteBoard(deletingBoardId);
-    setIsDeletingBoard(false);
-    setShowDeleteBoard(false);
-    setDeletingBoardId(null);
+    setDeleteBoardError(null);
+    try {
+      const result = await deleteBoard(deletingBoardId);
+      if (result?.success === false) {
+        setDeleteBoardError(result.message || 'Failed to delete board.');
+      } else {
+        setShowDeleteBoard(false);
+        setDeletingBoardId(null);
+      }
+    } catch (err) {
+      setDeleteBoardError(err?.message || 'Failed to delete board.');
+    } finally {
+      setIsDeletingBoard(false);
+    }
   };
 
   const handleWorkspaceChange = (wsId) => {
@@ -200,10 +211,15 @@ const Sidebar = () => {
         onClose={() => {
           setShowDeleteBoard(false);
           setDeletingBoardId(null);
+          setDeleteBoardError(null);
         }}
         onConfirm={handleDeleteBoard}
         title="Delete Board"
-        message="Are you sure you want to delete this board? All lists and tasks within it will be removed. This action cannot be undone."
+        message={
+          deleteBoardError
+            ? deleteBoardError
+            : 'Are you sure you want to delete this board? All lists and tasks within it will be removed. This action cannot be undone.'
+        }
         isLoading={isDeletingBoard}
       />
     </aside>

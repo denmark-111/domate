@@ -33,9 +33,12 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
       name: editName.trim(),
       description: editDescription.trim(),
     };
-    await onUpdate(updatedTask);
-    setIsEditingDetails(false);
-    setIsSaving(false);
+    try {
+      await onUpdate(updatedTask);
+      setIsEditingDetails(false);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleAddComment = () => {

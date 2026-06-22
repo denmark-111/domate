@@ -22,9 +22,12 @@ const TaskCard = ({ task, sortableId, onClick, onDelete }) => {
 
   const handleDeleteTask = async () => {
     setIsDeletingTask(true);
-    await onDelete?.(task.id);
-    setIsDeletingTask(false);
-    setShowDeleteTask(false);
+    try {
+      await onDelete?.(task.id);
+    } finally {
+      setIsDeletingTask(false);
+      setShowDeleteTask(false);
+    }
   };
 
   return (
