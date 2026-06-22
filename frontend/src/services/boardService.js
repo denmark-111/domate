@@ -1,9 +1,9 @@
 import { apiCall } from './apiConfig.js';
 
 export const boardService = {
-  getWorkspaceBoards: async (workspaceId) => {
+  getWorkspaceBoards: async (workspaceId, { signal } = {}) => {
     try {
-      const data = await apiCall(`/workspaces/${workspaceId}/boards`);
+      const data = await apiCall(`/workspaces/${workspaceId}/boards`, { signal });
       return { success: true, data };
     } catch (error) {
       console.error('Error in getWorkspaceBoards:', error);

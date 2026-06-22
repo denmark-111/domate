@@ -43,9 +43,12 @@ export const WorkspaceProvider = ({ children }) => {
   useEffect(() => {
     if (workspaceId) {
       setActiveView('Overview');
-      
+      setActiveBoard(null);
+
+      const controller = new AbortController();
+
       const fetchBoards = async () => {
-        const res = await boardService.getWorkspaceBoards(workspaceId);
+        const res = await boardService.getWorkspaceBoards(workspaceId, { signal: controller.signal });
         if (res.success) {
           setBoards(res.data);
         } else {
@@ -55,6 +58,8 @@ export const WorkspaceProvider = ({ children }) => {
       if (isAuthenticated) {
         fetchBoards();
       }
+
+      return () => controller.abort();
     } else {
       setActiveView('Home');
       setActiveBoard(null);

@@ -54,6 +54,7 @@ const Workspace = () => {
             if (!res.success) {
               throw new Error(res.error || 'Failed to create board');
             }
+            return res;
           }}
         />
       )}
