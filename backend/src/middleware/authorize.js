@@ -74,6 +74,25 @@ export const requireBoardWorkspaceMember = requireAuthorized((req, userId, roles
   return authorizationService.getBoardMembership({ boardId, userId, roles });
 });
 
+// Checks workspace membership through the announcement's workspace.
+export const requireAnnouncementWorkspaceMember = requireAuthorized((req, userId, roles) => {
+  const { announcementId } = req.validated.params;
+  return authorizationService.getAnnouncementMembership({ announcementId, userId, roles });
+});
+
+// Requires OWNER role for an announcement's workspace.
+export const requireAnnouncementWorkspaceOwner = requireAuthorized((req, userId) => {
+  const { announcementId } = req.validated.params;
+  return authorizationService.getAnnouncementMembership({
+    announcementId,
+    userId,
+    roles: [WorkspaceRoles.OWNER]
+  });
+}, {
+  status: 403,
+  message: "Only workspace owners can perform this action"
+});
+
 // Checks workspace membership through the list's board and workspace.
 export const requireListWorkspaceMember = requireAuthorized((req, userId, roles) => {
   const { listId } = req.validated.params;
