@@ -19,10 +19,8 @@ const fullAnnouncementInclude = {
 // source of truth for which attachment belongs to which announcement. The {random} UUID
 // guarantees uniqueness; this prefix check just stops a client from persisting a row
 // that points at an arbitrary location in the bucket.
-const buildStoragePrefix = (workspaceId) => `announcements/${workspaceId}/`;
-
 const validateAttachmentPaths = (attachments, workspaceId) => {
-    const prefix = buildStoragePrefix(workspaceId);
+    const prefix = `announcements/${workspaceId}/`;
     for (const a of attachments) {
         if (!a.storagePath.startsWith(prefix)) {
             throw new ApiError(422, "Attachment storagePath does not match the expected location");
