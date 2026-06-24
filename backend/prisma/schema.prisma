@@ -105,6 +105,7 @@ model User {
 
   workspaceMemberships WorkspaceMember[]
   announcements        Announcement[]
+  attachments          Attachment[]
 
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
@@ -122,8 +123,33 @@ model Announcement {
   workspaceId String    @db.Uuid
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
+  attachments Attachment[]
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
   @@index([workspaceId])
+}
+
+// Files attached to an entity. Exclusive belongs-to: exactly one parent FK is set
+// (enforced at the API layer). Add a nullable taskId later via one migration to support
+// task attachments without a new table.
+model Attachment {
+  id              String        @id @default(uuid()) @db.Uuid
+  fileName        String        @db.Text
+  fileSize        Int
+  mimeType        String        @db.Text
+  storagePath     String        @db.Text
+
+  announcementId  String?       @db.Uuid
+  announcement    Announcement? @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+
+  uploadedById    String        @db.Uuid
+  uploadedBy      User          @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([announcementId])
+  @@index([uploadedById])
 }
