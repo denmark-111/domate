@@ -13,15 +13,16 @@ const fullAnnouncementInclude = {
     attachments: true
 };
 
-// Storage paths look like: announcements/{workspaceId}/{announcementId}/{random}
-// On create the announcementId isn't known yet, so only the workspace-scoped prefix is
-// enforced; the frontend's random segment fills the rest. This prevents a client from
-// persisting a row that points at an arbitrary location in the bucket.
-const buildStoragePrefix = (workspaceId, announcementId) =>
-    `announcements/${workspaceId}/${announcementId ?? ""}`;
+// Storage paths are workspace-scoped: announcements/{workspaceId}/{random}
+// The announcementId is intentionally NOT in the path — on create it doesn't exist yet
+// (files are uploaded before the announcement is POSTed), and the DB FK is the real
+// source of truth for which attachment belongs to which announcement. The {random} UUID
+// guarantees uniqueness; this prefix check just stops a client from persisting a row
+// that points at an arbitrary location in the bucket.
+const buildStoragePrefix = (workspaceId) => `announcements/${workspaceId}/`;
 
-const validateAttachmentPaths = (attachments, workspaceId, announcementId) => {
-    const prefix = buildStoragePrefix(workspaceId, announcementId);
+const validateAttachmentPaths = (attachments, workspaceId) => {
+    const prefix = buildStoragePrefix(workspaceId);
     for (const a of attachments) {
         if (!a.storagePath.startsWith(prefix)) {
             throw new ApiError(422, "Attachment storagePath does not match the expected location");
@@ -62,9 +63,7 @@ export const createAnnouncement = async (req, res, next) => {
     };
 
     if (attachments?.length) {
-        // On create the announcementId is assigned by Postgres, so only the
-        // workspace-scoped prefix can be validated here.
-        validateAttachmentPaths(attachments, workspaceId, undefined);
+        validateAttachmentPaths(attachments, workspaceId);
         data.attachments = {
             create: attachments.map(({ fileName, fileSize, mimeType, storagePath }) => ({
                 fileName,
@@ -120,7 +119,7 @@ export const updateAnnouncement = async (req, res, next) => {
     // provided set created). "attachments" omitted => leave attachments untouched, so a
     // plain title/content edit doesn't require resending the file list.
     if (attachments !== undefined) {
-        validateAttachmentPaths(attachments, workspaceId, announcementId);
+        validateAttachmentPaths(attachments, workspaceId);
         data.attachments = {
             deleteMany: { announcementId },
             create: attachments.map(({ fileName, fileSize, mimeType, storagePath }) => ({
