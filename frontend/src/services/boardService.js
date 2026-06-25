@@ -6,6 +6,9 @@ export const boardService = {
       const data = await apiCall(`/workspaces/${workspaceId}/boards`, { signal });
       return { success: true, data };
     } catch (error) {
+      if (error.name === 'AbortError') {
+        return { success: false, aborted: true };
+      }
       console.error('Error in getWorkspaceBoards:', error);
       return { success: false, error: error.message };
     }
