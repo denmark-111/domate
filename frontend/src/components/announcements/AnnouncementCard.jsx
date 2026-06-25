@@ -1,23 +1,23 @@
 import React, { useState } from 'react';
-import { Pin, PinOff, Paperclip, Download, Edit3, Trash2, Calendar, User } from 'lucide-react';
+import { Pin, PinOff, Paperclip, ExternalLink, Edit3, Trash2, Calendar, User } from 'lucide-react';
 import { supabaseStorageService } from '../../services/index.js';
 
 const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
   const [expanded, setExpanded] = useState(false);
-  const [downloading, setDownloading] = useState(null);
+  const [opening, setOpening] = useState(null);
   const contentPreview = announcement.content?.length > 300
     ? announcement.content.slice(0, 300) + '...'
     : announcement.content;
 
-  const handleDownload = async (attachment) => {
-    setDownloading(attachment.id);
+  const handleOpen = async (attachment) => {
+    setOpening(attachment.id);
     try {
       const url = await supabaseStorageService.getFileUrl(attachment.storagePath);
       if (url) {
         window.open(url, '_blank');
       }
     } finally {
-      setDownloading(null);
+      setOpening(null);
     }
   };
 
@@ -123,16 +123,16 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
             {announcement.attachments.map((attachment) => (
               <button
                 key={attachment.id}
-                onClick={() => handleDownload(attachment)}
+                onClick={() => handleOpen(attachment)}
                 className="w-full flex items-center justify-between p-2.5 bg-bg rounded-lg border border-border-light hover:border-accent/30 hover:bg-bg-hover transition-colors text-left"
               >
                 <div className="flex items-center gap-2 min-w-0">
-                  {downloading === attachment.id ? (
+                  {opening === attachment.id ? (
                     <svg className="animate-spin shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <circle cx="12" cy="12" r="10" strokeDasharray="40" strokeDashoffset="10" />
                     </svg>
                   ) : (
-                    <Download size={14} className="text-text-secondary shrink-0" />
+                    <ExternalLink size={14} className="text-text-secondary shrink-0" />
                   )}
                   <span className="text-sm font-medium text-text truncate">
                     {attachment.fileName}
