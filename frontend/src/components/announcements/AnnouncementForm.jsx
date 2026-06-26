@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, Paperclip, Upload, File, Trash2, Loader } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Paperclip, Upload, File, Trash2, Loader, Image } from 'lucide-react';
 import { supabaseStorageService } from '../../services/index.js';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -12,6 +12,7 @@ const AnnouncementForm = ({
   onSubmit,
 }) => {
   const isEditing = !!announcement;
+  const objectUrlsRef = useRef({}); // tracks ObjectURLs for cleanup
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -20,22 +21,62 @@ const AnnouncementForm = ({
   const [loadingFiles, setLoadingFiles] = useState([]); // files currently uploading
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [previewUrls, setPreviewUrls] = useState({}); // attachment.id -> preview URL
 
-  // Initialize form when editing
+  const isImageAttachment = (attachment) => {
+    return attachment.mimeType?.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(attachment.fileName);
+  };
+
+  // Cleanup object URLs on unmount
   useEffect(() => {
-    if (announcement) {
-      setTitle(announcement.title || '');
-      setContent(announcement.content || '');
-      setPinned(announcement.pinned || false);
-      setAttachments(announcement.attachments || []);
-    } else {
-      setTitle('');
-      setContent('');
-      setPinned(false);
-      setAttachments([]);
-    }
-    setLoadingFiles([]);
-    setError('');
+    return () => {
+      Object.values(objectUrlsRef.current).forEach((url) => URL.revokeObjectURL(url));
+      objectUrlsRef.current = {};
+    };
+  }, []);
+
+  // Initialize form when editing, and load signed URLs for existing image attachments
+  useEffect(() => {
+    let cancelled = false;
+
+    const initForm = async () => {
+      if (announcement) {
+        setTitle(announcement.title || '');
+        setContent(announcement.content || '');
+        setPinned(announcement.pinned || false);
+        setAttachments(announcement.attachments || []);
+
+        // Load signed URLs for existing image attachments
+        const imageAtts = (announcement.attachments || []).filter(isImageAttachment);
+        const urls = {};
+        for (const att of imageAtts) {
+          try {
+            const url = await supabaseStorageService.getFileUrl(att.storagePath, 3600);
+            if (!cancelled && url) {
+              urls[att.id] = url;
+            }
+          } catch (err) {
+            console.error('Failed to load preview for', att.fileName, err);
+          }
+        }
+        if (!cancelled) {
+          setPreviewUrls((prev) => ({ ...prev, ...urls }));
+        }
+      } else {
+        setTitle('');
+        setContent('');
+        setPinned(false);
+        setAttachments([]);
+        setPreviewUrls({});
+      }
+      if (!cancelled) {
+        setLoadingFiles([]);
+        setError('');
+      }
+    };
+
+    initForm();
+    return () => { cancelled = true; };
   }, [announcement, isOpen]);
 
   const handleFileSelect = async (e) => {
@@ -62,6 +103,19 @@ const AnnouncementForm = ({
           file
         );
         newAttachments.push(metadata);
+
+        // Create preview for image files using the uploaded file's URL
+        if (file.type.startsWith('image/')) {
+          try {
+            const url = await supabaseStorageService.getFileUrl(metadata.storagePath, 3600);
+            if (url) {
+              setPreviewUrls((prev) => ({ ...prev, [metadata.storagePath]: url }));
+            }
+          } catch {
+            // preview not essential
+          }
+        }
+
         // Remove from loading, mark as done
         const idx = newLoading.findIndex((l) => l.id === loadingId);
         if (idx !== -1) {
@@ -86,6 +140,13 @@ const AnnouncementForm = ({
 
   const removeAttachment = async (index) => {
     const attachment = attachments[index];
+    // Clean up preview URL
+    setPreviewUrls((prev) => {
+      const next = { ...prev };
+      delete next[attachment.id];
+      delete next[attachment.storagePath];
+      return next;
+    });
     // If it was newly uploaded (has no DB id, meaning not saved yet), delete from storage
     if (!attachment.id) {
       try {
@@ -232,27 +293,43 @@ const AnnouncementForm = ({
             {/* Uploaded files list */}
             {attachments.length > 0 && (
               <div className="space-y-2 mb-3">
-                {attachments.map((attachment, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 bg-bg-secondary rounded-lg border border-border-light"
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <File size={16} className="text-text-secondary shrink-0" />
-                      <span className="text-sm font-medium text-text truncate">
-                        {attachment.fileName}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeAttachment(index)}
-                      className="p-1.5 text-text-secondary hover:text-red-500 hover:bg-red-50 rounded transition-colors shrink-0"
-                      title="Remove file"
+                {attachments.map((attachment, index) => {
+                  const previewUrl = previewUrls[attachment.id] || previewUrls[attachment.storagePath];
+                  const isImage = isImageAttachment(attachment);
+                  return (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-bg-secondary rounded-lg border border-border-light"
                     >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                ))}
+                      <div className="flex items-center gap-3 min-w-0">
+                        {isImage && previewUrl ? (
+                          <img
+                            src={previewUrl}
+                            alt={attachment.fileName}
+                            className="w-10 h-10 rounded-md object-cover border border-border-light shrink-0"
+                          />
+                        ) : isImage ? (
+                          <div className="w-10 h-10 flex items-center justify-center bg-bg rounded-md border border-border-light shrink-0">
+                            <Image size={16} className="text-text-secondary" />
+                          </div>
+                        ) : (
+                          <File size={16} className="text-text-secondary shrink-0" />
+                        )}
+                        <span className="text-sm font-medium text-text truncate">
+                          {attachment.fileName}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeAttachment(index)}
+                        className="p-1.5 text-text-secondary hover:text-red-500 hover:bg-red-50 rounded transition-colors shrink-0"
+                        title="Remove file"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             )}
 
