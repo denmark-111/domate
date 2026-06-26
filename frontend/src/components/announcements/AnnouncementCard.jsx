@@ -105,17 +105,23 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
 
     const loadImageUrls = async () => {
       const urls = {};
-      for (const attachment of currentImageAttachments) {
+      const displayedAttachments = currentImageAttachments.slice(0, 3);
+
+      // Load first 3 images in parallel (these are the ones immediately displayed)
+      const initialPromises = displayedAttachments.map((attachment) =>
+        supabaseStorageService.getFileUrl(attachment.storagePath, 3600).then((url) => ({ attachment, url }))
+      );
+
+      const initialResults = await Promise.allSettled(initialPromises);
+
+      for (const result of initialResults) {
         if (cancelled) return;
-        try {
-          const url = await supabaseStorageService.getFileUrl(attachment.storagePath, 3600);
-          if (!cancelled && url) {
-            urls[attachment.id] = url;
-          }
-        } catch (err) {
-          console.error('Failed to load image URL for', attachment.fileName, err);
+        if (result.status === 'fulfilled' && result.value.url) {
+          urls[result.value.attachment.id] = result.value.url;
         }
       }
+
+      // Set URLs for displayed images and turn off loading so UI renders
       if (!cancelled) {
         setImageUrls(urls);
         setLoadingImages(false);
@@ -128,6 +134,48 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
       cancelled = true;
     };
   }, [announcement.id, announcement.attachments]);
+
+  // Load remaining images only when the lightbox is opened
+  useEffect(() => {
+    if (!fullscreenImage) return;
+
+    const remainingAttachments = imageAttachments.slice(3);
+    const alreadyLoaded = remainingAttachments.every((att) => imageUrls[att.id]);
+
+    if (remainingAttachments.length === 0 || alreadyLoaded) return;
+
+    let cancelled = false;
+
+    const loadRemaining = async () => {
+      const promises = remainingAttachments.map((attachment) =>
+        supabaseStorageService
+          .getFileUrl(attachment.storagePath, 3600)
+          .then((url) => ({ attachment, url }))
+          .catch((err) => {
+            console.error('Failed to load image URL for', attachment.fileName, err);
+            return null;
+          })
+      );
+
+      const results = await Promise.allSettled(promises);
+
+      for (const result of results) {
+        if (cancelled) return;
+        if (result.status === 'fulfilled' && result.value && result.value.url) {
+          setImageUrls((prev) => ({
+            ...prev,
+            [result.value.attachment.id]: result.value.url,
+          }));
+        }
+      }
+    };
+
+    loadRemaining();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [fullscreenImage, imageAttachments, imageUrls]);
 
   return (
     <div
