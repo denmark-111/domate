@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Pin, PinOff, Paperclip, ExternalLink, Edit3, Trash2, Calendar, User, Image, X, Maximize2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Pin, PinOff, Paperclip, ExternalLink, Edit3, Trash2, Calendar, User, Image, X, Maximize2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabaseStorageService } from '../../services/index.js';
 
 const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
@@ -7,7 +7,9 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
   const [opening, setOpening] = useState(null);
   const [imageUrls, setImageUrls] = useState({});
   const [fullscreenImage, setFullscreenImage] = useState(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [loadingImages, setLoadingImages] = useState(true);
+  const thumbnailContainerRef = useRef(null);
   const contentPreview = announcement.content?.length > 300
     ? announcement.content.slice(0, 300) + '...'
     : announcement.content;
@@ -34,6 +36,45 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
       minute: '2-digit',
     });
   };
+
+  const handleImageClick = (index) => {
+    setSelectedImageIndex(index);
+    setFullscreenImage(imageAttachments[index]?.id);
+  };
+
+  const handleNext = (e) => {
+    e.stopPropagation();
+    const newIndex = (selectedImageIndex + 1) % imageAttachments.length;
+    setSelectedImageIndex(newIndex);
+    setFullscreenImage(imageAttachments[newIndex].id);
+  };
+
+  const handlePrev = (e) => {
+    e.stopPropagation();
+    const newIndex = (selectedImageIndex - 1 + imageAttachments.length) % imageAttachments.length;
+    setSelectedImageIndex(newIndex);
+    setFullscreenImage(imageAttachments[newIndex].id);
+  };
+
+  const handleThumbnailClick = (e, index) => {
+    e.stopPropagation();
+    setSelectedImageIndex(index);
+    setFullscreenImage(imageAttachments[index].id);
+  };
+
+  const isInitialMount = useRef(true);
+
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    if (!thumbnailContainerRef.current) return;
+    const selected = thumbnailContainerRef.current.querySelector('[data-selected="true"]');
+    if (selected) {
+      selected.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }, [selectedImageIndex]);
 
   const formatFileSize = (bytes) => {
     if (bytes < 1024) return `${bytes} B`;
@@ -170,46 +211,54 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
             Images ({imageAttachments.length})
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {imageAttachments.map((attachment) => (
-              <div key={attachment.id} className="relative group aspect-square">
-                {loadingImages && !imageUrls[attachment.id] ? (
-                  <div className="w-full h-full flex items-center justify-center bg-bg rounded-lg border border-border-light">
-                    <svg className="animate-spin text-text-secondary" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="12" cy="12" r="10" strokeDasharray="40" strokeDashoffset="10" />
-                    </svg>
-                  </div>
-                ) : imageUrls[attachment.id] ? (
-                  <>
-                    <img
-                      src={imageUrls[attachment.id]}
-                      alt={attachment.fileName}
-                      className="w-full h-full object-cover rounded-lg border border-border-light cursor-pointer bg-bg transition-transform hover:scale-[1.02]"
-                      onClick={() => setFullscreenImage(attachment.id)}
-                      loading="lazy"
-                    />
-                    <button
-                      onClick={() => setFullscreenImage(attachment.id)}
-                      className="absolute top-1.5 right-1.5 p-1.5 bg-black/50 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
-                      title="View full size"
-                    >
-                      <Maximize2 size={12} />
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    onClick={() => handleOpen(attachment)}
-                    className="w-full h-full flex items-center justify-center bg-bg rounded-lg border border-border-light hover:border-accent/30 transition-colors"
-                  >
-                    <div className="text-center">
-                      <ExternalLink size={16} className="mx-auto mb-1 text-text-secondary" />
-                      <span className="text-[10px] text-text-secondary block truncate px-1">
-                        {attachment.fileName}
-                      </span>
+            {imageAttachments.slice(0, 3).map((attachment, index) => {
+              const isThirdWithMore = index === 2 && imageAttachments.length > 3;
+              return (
+                <div key={attachment.id} className="relative group aspect-square">
+                  {loadingImages && !imageUrls[attachment.id] ? (
+                    <div className="w-full h-full flex items-center justify-center bg-bg rounded-lg border border-border-light">
+                      <svg className="animate-spin text-text-secondary" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10" strokeDasharray="40" strokeDashoffset="10" />
+                      </svg>
                     </div>
-                  </button>
-                )}
-              </div>
-            ))}
+                  ) : imageUrls[attachment.id] ? (
+                    <>
+                      <img
+                        src={imageUrls[attachment.id]}
+                        alt={attachment.fileName}
+                        className="w-full h-full object-cover rounded-lg border border-border-light cursor-pointer bg-bg transition-transform hover:scale-[1.02]"
+                        onClick={() => handleImageClick(index)}
+                        loading="lazy"
+                      />
+                      {isThirdWithMore && (
+                        <div className="absolute inset-0 bg-black/60 rounded-lg flex items-center justify-center cursor-pointer" onClick={() => handleImageClick(index)}>
+                          <span className="text-white font-bold text-lg">+{imageAttachments.length - 2}</span>
+                        </div>
+                      )}
+                      <button
+                        onClick={() => handleImageClick(index)}
+                        className="absolute top-1.5 right-1.5 p-1.5 bg-black/50 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70 z-10"
+                        title="View full size"
+                      >
+                        <Maximize2 size={12} />
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => handleOpen(attachment)}
+                      className="w-full h-full flex items-center justify-center bg-bg rounded-lg border border-border-light hover:border-accent/30 transition-colors"
+                    >
+                      <div className="text-center">
+                        <ExternalLink size={16} className="mx-auto mb-1 text-text-secondary" />
+                        <span className="text-[10px] text-text-secondary block truncate px-1">
+                          {attachment.fileName}
+                        </span>
+                      </div>
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
@@ -252,23 +301,80 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
       {/* Fullscreen Image Modal */}
       {fullscreenImage && imageUrls[fullscreenImage] && (
         <div
-          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center"
           onClick={() => setFullscreenImage(null)}
         >
-          <div className="relative max-w-[90vw] max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+          {/* Close Button */}
+          <button
+            onClick={() => setFullscreenImage(null)}
+            className="absolute top-4 right-4 p-2 bg-bg-secondary rounded-full shadow-lg border border-border hover:bg-bg-hover transition-colors z-50"
+            title="Close"
+          >
+            <X size={16} />
+          </button>
+
+          {/* Previous Button */}
+          {imageAttachments.length > 1 && (
             <button
-              onClick={() => setFullscreenImage(null)}
-              className="absolute -top-3 -right-3 p-2 bg-bg-secondary rounded-full shadow-lg border border-border hover:bg-bg-hover transition-colors z-10"
-              title="Close"
+              onClick={handlePrev}
+              className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-bg-secondary/90 rounded-full shadow-lg border border-border hover:bg-bg-hover transition-colors z-50"
+              title="Previous image"
             >
-              <X size={16} />
+              <ChevronLeft size={24} />
             </button>
+          )}
+
+          {/* Next Button */}
+          {imageAttachments.length > 1 && (
+            <button
+              onClick={handleNext}
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-bg-secondary/90 rounded-full shadow-lg border border-border hover:bg-bg-hover transition-colors z-50"
+              title="Next image"
+            >
+              <ChevronRight size={24} />
+            </button>
+          )}
+
+          <div onClick={(e) => e.stopPropagation()}>
+            {/* Main Image */}
             <img
               src={imageUrls[fullscreenImage]}
               alt="Full size"
-              className="max-w-full max-h-[90vh] rounded-xl shadow-2xl object-contain"
+              className="max-w-[90vw] max-h-[70vh] rounded-xl shadow-2xl object-contain block mx-auto"
             />
           </div>
+
+          {/* Thumbnail Navigation */}
+          {imageAttachments.length > 1 && (
+            <div ref={thumbnailContainerRef} className="absolute bottom-4 left-4 right-4 flex items-center bg-black/60 backdrop-blur-sm p-2 rounded-xl overflow-x-auto z-40 gap-2">
+              {imageAttachments.map((attachment, index) => (
+                <button
+                  key={attachment.id}
+                  data-selected={index === selectedImageIndex}
+                  onClick={(e) => handleThumbnailClick(e, index)}
+                  className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${
+                    index === selectedImageIndex
+                      ? 'border-accent shadow-lg'
+                      : 'border-border-light hover:border-text-secondary'
+                  }`}
+                >
+                  {imageUrls[attachment.id] ? (
+                    <img
+                      src={imageUrls[attachment.id]}
+                      alt={attachment.fileName}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-bg">
+                      <svg className="animate-spin text-text-secondary" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10" strokeDasharray="40" strokeDashoffset="10" />
+                      </svg>
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
