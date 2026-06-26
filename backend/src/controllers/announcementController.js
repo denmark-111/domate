@@ -30,20 +30,37 @@ const validateAttachmentPaths = (attachments, workspaceId) => {
 
 export const getAnnouncements = async (req, res, next) => {
     const { workspaceId } = req.validated.params;
+    const { page = 1, limit = 20 } = req.validated.query || {};
+    const offset = ((page ?? 1) - 1) * Number(limit);
 
-    const announcements = await prisma.announcement.findMany({
-        where: {
-            workspaceId
-        },
-        orderBy: [
-            { pinned: "desc" },
-            { createdAt: "desc" }
-        ],
-        include: fullAnnouncementInclude
-    });
+    const [announcements, total] = await Promise.all([
+        prisma.announcement.findMany({
+            where: {
+                workspaceId
+            },
+            orderBy: [
+                { pinned: "desc" },
+                { createdAt: "desc" }
+            ],
+            include: fullAnnouncementInclude,
+            skip: Number(offset),
+            take: Number(limit)
+        }),
+        prisma.announcement.count({
+            where: {
+                workspaceId
+            }
+        })
+    ]);
 
     res.status(200).json({
-        data: announcements
+        data: announcements,
+        pagination: {
+            page: Number(page),
+            limit: Number(limit),
+            total,
+            hasMore: Number(offset) + announcements.length < total
+        }
     });
 };
 

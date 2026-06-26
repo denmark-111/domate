@@ -38,3 +38,10 @@ export const announcementIdParamSchema = z.object({
 		announcementId: z.string().uuid("Invalid announcement ID format")
 	})
 });
+
+export const listAnnouncementsSchema = z.object({
+	query: z.object({
+		page: z.coerce.number().int().positive().optional(),
+		limit: z.coerce.number().int().positive().max(100).optional()
+	})
+});

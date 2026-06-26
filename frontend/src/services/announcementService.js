@@ -1,10 +1,20 @@
-import { apiCall } from './apiConfig.js';
+import { apiCall, API_BASE_URL, getAuthHeaders } from './apiConfig.js';
 
 export const announcementService = {
-  getWorkspaceAnnouncements: async (workspaceId) => {
+  getWorkspaceAnnouncements: async (workspaceId, { page = 1, limit = 20 } = {}) => {
     try {
-      const data = await apiCall(`/workspaces/${workspaceId}/announcements`);
-      return { success: true, data };
+      const params = new URLSearchParams();
+      if (page && page !== 1) params.set('page', String(page));
+      if (limit !== 20) params.set('limit', String(limit));
+      const qs = params.toString();
+      const response = await fetch(`${API_BASE_URL}/workspaces/${workspaceId}/announcements${qs ? `?${qs}` : ''}`, {
+        headers: await getAuthHeaders(),
+      });
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
+      }
+      const json = await response.json();
+      return { success: true, data: json };
     } catch (error) {
       console.error('Error in getWorkspaceAnnouncements:', error);
       return { success: false, error: error.message };

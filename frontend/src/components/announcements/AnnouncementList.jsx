@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Megaphone, Plus, Loader, AlertCircle } from 'lucide-react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useAuth } from '../../context/AuthContext';
@@ -7,6 +7,8 @@ import AnnouncementCard from './AnnouncementCard';
 import AnnouncementForm from './AnnouncementForm';
 import ConfirmModal from '../common/ConfirmModal';
 
+const PAGE_SIZE = 20;
+
 const AnnouncementList = () => {
   const { activeWorkspace } = useWorkspace();
   const { user } = useAuth();
@@ -14,27 +16,24 @@ const AnnouncementList = () => {
   const [announcements, setAnnouncements] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [hasMore, setHasMore] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
 
-  // Full workspace details (includes memberships) for owner detection
+  const scrollContainerRef = useRef(null);
+
   const [fullWorkspace, setFullWorkspace] = useState(null);
-
-  // Form modal state
   const [showForm, setShowForm] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState(null);
-
-  // Delete confirmation state
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingAnnouncement, setDeletingAnnouncement] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Determine if current user is an owner of the workspace.
-  // The activeWorkspace from context doesn't include memberships (the list endpoint
-  // returns only counts), so fetch full details when the workspace changes.
-  const isOwner = fullWorkspace?.memberships?.some(
-    (m) => m.role === 'OWNER' && m.user?.id === user?.id
-  ) || activeWorkspace?.role === 'OWNER' || activeWorkspace?.type === 'personal';
+  const isOwner =
+    fullWorkspace?.memberships?.some((m) => m.role === 'OWNER' && m.user?.id === user?.id) ||
+    activeWorkspace?.role === 'OWNER' ||
+    activeWorkspace?.type === 'personal';
 
-  // Fetch full workspace details (with memberships) for ownership detection
   useEffect(() => {
     const loadWorkspaceDetails = async () => {
       if (activeWorkspace?.id) {
@@ -51,9 +50,12 @@ const AnnouncementList = () => {
     if (!activeWorkspace?.id) return;
     setIsLoading(true);
     setError('');
-    const res = await announcementService.getWorkspaceAnnouncements(activeWorkspace.id);
+    const res = await announcementService.getWorkspaceAnnouncements(activeWorkspace.id, { page: 1, limit: PAGE_SIZE });
     if (res.success) {
-      setAnnouncements(res.data || []);
+      const pageData = res.data?.data ?? res.data ?? [];
+      setAnnouncements(pageData);
+      setHasMore(Boolean(res.data?.pagination?.hasMore));
+      setPage(1);
     } else {
       setError(res.error || 'Failed to load announcements');
     }
@@ -63,6 +65,43 @@ const AnnouncementList = () => {
   useEffect(() => {
     fetchAnnouncements();
   }, [fetchAnnouncements]);
+
+  const loadMore = useCallback(async () => {
+    if (!activeWorkspace?.id || isLoadingMore || !hasMore) return;
+    setIsLoadingMore(true);
+    setError('');
+    const nextPage = page + 1;
+    const res = await announcementService.getWorkspaceAnnouncements(activeWorkspace.id, {
+      page: nextPage,
+      limit: PAGE_SIZE,
+    });
+    if (res.success) {
+      const pageData = res.data?.data ?? res.data ?? [];
+      setAnnouncements((prev) => [...prev, ...pageData]);
+      setHasMore(Boolean(res.data?.pagination?.hasMore));
+      setPage(nextPage);
+    } else {
+      setError(res.error || 'Failed to load more announcements');
+    }
+    setIsLoadingMore(false);
+  }, [activeWorkspace?.id, isLoadingMore, hasMore, page]);
+
+  const handleScroll = useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (!el || isLoadingMore || !hasMore) return;
+
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    if (distanceFromBottom < 200) {
+      loadMore();
+    }
+  }, [isLoadingMore, hasMore, loadMore]);
+
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    el.addEventListener('scroll', handleScroll, { passive: true });
+    return () => el.removeEventListener('scroll', handleScroll);
+  }, [handleScroll]);
 
   const handleCreate = async (data) => {
     const res = await announcementService.createAnnouncement(activeWorkspace.id, data);
@@ -128,7 +167,7 @@ const AnnouncementList = () => {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-bg p-8 sm:p-12">
+    <div ref={scrollContainerRef} className="flex-1 overflow-y-auto bg-bg p-8 sm:p-12">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <header className="mb-8 flex items-center justify-between">
@@ -199,6 +238,18 @@ const AnnouncementList = () => {
                 onDelete={openDeleteConfirm}
               />
             ))}
+
+            {/* Infinite scroll loading indicator */}
+            {hasMore && (
+              <div className="flex items-center justify-center py-6">
+                {isLoadingMore && (
+                  <div className="flex items-center gap-3 text-text-secondary">
+                    <Loader size={20} className="animate-spin" />
+                    <span className="text-sm font-medium">Loading more...</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
