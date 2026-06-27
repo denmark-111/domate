@@ -1,8 +1,9 @@
 -- setup_auth.sql
--- setup_auth.sql
--- Idempotent SQL to create triggers that insert into public.User when a new
--- row is added to auth.users (Supabase Auth). The actual `User` table is
--- expected to be managed by Prisma (prisma/schema.prisma).
+-- Mirrors auth.users into the public.User table (Prisma-managed schema)
+-- so that the backend can reference a user directly from their access token
+-- (auth.uid()) without needing the service_role key.
+--
+-- public.User also handles profile management
 
 BEGIN;
 

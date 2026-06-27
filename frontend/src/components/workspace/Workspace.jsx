@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Board from '../board/Board';
 import CreateBoardForm from '../board/CreateBoardForm';
 import WorkspaceOverview from './WorkspaceOverview';
+import AnnouncementList from '../announcements/AnnouncementList';
 import { useWorkspace } from '../../context/WorkspaceContext';
 
 const Workspace = () => {
@@ -26,15 +27,17 @@ const Workspace = () => {
           <Board boardName={activeBoard} />
         ) : activeView === 'Overview' ? (
           <WorkspaceOverview />
+        ) : activeView === 'Announcements' ? (
+          <AnnouncementList />
         ) : (
           <div className="flex-1 flex items-center justify-center bg-bg-secondary">
             <div className="max-w-md text-center p-8 bg-bg-secondary rounded-2xl shadow-sm border border-border-light">
-              <div className="text-6xl mb-6">{activeView === 'Chat' ? '💬' : '📢'}</div>
+              <div className="text-6xl mb-6">💬</div>
               <h3 className="text-xl font-bold text-text mb-2">
-                {activeView} for {activeWorkspace.name}
+                Chat for {activeWorkspace.name}
               </h3>
               <p className="text-text-secondary mb-6 text-sm">
-                This {activeView.toLowerCase()} channel is private to the workspace.
+                This chat channel is private to the workspace.
               </p>
               <div className="inline-block px-4 py-2 bg-input-bg text-label-feature-text rounded-full text-[10px] font-bold uppercase tracking-wider">
                 Coming Soon

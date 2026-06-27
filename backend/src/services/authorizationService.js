@@ -61,6 +61,36 @@ export const authorizationService = {
     };
   },
 
+  // Params: announcementId, authenticated userId, and optional allowed roles.
+  async getAnnouncementMembership({ announcementId, userId, roles }) {
+    const announcement = await prisma.announcement.findFirst({
+      where: {
+        id: announcementId,
+        workspace: {
+          memberships: {
+            some: {
+              userId,
+              ...roleFilter(roles)
+            }
+          }
+        }
+      },
+      select: {
+        id: true,
+        workspaceId: true
+      }
+    });
+
+    if (!announcement) {
+      return null;
+    }
+
+    return {
+      resourceId: announcement.id,
+      workspaceId: announcement.workspaceId
+    };
+  },
+
   // Params: listId, authenticated userId, and optional allowed roles.
   async getListMembership({ listId, userId, roles }) {
     const list = await prisma.list.findFirst({

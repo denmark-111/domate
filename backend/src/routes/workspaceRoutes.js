@@ -3,6 +3,7 @@ import { getWorkspaces, createWorkspace, getWorkspaceById, updateWorkspace, dele
 import { validate } from  "../middleware/validate.js";
 import { createWorkspaceSchema, workspaceIdParamSchema, updateWorkspaceSchema } from "../schemas/workspaceSchema.js";
 import { nestedRouter as boardRouter } from "./boardRoutes.js";
+import { nestedRouter as announcementRouter } from "./announcementRoutes.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { requireWorkspaceMember, requireWorkspaceOwner } from "../middleware/authorize.js";
 
@@ -16,5 +17,8 @@ router.delete('/:workspaceId', validate(workspaceIdParamSchema), requireWorkspac
 
 // mount nested board routes
 router.use('/:workspaceId/boards', validate(workspaceIdParamSchema), requireWorkspaceMember, boardRouter);
+
+// mount nested announcement routes (per-route guards enforce member vs owner @announcementRoutes.js)
+router.use('/:workspaceId/announcements', validate(workspaceIdParamSchema), announcementRouter);
 
 export default router;
