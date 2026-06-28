@@ -49,10 +49,7 @@ export const getInvitationById = async (req, res, next) => {
 
   if (invitation.status !== "PENDING" || invitation.expiresAt < new Date()) {
     return res.status(410).json({
-      message: "This invitation is no longer valid",
-      data: {
-        status: invitation.expiresAt < new Date() ? "EXPIRED" : invitation.status
-      }
+      message: "This invitation is no longer valid"
     });
   }
 
@@ -68,19 +65,12 @@ export const acceptInvitation = async (req, res, next) => {
   const userId = req.supabase.user.id;
   const { invitationId } = req.validated.params;
 
-  try {
-    const result = await invitationService.acceptInvitation({ id: invitationId, userId });
+  const result = await invitationService.acceptInvitation({ id: invitationId, userId });
 
-    res.status(200).json({
-      message: `You have joined ${result.workspace.name}`,
-      data: result
-    });
-  } catch (error) {
-    if (error.statusCode) {
-      return res.status(error.statusCode).json({ message: error.message });
-    }
-    throw error;
-  }
+  res.status(200).json({
+    message: `You have joined ${result.workspace.name}`,
+    data: result
+  });
 };
 
 export const getMyInvitations = async (req, res, next) => {

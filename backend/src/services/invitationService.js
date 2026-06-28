@@ -1,4 +1,5 @@
 import prisma from "../client.js";
+import { ApiError } from "../middleware/errorHandler.js";
 
 const INVITATION_TTL_DAYS = 7;
 
@@ -79,7 +80,7 @@ export const invitationService = {
 
   /**
    * Accept an invitation: creates a workspace membership and marks the invitation as accepted.
-   * Throws descriptive errors for invalid states.
+   * Throws ApiError for invalid / expired / not-found states.
    */
   async acceptInvitation({ id, userId }) {
     const invitation = await prisma.invitation.findUnique({
@@ -92,17 +93,11 @@ export const invitationService = {
     });
 
     if (!invitation) {
-      throw Object.assign(new Error("Invitation not found"), { statusCode: 404 });
+      throw new ApiError(404, "Invitation not found");
     }
 
     if (invitation.status !== "PENDING") {
-      if (invitation.status === "ACCEPTED") {
-        throw Object.assign(new Error("This invitation has already been accepted"), { statusCode: 410 });
-      }
-      if (invitation.status === "DECLINED") {
-        throw Object.assign(new Error("This invitation has been declined"), { statusCode: 410 });
-      }
-      throw Object.assign(new Error("This invitation is no longer valid"), { statusCode: 410 });
+      throw new ApiError(410, "This invitation is no longer valid");
     }
 
     if (invitation.expiresAt < new Date()) {
@@ -110,38 +105,35 @@ export const invitationService = {
         where: { id: invitation.id },
         data: { status: "EXPIRED" }
       });
-      throw Object.assign(new Error("This invitation has expired"), { statusCode: 410 });
+      throw new ApiError(410, "This invitation is no longer valid");
     }
 
-    // Get the accepting user's email
+    // Check the accepting user matches the invited email
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { email: true }
     });
 
     if (!user || user.email !== invitation.email) {
-      throw Object.assign(
-        new Error("This invitation was sent to a different email address"),
-        { statusCode: 403 }
-      );
+      throw new ApiError(403, "This invitation was sent to a different email address");
+    }
+
+    // Check not already a member (quick check — unique constraint handles races)
+    const existingMember = await prisma.workspaceMember.findUnique({
+      where: {
+        workspaceId_userId: {
+          workspaceId: invitation.workspaceId,
+          userId
+        }
+      }
+    });
+
+    if (existingMember) {
+      throw new ApiError(409, "You are already a member of this workspace");
     }
 
     // Atomic: create membership + update invitation in a transaction
     const membership = await prisma.$transaction(async (tx) => {
-      // Double-check not already a member (race condition guard)
-      const existing = await tx.workspaceMember.findUnique({
-        where: {
-          workspaceId_userId: {
-            workspaceId: invitation.workspaceId,
-            userId
-          }
-        }
-      });
-
-      if (existing) {
-        throw Object.assign(new Error("You are already a member of this workspace"), { statusCode: 409 });
-      }
-
       await tx.invitation.update({
         where: { id: invitation.id },
         data: { status: "ACCEPTED" }
