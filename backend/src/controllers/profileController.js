@@ -26,12 +26,13 @@ export const getProfile = async (req, res, next) => {
 
 export const updateProfile = async (req, res, next) => {
     const userId = req.supabase.user.id;
-    const { fullName } = req.validated.body;
+    const { fullName, avatarUrl } = req.validated.body;
 
     const profile = await prisma.user.update({
         where: { id: userId },
         data: {
-            fullName
+            fullName,
+            avatarUrl
         },
         select: {
             id: true,
