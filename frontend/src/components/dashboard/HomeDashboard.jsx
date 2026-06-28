@@ -57,7 +57,7 @@ const HomeDashboard = () => {
                     </div>
                   </div>
                   <button
-                    onClick={() => navigate(`/invitations/${inv.token}`)}
+                    onClick={() => navigate(`/invitations/${inv.id}`)}
                     className="px-4 py-1.5 rounded-lg font-bold bg-button hover:bg-button-hover text-white text-xs transition-colors shadow-sm"
                   >
                     View

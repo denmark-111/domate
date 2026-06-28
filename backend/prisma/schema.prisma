@@ -58,7 +58,6 @@ model WorkspaceMember {
 model Invitation {
   id          String           @id @default(uuid()) @db.Uuid
   email       String           @db.Text
-  token       String           @unique @db.Text
   status      InvitationStatus @default(PENDING)
   expiresAt   DateTime
 
@@ -73,7 +72,6 @@ model Invitation {
 
   @@index([workspaceId])
   @@index([email])
-  @@index([token])
 }
 
 model Board {

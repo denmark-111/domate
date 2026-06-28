@@ -11,16 +11,9 @@ export const createInvitationSchema = z.object({
 });
 
 // Nested under /workspaces/:workspaceId/invitations
-// Top-level: DELETE /invitations/:invitationId
+// Top-level: GET /invitations/:invitationId, POST /invitations/:invitationId/accept, DELETE /invitations/:invitationId
 export const invitationIdParamSchema = z.object({
 	params: z.object({
 		invitationId: z.string().uuid("Invalid invitation ID format")
-	})
-});
-
-// Top-level: GET /invitations/:token and POST /invitations/:token/accept
-export const invitationTokenSchema = z.object({
-	params: z.object({
-		token: z.string().uuid("Invalid invitation token format")
 	})
 });

@@ -43,7 +43,7 @@ function App() {
             <Route path="/dashboard" element={<RequireAuth><AppContent viewType="home" /></RequireAuth>} />
             <Route path="/tasks" element={<RequireAuth><AppContent viewType="tasks" /></RequireAuth>} />
             <Route path="/workspaces/:workspaceId" element={<RequireAuth><AppContent viewType="workspace" /></RequireAuth>} />
-            <Route path="/invitations/:token" element={<AcceptInvitation />} />
+            <Route path="/invitations/:invitationId" element={<AcceptInvitation />} />
           </Routes>
         </ThemeContextProvider>
       </Router>

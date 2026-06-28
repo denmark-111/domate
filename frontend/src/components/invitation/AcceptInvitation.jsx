@@ -4,7 +4,7 @@ import { invitationService } from '../../services/index.js';
 import { useAuth } from '../../context/AuthContext';
 
 const AcceptInvitation = () => {
-  const { token } = useParams();
+  const { invitationId } = useParams();
   const navigate = useNavigate();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
 
@@ -17,7 +17,7 @@ const AcceptInvitation = () => {
   useEffect(() => {
     const load = async () => {
       setIsLoading(true);
-      const res = await invitationService.getInvitationByToken(token);
+      const res = await invitationService.getInvitationById(invitationId);
       if (res.success) {
         setInvite(res.data);
       } else {
@@ -26,13 +26,13 @@ const AcceptInvitation = () => {
       setIsLoading(false);
     };
     load();
-  }, [token]);
+  }, [invitationId]);
 
   const handleAccept = async () => {
     setIsAccepting(true);
     setError('');
 
-    const res = await invitationService.acceptInvitation(token);
+    const res = await invitationService.acceptInvitation(invitationId);
     if (res.success) {
       setAccepted(true);
     } else {
@@ -105,7 +105,7 @@ const AcceptInvitation = () => {
               Sign in or create an account to accept this invitation.
             </p>
             <Link
-              to={`/auth?redirect=/invitations/${token}`}
+              to={`/auth?redirect=/invitations/${invitationId}`}
               className="inline-block px-6 py-2 rounded-lg font-bold bg-button hover:bg-button-hover text-white transition-colors shadow-sm"
             >
               Sign In

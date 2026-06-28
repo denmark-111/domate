@@ -34,19 +34,19 @@ export const invitationService = {
     }
   },
 
-  getInvitationByToken: async (token) => {
+  getInvitationById: async (id) => {
     try {
-      const data = await apiCall(`/invitations/${token}`);
+      const data = await apiCall(`/invitations/${id}`);
       return { success: true, data };
     } catch (error) {
-      console.error('Error in getInvitationByToken:', error);
+      console.error('Error in getInvitationById:', error);
       return { success: false, error: error.message };
     }
   },
 
-  acceptInvitation: async (token) => {
+  acceptInvitation: async (id) => {
     try {
-      const data = await apiCall(`/invitations/${token}/accept`, {
+      const data = await apiCall(`/invitations/${id}/accept`, {
         method: 'POST',
       });
       return { success: true, data, message: data.message };

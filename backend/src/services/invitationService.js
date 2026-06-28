@@ -1,4 +1,3 @@
-import crypto from "crypto";
 import prisma from "../client.js";
 
 const INVITATION_TTL_DAYS = 7;
@@ -25,7 +24,7 @@ export const invitationService = {
 
     const existingEmails = new Set(existingMembers.map(m => m.user.email));
 
-    // Find pending invitations that haven't expired — decline them so we can re-invite
+    // Find pending invitations that haven't expired
     const pendingInvitations = await prisma.invitation.findMany({
       where: {
         workspaceId,
@@ -49,7 +48,6 @@ export const invitationService = {
       await prisma.invitation.createMany({
         data: newEmails.map(email => ({
           email,
-          token: crypto.randomUUID(),
           expiresAt,
           workspaceId,
           invitedById
@@ -66,11 +64,11 @@ export const invitationService = {
   },
 
   /**
-   * Get the invitation by token.
+   * Get the invitation by id.
    */
-  async getByToken(token) {
+  async getById(id) {
     return prisma.invitation.findUnique({
-      where: { token },
+      where: { id },
       include: {
         workspace: {
           select: { id: true, name: true, description: true }
@@ -83,9 +81,9 @@ export const invitationService = {
    * Accept an invitation: creates a workspace membership and marks the invitation as accepted.
    * Throws descriptive errors for invalid states.
    */
-  async acceptInvitation({ token, userId }) {
+  async acceptInvitation({ id, userId }) {
     const invitation = await prisma.invitation.findUnique({
-      where: { token },
+      where: { id },
       include: {
         workspace: {
           select: { id: true, name: true }
@@ -175,12 +173,10 @@ export const invitationService = {
    * Revoke a pending invitation.
    */
   async revokeInvitation(invitationId) {
-    const invitation = await prisma.invitation.update({
+    await prisma.invitation.update({
       where: { id: invitationId },
       data: { status: "EXPIRED" }
     });
-
-    return invitation;
   },
 
   /**

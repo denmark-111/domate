@@ -38,10 +38,10 @@ export const revokeInvitation = async (req, res, next) => {
   });
 };
 
-export const getInvitationByToken = async (req, res, next) => {
-  const { token } = req.validated.params;
+export const getInvitationById = async (req, res, next) => {
+  const { invitationId } = req.validated.params;
 
-  const invitation = await invitationService.getByToken(token);
+  const invitation = await invitationService.getById(invitationId);
 
   if (!invitation) {
     return res.status(404).json({ message: "Invitation not found" });
@@ -66,10 +66,10 @@ export const getInvitationByToken = async (req, res, next) => {
 
 export const acceptInvitation = async (req, res, next) => {
   const userId = req.supabase.user.id;
-  const { token } = req.validated.params;
+  const { invitationId } = req.validated.params;
 
   try {
-    const result = await invitationService.acceptInvitation({ token, userId });
+    const result = await invitationService.acceptInvitation({ id: invitationId, userId });
 
     res.status(200).json({
       message: `You have joined ${result.workspace.name}`,

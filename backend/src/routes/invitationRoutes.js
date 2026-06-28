@@ -3,15 +3,14 @@ import {
   createInvitations,
   getWorkspaceInvitations,
   revokeInvitation,
-  getInvitationByToken,
+  getInvitationById,
   acceptInvitation,
   getMyInvitations
 } from "../controllers/invitationController.js";
 import { validate } from "../middleware/validate.js";
 import {
   createInvitationSchema,
-  invitationIdParamSchema,
-  invitationTokenSchema
+  invitationIdParamSchema
 } from "../schemas/invitationSchema.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { requireInvitationWorkspaceOwner } from "../middleware/authorize.js";
@@ -27,9 +26,9 @@ const router = express.Router();
 
 router.get("/", asyncHandler(getMyInvitations));
 
-router.get("/:token", validate(invitationTokenSchema), asyncHandler(getInvitationByToken));
+router.get("/:invitationId", validate(invitationIdParamSchema), asyncHandler(getInvitationById));
 
-router.post("/:token/accept", validate(invitationTokenSchema), asyncHandler(acceptInvitation));
+router.post("/:invitationId/accept", validate(invitationIdParamSchema), asyncHandler(acceptInvitation));
 
 router.delete("/:invitationId", validate(invitationIdParamSchema), requireInvitationWorkspaceOwner, asyncHandler(revokeInvitation));
 
