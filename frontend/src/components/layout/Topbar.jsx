@@ -1,13 +1,20 @@
-import React from 'react';
-import { Bell, Settings, Search, Sun, Moon, LogOut } from 'lucide-react'; // Import Sun and Moon icons
+import React, { useState } from 'react';
+import { Bell, Settings, Search, Sun, Moon, LogOut } from 'lucide-react';
 import { useWorkspace } from '../../context/WorkspaceContext';
-import { useTheme } from '../../context/ThemeContext'; // Import useTheme hook
+import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
+import { supabaseStorageService } from '../../services/index.js';
+import ProfileModal from '../profile/ProfileModal';
 
 const Topbar = () => {
   const { activeWorkspace, activeView, activeBoard } = useWorkspace();
-  const { theme, toggleTheme } = useTheme(); // Use the theme context
+  const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
+  const [showProfileModal, setShowProfileModal] = useState(false);
+
+  const avatarUrl = user?.avatarUrl
+    ? supabaseStorageService.getAvatarUrl(user.avatarUrl)
+    : null;
 
   return (
     <header className="h-16 border-b border-border bg-bg flex items-center justify-between px-8 z-10">
@@ -37,7 +44,11 @@ const Topbar = () => {
             <Bell size={20} />
             <span className="absolute top-2 right-2 w-2 h-2 bg-error-text border-2 border-white rounded-full"></span>
           </button>
-          <button className="p-2 text-text-secondary hover:bg-bg-tertiary rounded-full transition-colors">
+          <button
+            onClick={() => setShowProfileModal(true)}
+            className="p-2 text-text-secondary hover:bg-bg-tertiary rounded-full transition-colors"
+            title="Profile settings"
+          >
             <Settings size={20} />
           </button>
         </div>
@@ -47,8 +58,15 @@ const Topbar = () => {
             <p className="text-sm font-bold text-text leading-none">{user?.fullName || user?.email || 'Guest'}</p>
             <p className="text-[10px] text-text-secondary font-medium mt-1">{user ? 'Active' : 'Not signed in'}</p>
           </div>
-          <div className="w-9 h-9 rounded-full bg-button flex items-center justify-center text-white text-xs font-bold shadow-sm border-2 border-white group-hover:scale-105 transition-transform">
-            {(user?.fullName || user?.email || 'G').slice(0,2).toUpperCase()}
+          <div
+            onClick={() => setShowProfileModal(true)}
+            className="w-9 h-9 rounded-full bg-button flex items-center justify-center text-white text-xs font-bold shadow-sm border-2 border-white group-hover:scale-105 transition-transform cursor-pointer overflow-hidden shrink-0"
+          >
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (
+              (user?.fullName || user?.email || 'G').slice(0, 2).toUpperCase()
+            )}
           </div>
           {user && (
             <button onClick={logout} className="p-2 ml-2 rounded-md hover:bg-bg-tertiary transition-colors" title="Sign out">
@@ -57,6 +75,8 @@ const Topbar = () => {
           )}
         </div>
       </div>
+
+      <ProfileModal isOpen={showProfileModal} onClose={() => setShowProfileModal(false)} />
     </header>
   );
 };

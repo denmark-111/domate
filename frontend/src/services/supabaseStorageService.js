@@ -73,4 +73,57 @@ export const supabaseStorageService = {
 
     return data?.signedUrl || '';
   },
+
+  /**
+   * Upload an avatar image to the avatars bucket (public bucket).
+   * The file is uploaded directly from the client to Supabase Storage,
+   * and the returned storage path is sent to the backend for persistence.
+   * @param {File} file - The avatar image file
+   * @param {string} userId - The user's UUID (used for path scoping)
+   * @returns {Promise<string>} - The storage path of the uploaded avatar
+   */
+  uploadAvatar: async (file, userId) => {
+    const ext = file.name.split('.').pop() || 'png';
+    const storagePath = `${userId}/${crypto.randomUUID()}.${ext}`;
+
+    const { data, error } = await supabase.storage
+      .from('avatars')
+      .upload(storagePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: file.type,
+      });
+
+    if (error) {
+      throw new Error(`Failed to upload avatar: ${error.message}`);
+    }
+
+    if (!data?.path) {
+      throw new Error('Avatar upload succeeded but no path was returned');
+    }
+
+    return data.path;
+  },
+
+  /**
+   * Resolve an avatar URL for display.
+   *
+   * OAuth providers (Google, GitHub, etc.) store an absolute URL like
+   * "https://lh3.googleusercontent.com/..." directly in avatarUrl.
+   * Locally-uploaded avatars store a relative storage path (e.g.
+   * "avatars/{userId}/{uuid}.png") which needs getPublicUrl().
+   *
+   * @param {string} avatarUrlOrPath - The avatarUrl value from the user record
+   * @returns {string}
+   */
+  getAvatarUrl: (avatarUrlOrPath) => {
+    if (!avatarUrlOrPath) return '';
+    // Already an absolute URL — return as-is (e.g. Google OAuth picture)
+    if (avatarUrlOrPath.startsWith('http://') || avatarUrlOrPath.startsWith('https://')) {
+      return avatarUrlOrPath;
+    }
+    // Relative storage path — resolve via the avatars bucket
+    const { data } = supabase.storage.from('avatars').getPublicUrl(avatarUrlOrPath);
+    return data?.publicUrl || '';
+  },
 };
