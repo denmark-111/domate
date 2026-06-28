@@ -68,6 +68,15 @@ export const requireWorkspaceOwner = requireAuthorized((req, userId) => {
   message: "Only workspace owners can perform this action"
 });
 
+// Requires OWNER role for the workspace the invitation belongs to.
+export const requireInvitationWorkspaceOwner = requireAuthorized((req, userId) => {
+  const { invitationId } = req.validated.params;
+  return authorizationService.getInvitationWorkspaceOwnership({ invitationId, userId });
+}, {
+  status: 403,
+  message: "Only workspace owners can perform this action"
+});
+
 // Checks workspace membership through the board's workspace.
 export const requireBoardWorkspaceMember = requireAuthorized((req, userId, roles) => {
   const { boardId } = req.validated.params;

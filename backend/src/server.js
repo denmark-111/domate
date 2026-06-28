@@ -8,6 +8,7 @@ import { router as boardRoutes } from "./routes/boardRoutes.js";
 import { router as listRoutes } from "./routes/listRoutes.js";
 import { router as taskRoutes } from "./routes/taskRoutes.js";
 import { router as announcementRoutes } from "./routes/announcementRoutes.js";
+import invitationRoutes from "./routes/invitationRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 
 const app = express();
@@ -48,6 +49,7 @@ app.use('/api/lists', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AU
 app.use('/api/tasks', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), taskRoutes);
 app.use('/api/announcements', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), announcementRoutes);
 app.use('/api/users', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), userRoutes);
+app.use('/api/invitations', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), invitationRoutes);
 
 app.use(notFoundHandler);
 app.use(apiErrorHandler);

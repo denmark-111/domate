@@ -4,6 +4,7 @@ import { validate } from  "../middleware/validate.js";
 import { createWorkspaceSchema, workspaceIdParamSchema, updateWorkspaceSchema } from "../schemas/workspaceSchema.js";
 import { nestedRouter as boardRouter } from "./boardRoutes.js";
 import { nestedRouter as announcementRouter } from "./announcementRoutes.js";
+import { nestedRouter as invitationRouter } from "./invitationRoutes.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { requireWorkspaceMember, requireWorkspaceOwner } from "../middleware/authorize.js";
 
@@ -20,5 +21,8 @@ router.use('/:workspaceId/boards', validate(workspaceIdParamSchema), requireWork
 
 // mount nested announcement routes (per-route guards enforce member vs owner @announcementRoutes.js)
 router.use('/:workspaceId/announcements', validate(workspaceIdParamSchema), announcementRouter);
+
+// mount nested invitation routes (owner-only — only owners see/manage invitations)
+router.use('/:workspaceId/invitations', validate(workspaceIdParamSchema), requireWorkspaceOwner, invitationRouter);
 
 export default router;

@@ -31,6 +31,22 @@ export const authorizationService = {
     });
   },
 
+  // Params: invitationId, authenticated userId, and optional allowed roles.
+  async getInvitationWorkspaceOwnership({ invitationId, userId }) {
+    const invitation = await prisma.invitation.findUnique({
+      where: { id: invitationId },
+      select: { workspaceId: true }
+    });
+
+    if (!invitation) return null;
+
+    return this.getWorkspaceMembership({
+      workspaceId: invitation.workspaceId,
+      userId,
+      roles: [WorkspaceRole.OWNER]
+    });
+  },
+
   // Params: boardId, authenticated userId, and optional allowed roles.
   async getBoardMembership({ boardId, userId, roles }) {
     const board = await prisma.board.findFirst({

@@ -16,6 +16,13 @@ enum WorkspaceRole {
   MEMBER
 }
 
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
 model Workspace {
   id          String   @id @default(uuid()) @db.Uuid
   name        String
@@ -24,6 +31,7 @@ model Workspace {
   boards      Board[]
   announcements Announcement[]
   memberships WorkspaceMember[]
+  invitations Invitation[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -45,6 +53,27 @@ model WorkspaceMember {
   @@unique([workspaceId, userId])
   @@index([workspaceId])
   @@index([userId])
+}
+
+model Invitation {
+  id          String           @id @default(uuid()) @db.Uuid
+  email       String           @db.Text
+  token       String           @unique @db.Text
+  status      InvitationStatus @default(PENDING)
+  expiresAt   DateTime
+
+  workspaceId  String    @db.Uuid
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  invitedById String  @db.Uuid
+  invitedBy   User    @relation("SentInvitations", fields: [invitedById], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([workspaceId])
+  @@index([email])
+  @@index([token])
 }
 
 model Board {
@@ -106,6 +135,7 @@ model User {
   workspaceMemberships WorkspaceMember[]
   announcements        Announcement[]
   attachments          Attachment[]
+  sentInvitations      Invitation[]      @relation("SentInvitations")
 
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
