@@ -36,7 +36,17 @@ export const apiCall = async (endpoint, options = {}) => {
   });
 
   if (!response.ok) {
-    throw new Error(`API error: ${response.status} ${response.statusText}`);
+    const body = await response.text().catch(() => null);
+    let message = `API error: ${response.status} ${response.statusText}`;
+    if (body) {
+      try {
+        const parsed = JSON.parse(body);
+        if (parsed.message) message = parsed.message;
+      } catch {
+        // ignore parse failures, fall back to default message
+      }
+    }
+    throw new Error(message);
   }
 
   if (response.status === 204) {
