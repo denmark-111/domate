@@ -11,6 +11,7 @@ import Topbar from './components/layout/Topbar';
 import HomeDashboard from './components/dashboard/HomeDashboard';
 import Tasks from './components/dashboard/Tasks';
 import Workspace from './components/workspace/Workspace';
+import AcceptInvitation from './components/invitation/AcceptInvitation';
 
 const AppContent = ({ viewType }) => {
   return (
@@ -42,6 +43,7 @@ function App() {
             <Route path="/dashboard" element={<RequireAuth><AppContent viewType="home" /></RequireAuth>} />
             <Route path="/tasks" element={<RequireAuth><AppContent viewType="tasks" /></RequireAuth>} />
             <Route path="/workspaces/:workspaceId" element={<RequireAuth><AppContent viewType="workspace" /></RequireAuth>} />
+            <Route path="/invitations/:token" element={<AcceptInvitation />} />
           </Routes>
         </ThemeContextProvider>
       </Router>

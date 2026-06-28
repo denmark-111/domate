@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { workspaceService, boardService, listService, taskService } from '../services/index.js';
+import { workspaceService, boardService, listService, taskService, invitationService } from '../services/index.js';
 import { useAuth } from './AuthContext';
 
 const WorkspaceContext = createContext();
@@ -8,13 +8,17 @@ const WorkspaceContext = createContext();
 export const WorkspaceProvider = ({ children }) => {
   const { workspaceId } = useParams();
   const { isAuthenticated } = useAuth();
-  
+
   const [workspaces, setWorkspaces] = useState([]);
   const [isLoadingWorkspaces, setIsLoadingWorkspaces] = useState(true);
   const [activeView, setActiveView] = useState('Overview');
   const [activeBoard, setActiveBoard] = useState(null);
   const [boards, setBoards] = useState([]);
   const [showCreateBoard, setShowCreateBoard] = useState(false);
+  const [invitations, setInvitations] = useState([]);
+  const [isLoadingInvitations, setIsLoadingInvitations] = useState(false);
+  const [myPendingInvitations, setMyPendingInvitations] = useState([]);
+  const [isLoadingMyInvitations, setIsLoadingMyInvitations] = useState(false);
 
   // Fetch workspaces on load or when auth changes
   useEffect(() => {
@@ -58,6 +62,18 @@ export const WorkspaceProvider = ({ children }) => {
       if (isAuthenticated) {
         fetchBoards();
       }
+
+      const fetchInvitations = async () => {
+        setIsLoadingInvitations(true);
+        const res = await invitationService.getWorkspaceInvitations(workspaceId);
+        if (res.success) {
+          setInvitations(res.data);
+        } else {
+          setInvitations([]);
+        }
+        setIsLoadingInvitations(false);
+      };
+      fetchInvitations();
 
       return () => controller.abort();
     } else {
@@ -116,6 +132,34 @@ export const WorkspaceProvider = ({ children }) => {
     return res;
   };
 
+  const createInvitation = async (workspaceId, emails) => {
+    const res = await invitationService.createInvitations(workspaceId, emails);
+    if (res.success) {
+      // Refresh invitations list
+      const updated = await invitationService.getWorkspaceInvitations(workspaceId);
+      if (updated.success) setInvitations(updated.data);
+    }
+    return res;
+  };
+
+  const revokeInvitation = async (invitationId, workspaceId) => {
+    const res = await invitationService.revokeInvitation(invitationId);
+    if (res.success) {
+      setInvitations(prev => prev.filter(inv => inv.id !== invitationId));
+    }
+    return res;
+  };
+
+  const fetchMyPendingInvitations = useCallback(async () => {
+    setIsLoadingMyInvitations(true);
+    const res = await invitationService.getMyInvitations();
+    if (res.success) {
+      setMyPendingInvitations(res.data);
+    }
+    setIsLoadingMyInvitations(false);
+    return res;
+  }, []);
+
   const updateList = async (listId, data) => {
     return await listService.updateList(listId, data);
   };
@@ -152,6 +196,13 @@ export const WorkspaceProvider = ({ children }) => {
       createWorkspace,
       updateWorkspace,
       deleteWorkspace,
+      invitations,
+      isLoadingInvitations,
+      myPendingInvitations,
+      isLoadingMyInvitations,
+      createInvitation,
+      revokeInvitation,
+      fetchMyPendingInvitations,
       createBoard,
       updateBoard,
       deleteBoard,

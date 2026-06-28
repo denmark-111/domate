@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useAuth } from '../../context/AuthContext';
-import { Info, Save, Edit3, X, Trash2 } from 'lucide-react';
-import { workspaceService } from '../../services/index.js';
+import { Info, Save, Edit3, X, Trash2, UserPlus, XCircle } from 'lucide-react';
+import { workspaceService, invitationService } from '../../services/index.js';
 import ConfirmModal from '../common/ConfirmModal';
+import InviteMembersForm from './InviteMembersForm';
 
 const WorkspaceOverview = () => {
-  const { activeWorkspace, updateWorkspace, deleteWorkspace, updateBoard, deleteBoard } = useWorkspace();
+  const { activeWorkspace, updateWorkspace, deleteWorkspace, updateBoard, deleteBoard, invitations, isLoadingInvitations, createInvitation, revokeInvitation } = useWorkspace();
   const { user } = useAuth();
   
   const [isEditing, setIsEditing] = useState(false);
@@ -81,6 +82,7 @@ const WorkspaceOverview = () => {
   const [showDeleteWorkspace, setShowDeleteWorkspace] = useState(false);
   const [showDeleteBoard, setShowDeleteBoard] = useState(false);
   const [isDeletingWorkspace, setIsDeletingWorkspace] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   const handleDeleteWorkspace = async () => {
     setIsDeletingWorkspace(true);
@@ -379,36 +381,101 @@ const WorkspaceOverview = () => {
         />
 
         {/* Team Members Section */}
-        {displayWorkspace.type === 'team' && (
-          <div className="bg-bg-secondary rounded-2xl border border-border p-8 shadow-sm">
-            <h3 className="text-sm font-bold text-text-secondary uppercase tracking-wider mb-4">Workspace Members</h3>
-            {isLoadingDetails ? (
-              <p className="text-sm text-text-secondary">Loading members...</p>
-            ) : displayWorkspace.memberships && displayWorkspace.memberships.length > 0 ? (
-              <div className="space-y-3">
-                {displayWorkspace.memberships.map((membership) => (
-                  <div key={membership.user.id} className="flex items-center justify-between p-3 bg-bg rounded-lg border border-border-light">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-button flex items-center justify-center text-white text-xs font-bold shadow-sm">
-                        {(membership.user?.fullName || membership.user?.email || 'U').slice(0, 2).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-text">{membership.user?.fullName || 'Unknown User'}</p>
-                        <p className="text-xs text-text-secondary">{membership.user?.email || ''}</p>
-                      </div>
-                    </div>
-                    <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded-full ${
-                      membership.role === 'OWNER' ? 'bg-label-team-bg text-label-team-text' : 'bg-bg-tertiary text-text-secondary'
-                    }`}>
-                      {membership.role}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-text-secondary">No members found.</p>
+        <div className="bg-bg-secondary rounded-2xl border border-border p-8 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-bold text-text-secondary uppercase tracking-wider">
+              Members{displayWorkspace.memberships ? ` (${displayWorkspace.memberships.length})` : ''}
+            </h3>
+            {isOwner && (
+              <button
+                onClick={() => setShowInviteModal(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-button hover:bg-button-hover text-white text-xs font-bold transition-colors shadow-sm"
+              >
+                <UserPlus size={14} /> Invite
+              </button>
             )}
           </div>
+          {isLoadingDetails ? (
+            <p className="text-sm text-text-secondary">Loading members...</p>
+          ) : displayWorkspace.memberships && displayWorkspace.memberships.length > 0 && displayWorkspace.memberships.some(m => m.user) ? (
+            <div className="space-y-3">
+              {displayWorkspace.memberships.filter(m => m.user).map((membership) => (
+                <div key={membership.user.id} className="flex items-center justify-between p-3 bg-bg rounded-lg border border-border-light">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-button flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                      {(membership.user?.fullName || membership.user?.email || 'U').slice(0, 2).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-text">{membership.user?.fullName || 'Unknown User'}</p>
+                      <p className="text-xs text-text-secondary">{membership.user?.email || ''}</p>
+                    </div>
+                  </div>
+                  <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded-full ${
+                    membership.role === 'OWNER' ? 'bg-label-team-bg text-label-team-text' : 'bg-bg-tertiary text-text-secondary'
+                  }`}>
+                    {membership.role}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-text-secondary">No members found.</p>
+          )}
+
+          {/* Pending Invitations (owner only) */}
+          {isOwner && (
+            <div className="mt-6 pt-6 border-t border-border">
+              <h4 className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-3">
+                Pending Invitations
+                {invitations.length > 0 && (
+                  <span className="ml-2 px-1.5 py-0.5 bg-label-feature-bg text-label-feature-text rounded-full text-[10px]">
+                    {invitations.length}
+                  </span>
+                )}
+              </h4>
+              {isLoadingInvitations ? (
+                <p className="text-sm text-text-secondary">Loading invitations...</p>
+              ) : invitations.length > 0 ? (
+                <div className="space-y-2">
+                  {invitations.map((inv) => (
+                    <div key={inv.id} className="flex items-center justify-between p-3 bg-bg rounded-lg border border-border-light">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-700 text-xs font-bold">
+                          {(inv.email || '?').slice(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-text">{inv.email}</p>
+                          <p className="text-xs text-text-secondary">
+                            Invited {new Date(inv.createdAt).toLocaleDateString()} &middot; expires {new Date(inv.expiresAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => revokeInvitation(inv.id, displayWorkspace.id)}
+                        className="p-1.5 text-red-500 hover:bg-red-50 rounded transition-colors"
+                        title="Revoke invitation"
+                      >
+                        <XCircle size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-text-secondary">No pending invitations.</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Invite Members Modal */}
+        {showInviteModal && (
+          <InviteMembersForm
+            workspaceName={displayWorkspace.name}
+            onClose={() => setShowInviteModal(false)}
+            onSubmit={async (emails) => {
+              return createInvitation(displayWorkspace.id, emails);
+            }}
+          />
         )}
       </div>
     </div>
