@@ -7,6 +7,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
   const [isEditingDetails, setIsEditingDetails] = useState(false);
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
+  const [editDueDate, setEditDueDate] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -22,6 +23,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
   const startEditDetails = () => {
     setEditName(task.name || task.title || '');
     setEditDescription(task.description || '');
+    setEditDueDate(task.dueDate ? task.dueDate.substring(0, 10) : '');
     setIsEditingDetails(true);
   };
 
@@ -32,6 +34,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
       ...task,
       name: editName.trim(),
       description: editDescription.trim(),
+      dueDate: editDueDate || null,
     };
     try {
       await onUpdate(updatedTask);
@@ -139,6 +142,15 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
                 className="w-full px-4 py-3 rounded-lg border-2 border-input-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none text-sm leading-relaxed"
                 placeholder="Add a description..."
               />
+              <div className="mt-4">
+                <label className="block text-sm font-semibold text-text mb-2">Due Date</label>
+                <input
+                  type="date"
+                  value={editDueDate}
+                  onChange={(e) => setEditDueDate(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border-2 border-input-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors text-sm"
+                />
+              </div>
             </div>
           ) : (
             task.description && (
@@ -174,7 +186,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
 
 
           {/* Due Date */}
-          {task.dueDate && (
+          {!isEditingDetails && task.dueDate && (
             <div>
               <h3 className="text-sm font-semibold text-text mb-2">Due Date</h3>
               <div className="flex items-center gap-2 text-sm text-text-secondary bg-bg-tertiary p-3 rounded w-fit">

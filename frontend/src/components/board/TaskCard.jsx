@@ -68,6 +68,11 @@ const TaskCard = ({ task, sortableId, onClick, onDelete }) => {
       </p>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-text-secondary">
+          {task.dueDate && (
+            <span className={`text-xs ${new Date(task.dueDate) < new Date() ? 'text-red-500' : ''}`}>
+              📅 {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            </span>
+          )}
           <span className="text-xs">💬 {commentCount}</span>
         </div>
         <div className="w-6 h-6 rounded-full bg-button border-2 border-bg flex items-center justify-center text-[8px] text-white font-bold">

@@ -191,7 +191,7 @@ const Board = () => {
   };
 
   const handleTaskUpdate = async (updatedTask) => {
-    const res = await updateTask(updatedTask.id, { name: updatedTask.name || updatedTask.title, description: updatedTask.description || '' });
+    const res = await updateTask(updatedTask.id, { name: updatedTask.name || updatedTask.title, description: updatedTask.description || '', dueDate: updatedTask.dueDate || null });
     if (res.success) {
       setData((prevData) => prevData.map((column) => ({
         ...column,

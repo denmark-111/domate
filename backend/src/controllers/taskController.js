@@ -19,7 +19,7 @@ export const getTasks = async (req, res, next) => {
 
 export const createTask = async (req, res, next) => {
     const { listId } = req.validated.params;
-    const { name, description } = req.validated.body;
+    const { name, description, dueDate } = req.validated.body;
 
     const lastTask = await prisma.task.findFirst({
         where: { listId },
@@ -32,6 +32,7 @@ export const createTask = async (req, res, next) => {
         data: {
             name,
             description,
+            dueDate,
             position,
             listId
         }
@@ -61,13 +62,14 @@ export const getTaskById = async (req, res, next) => {
 
 export const updateTask = async (req, res, next) => {
     const { taskId } = req.validated.params;
-    const { name, description } = req.validated.body;
+    const { name, description, dueDate } = req.validated.body;
 
     const task = await prisma.task.update({
         where: { id: taskId },
         data: {
             name,
-            description
+            description,
+            dueDate
         }
     });
 
