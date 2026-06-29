@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import prisma from "../client.js";
 import { ApiError } from "../middleware/errorHandler.js";
 
@@ -118,26 +119,18 @@ export const invitationService = {
       throw new ApiError(403, "This invitation was sent to a different email address");
     }
 
-    // Check not already a member (quick check — unique constraint handles races)
-    const existingMember = await prisma.workspaceMember.findUnique({
-      where: {
-        workspaceId_userId: {
-          workspaceId: invitation.workspaceId,
-          userId
-        }
-      }
-    });
-
-    if (existingMember) {
-      throw new ApiError(409, "You are already a member of this workspace");
-    }
-
-    // Atomic: create membership + update invitation in a transaction
+    // Atomic transaction: claim the invitation + create membership.
+    // updateMany with where:{status:"PENDING"} acts as a gate:
+    // only one concurrent request wins, the other gets count===0.
     const membership = await prisma.$transaction(async (tx) => {
-      await tx.invitation.update({
-        where: { id: invitation.id },
+      const result = await tx.invitation.updateMany({
+        where: { id: invitation.id, status: "PENDING" },
         data: { status: "ACCEPTED" }
       });
+
+      if (result.count === 0) {
+        throw new ApiError(410, "This invitation is no longer valid");
+      }
 
       return tx.workspaceMember.create({
         data: {
@@ -153,6 +146,12 @@ export const invitationService = {
           }
         }
       });
+    }).catch((error) => {
+      // Convert unique constraint violation (duplicate membership) to a 409
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        throw new ApiError(409, "You are already a member of this workspace");
+      }
+      throw error; // re-throw ApiError or anything else
     });
 
     return {
