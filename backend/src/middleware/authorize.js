@@ -108,6 +108,15 @@ export const requireListWorkspaceMember = requireAuthorized((req, userId, roles)
   return authorizationService.getListMembership({ listId, userId, roles });
 });
 
+// Checks workspace membership through the chat message's workspace.
+export const requireChatMessageAuthor = requireAuthorized((req, userId, roles) => {
+  const { messageId } = req.validated.params;
+  return authorizationService.getChatMessageMembership({ messageId, userId, roles });
+}, {
+  status: 403,
+  message: "You are not a member of the workspace this message belongs to"
+});
+
 // Checks workspace membership through the task's list, board, and workspace.
 export const requireTaskWorkspaceMember = requireAuthorized((req, userId, roles) => {
   const { taskId } = req.validated.params;

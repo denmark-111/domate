@@ -8,6 +8,7 @@ import { router as boardRoutes } from "./routes/boardRoutes.js";
 import { router as listRoutes } from "./routes/listRoutes.js";
 import { router as taskRoutes } from "./routes/taskRoutes.js";
 import { router as announcementRoutes } from "./routes/announcementRoutes.js";
+import { router as chatRoutes } from "./routes/chatRoutes.js";
 import invitationRoutes from "./routes/invitationRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 
@@ -48,6 +49,7 @@ app.use('/api/boards', supabaseAuthMiddleware({ audience: process.env.SUPABASE_A
 app.use('/api/lists', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), listRoutes);
 app.use('/api/tasks', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), taskRoutes);
 app.use('/api/announcements', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), announcementRoutes);
+app.use('/api/chat', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), chatRoutes);
 app.use('/api/users', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), userRoutes);
 app.use('/api/invitations', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), invitationRoutes);
 

@@ -145,6 +145,36 @@ export const authorizationService = {
     };
   },
 
+  // Params: chatMessageId, authenticated userId, and optional allowed roles.
+  async getChatMessageMembership({ messageId, userId, roles }) {
+    const message = await prisma.chatMessage.findFirst({
+      where: {
+        id: messageId,
+        workspace: {
+          memberships: {
+            some: {
+              userId,
+              ...roleFilter(roles)
+            }
+          }
+        }
+      },
+      select: {
+        id: true,
+        workspaceId: true
+      }
+    });
+
+    if (!message) {
+      return null;
+    }
+
+    return {
+      resourceId: message.id,
+      workspaceId: message.workspaceId
+    };
+  },
+
   // Params: taskId, authenticated userId, and optional allowed roles.
   async getTaskMembership({ taskId, userId, roles }) {
     const task = await prisma.task.findFirst({

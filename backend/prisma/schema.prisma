@@ -30,6 +30,7 @@ model Workspace {
 
   boards      Board[]
   announcements Announcement[]
+  messages    ChatMessage[]
   memberships WorkspaceMember[]
   invitations Invitation[]
 
@@ -133,6 +134,7 @@ model User {
 
   workspaceMemberships WorkspaceMember[]
   announcements        Announcement[]
+  messages             ChatMessage[]
   attachments          Attachment[]
   sentInvitations      Invitation[]      @relation("SentInvitations")
 
@@ -158,6 +160,22 @@ model Announcement {
   updatedAt   DateTime  @updatedAt
 
   @@index([workspaceId])
+}
+
+model ChatMessage {
+  id          String   @id @default(uuid()) @db.Uuid
+  content     String   @db.Text
+
+  authorId    String   @db.Uuid
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  workspaceId String   @db.Uuid
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([workspaceId, createdAt])
 }
 
 // Files attached to an entity. Exclusive belongs-to: exactly one parent FK is set
