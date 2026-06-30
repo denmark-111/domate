@@ -1,4 +1,4 @@
--- setup_attachment_bucket.sql
+-- setup_attachments_bucket.sql
 -- Creates the attachments bucket and sets up Row Level Security policies
 -- for direct-to-Supabase file uploads.
 -- Run this in your Supabase SQL editor after applying Prisma migrations.
