@@ -8,7 +8,7 @@ import ChatInput from './ChatInput';
 import useChatRealtime from '../../hooks/useChatRealtime';
 import ConfirmModal from '../common/ConfirmModal';
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 20;
 
 const ChatList = () => {
   const { activeWorkspace } = useWorkspace();
@@ -32,38 +32,6 @@ const ChatList = () => {
   const prevMessageCountRef = useRef(0);
   const prevScrollHeightRef = useRef(0);
   const isAtBottomRef = useRef(true);
-  const isLoadingMoreRef = useRef(false);
-  const hasMoreRef = useRef(false);
-  const pageRef = useRef(1);
-
-  // Keep refs in sync with state for use in scroll callback
-  useEffect(() => {
-    isLoadingMoreRef.current = isLoadingMore;
-    hasMoreRef.current = hasMore;
-    pageRef.current = page;
-  }, [isLoadingMore, hasMore, page]);
-
-  // Track if user is scrolled to bottom
-  const handleScroll = useCallback(() => {
-    const el = messagesContainerRef.current;
-    if (!el) return;
-
-    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
-    isAtBottomRef.current = distanceFromBottom < 100;
-
-    // Load more when scrolling to top
-    if (el.scrollTop < 100 && hasMoreRef.current && !isLoadingMoreRef.current) {
-      loadMore();
-    }
-  }, []);
-
-  // Subscribe to scroll events
-  useEffect(() => {
-    const el = messagesContainerRef.current;
-    if (!el) return;
-    el.addEventListener('scroll', handleScroll, { passive: true });
-    return () => el.removeEventListener('scroll', handleScroll);
-  }, [handleScroll]);
 
   // Scroll to bottom when new messages arrive (only if already at bottom)
   useEffect(() => {
@@ -76,7 +44,6 @@ const ChatList = () => {
   // Handle incoming realtime messages
   const onNewMessage = useCallback((message) => {
     setMessages((prev) => {
-      // Avoid duplicates
       if (prev.some((m) => m.id === message.id)) return prev;
       return [...prev, message];
     });
@@ -109,6 +76,7 @@ const ChatList = () => {
     fetchMessages();
   }, [fetchMessages]);
 
+  // loadMore is defined BEFORE handleScroll to avoid TDZ
   const loadMore = useCallback(async () => {
     if (!activeWorkspace?.id || isLoadingMore || !hasMore) return;
     setIsLoadingMore(true);
@@ -129,8 +97,28 @@ const ChatList = () => {
     setIsLoadingMore(false);
   }, [activeWorkspace?.id, isLoadingMore, hasMore, page]);
 
-  // After loading more, maintain scroll position
+  const handleScroll = useCallback(() => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
 
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    isAtBottomRef.current = distanceFromBottom < 100;
+
+    // Load more when scrolling to top
+    if (el.scrollTop < 100 && hasMore && !isLoadingMore) {
+      loadMore();
+    }
+  }, [isLoadingMore, hasMore, loadMore]);
+
+  // Subscribe to scroll events
+  useEffect(() => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    el.addEventListener('scroll', handleScroll, { passive: true });
+    return () => el.removeEventListener('scroll', handleScroll);
+  }, [handleScroll]);
+
+  // After loading more, maintain scroll position
   useEffect(() => {
     if (isLoadingMore && messagesContainerRef.current) {
       prevScrollHeightRef.current = messagesContainerRef.current.scrollHeight;
@@ -162,9 +150,7 @@ const ChatList = () => {
     setIsSending(true);
     const res = await chatService.sendMessage(activeWorkspace.id, content);
     if (res.success) {
-      // Add to local state immediately
       setMessages((prev) => [...prev, res.data]);
-      // Broadcast to other clients
       broadcastMessage(res.data);
     } else {
       throw new Error(res.error || 'Failed to send message');
@@ -204,7 +190,7 @@ const ChatList = () => {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-bg">
+    <div className="flex-1 flex flex-col bg-bg min-h-0">
       {/* Header */}
       <header className="shrink-0 border-b border-border bg-bg-secondary/50 px-8 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
