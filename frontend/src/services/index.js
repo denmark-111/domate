@@ -5,6 +5,7 @@ export { listService } from './listService.js';
 export { taskService } from './taskService.js';
 export { profileService } from './profileService.js';
 export { announcementService } from './announcementService.js';
+export { chatService } from './chatService.js';
 export { supabaseStorageService } from './supabaseStorageService.js';
 export { invitationService } from './invitationService.js';
 export { API_BASE_URL, getAuthHeaders, apiCall } from './apiConfig.js';

@@ -4,6 +4,7 @@ import Board from '../board/Board';
 import CreateBoardForm from '../board/CreateBoardForm';
 import WorkspaceOverview from './WorkspaceOverview';
 import AnnouncementList from '../announcements/AnnouncementList';
+import ChatList from '../chat/ChatList';
 import { useWorkspace } from '../../context/WorkspaceContext';
 
 const Workspace = () => {
@@ -29,6 +30,8 @@ const Workspace = () => {
           <WorkspaceOverview />
         ) : activeView === 'Announcements' ? (
           <AnnouncementList />
+        ) : activeView === 'Chat' ? (
+          <ChatList />
         ) : (
           <div className="flex-1 flex items-center justify-center bg-bg-secondary">
             <div className="max-w-md text-center p-8 bg-bg-secondary rounded-2xl shadow-sm border border-border-light">
