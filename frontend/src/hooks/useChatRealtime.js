@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient.js';
 
-const useChatRealtime = (workspaceId, onNewMessage) => {
+const useChatRealtime = (workspaceId, onNewMessage, onDeleteMessage) => {
   const channelRef = useRef(null);
 
   useEffect(() => {
@@ -27,6 +27,16 @@ const useChatRealtime = (workspaceId, onNewMessage) => {
       }
     );
 
+    channel.on(
+      'broadcast',
+      { event: 'delete-message' },
+      (payload) => {
+        if (onDeleteMessage) {
+          onDeleteMessage(payload.payload.messageId);
+        }
+      }
+    );
+
     channel.subscribe((status) => {
       if (status !== 'subscribed') {
         console.warn(`Realtime channel ${channelName} status: ${status}`);
@@ -39,19 +49,29 @@ const useChatRealtime = (workspaceId, onNewMessage) => {
       supabase.removeChannel(channel);
       channelRef.current = null;
     };
-  }, [workspaceId, onNewMessage]);
+  }, [workspaceId, onNewMessage, onDeleteMessage]);
 
-  const broadcastMessage = useCallback((message) => {
-    if (channelRef.current) {
-      channelRef.current.send({
-        type: 'broadcast',
-        event: 'new-message',
-        payload: message,
-      });
-    }
-  }, []);
+   const broadcastMessage = useCallback((message) => {
+     if (channelRef.current) {
+       channelRef.current.send({
+         type: 'broadcast',
+         event: 'new-message',
+         payload: message,
+       });
+     }
+   }, []);
+ 
+   const broadcastDelete = useCallback((messageId) => {
+     if (channelRef.current) {
+       channelRef.current.send({
+         type: 'broadcast',
+         event: 'delete-message',
+         payload: { messageId },
+       });
+     }
+   }, []);
 
-  return { broadcastMessage };
+   return { broadcastMessage, broadcastDelete };
 };
 
 export default useChatRealtime;

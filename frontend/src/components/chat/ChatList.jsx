@@ -82,7 +82,11 @@ const ChatList = () => {
     });
   }, []);
 
-  const { broadcastMessage } = useChatRealtime(activeWorkspace?.id, onNewMessage);
+  const onDeleteMessage = useCallback((messageId) => {
+    setMessages((prev) => prev.filter((m) => m.id !== messageId));
+  }, []);
+ 
+  const { broadcastMessage, broadcastDelete } = useChatRealtime(activeWorkspace?.id, onNewMessage, onDeleteMessage);
 
   // Fetch initial messages
   const fetchMessages = useCallback(async () => {
@@ -174,6 +178,7 @@ const ChatList = () => {
     const res = await chatService.deleteMessage(deletingMessageId);
     if (res.success) {
       setMessages((prev) => prev.filter((m) => m.id !== deletingMessageId));
+      broadcastDelete(deletingMessageId);
       setShowDeleteConfirm(false);
       setDeletingMessageId(null);
     } else {
