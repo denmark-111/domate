@@ -121,6 +121,8 @@ model Task {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
+  comments    TaskComment[]
+
   @@index([listId])
   @@index([listId, position])
 }
@@ -136,6 +138,7 @@ model User {
   announcements        Announcement[]
   messages             ChatMessage[]
   attachments          Attachment[]
+  taskComments         TaskComment[]
   sentInvitations      Invitation[]      @relation("SentInvitations")
 
   createdAt            DateTime @default(now())
@@ -176,6 +179,22 @@ model ChatMessage {
   updatedAt   DateTime @updatedAt
 
   @@index([workspaceId, createdAt])
+}
+
+model TaskComment {
+  id        String   @id @default(uuid()) @db.Uuid
+  content   String   @db.Text
+
+  authorId  String   @db.Uuid
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  taskId    String   @db.Uuid
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([taskId, createdAt])
 }
 
 // Files attached to an entity. Exclusive belongs-to: exactly one parent FK is set
