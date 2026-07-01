@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Edit3, Save, X, Trash2 } from 'lucide-react';
+import { X, Trash2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { taskService } from '../../services/taskService.js';
 
@@ -7,7 +7,8 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
   const { user } = useAuth();
   const [newComment, setNewComment] = useState('');
   const [isAddingComment, setIsAddingComment] = useState(false);
-  const [isEditingDetails, setIsEditingDetails] = useState(false);
+
+  // Inline editable fields
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editDueDate, setEditDueDate] = useState('');
@@ -36,7 +37,9 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
 
   useEffect(() => {
     if (isOpen && task?.id) {
-      setIsEditingDetails(false);
+      setEditName(task.name || task.title || '');
+      setEditDescription(task.description || '');
+      setEditDueDate(task.dueDate ? task.dueDate.substring(0, 10) : '');
       setNewComment('');
       setIsAddingComment(false);
       setComments([]);
@@ -46,13 +49,6 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
   }, [isOpen, task?.id, fetchComments]);
 
   if (!isOpen || !task) return null;
-
-  const startEditDetails = () => {
-    setEditName(task.name || task.title || '');
-    setEditDescription(task.description || '');
-    setEditDueDate(task.dueDate ? task.dueDate.substring(0, 10) : '');
-    setIsEditingDetails(true);
-  };
 
   const handleSaveDetails = async () => {
     if (!editName.trim()) return;
@@ -65,7 +61,6 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
     };
     try {
       await onUpdate(updatedTask);
-      setIsEditingDetails(false);
     } finally {
       setIsSaving(false);
     }
@@ -138,99 +133,52 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border bg-bg rounded-t-lg">
           <div className="flex-1 pr-4">
-            {isEditingDetails ? (
-              <div className="space-y-2">
-                <input
-                  type="text"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  className="w-full text-xl font-bold text-text bg-bg-tertiary px-3 py-2 rounded border border-input-border outline-none focus:border-input-border-focus"
-                  placeholder="Task name"
-                  autoFocus
-                />
-                <p className="text-sm text-text-secondary">{task.column}</p>
-              </div>
-            ) : (
-              <>
-                <h2 className="text-xl font-bold text-text mb-2 flex items-center gap-3">
-                  {task.name || task.title}
-                  <button
-                    onClick={startEditDetails}
-                    className="p-1 text-text-secondary hover:text-text-accent hover:bg-bg-tertiary rounded transition-colors"
-                    title="Edit task"
-                  >
-                    <Edit3 size={16} />
-                  </button>
-                </h2>
-                <p className="text-sm text-text-secondary">{task.column}</p>
-              </>
-            )}
+            <input
+              type="text"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              onBlur={handleSaveDetails}
+              className="w-full text-xl font-bold text-text bg-transparent -ml-3 -mt-2 px-3 py-2 border-none outline-none focus:bg-bg-tertiary rounded transition-colors"
+              placeholder="Task name"
+            />
+            <p className="text-sm text-text-secondary mt-1">{task.column}</p>
           </div>
-          <div className="flex items-center gap-2">
-            {isEditingDetails && (
-              <>
-                <button
-                  onClick={handleSaveDetails}
-                  disabled={isSaving}
-                  className="p-2 text-green-600 hover:bg-green-50 rounded transition-colors"
-                  title="Save"
-                >
-                  <Save size={18} />
-                </button>
-                <button
-                  onClick={() => setIsEditingDetails(false)}
-                  disabled={isSaving}
-                  className="p-2 text-text-secondary hover:bg-bg-tertiary rounded transition-colors"
-                  title="Cancel"
-                >
-                  <X size={18} />
-                </button>
-              </>
-            )}
-            <button
-              onClick={onClose}
-              className="text-text-secondary hover:text-text text-2xl font-light transition-colors"
-            >
-              ✕
-            </button>
-          </div>
+          <button
+            onClick={onClose}
+            className="text-text-secondary hover:text-text text-2xl font-light transition-colors"
+          >
+            ✕
+          </button>
         </div>
 
         {/* Body: two-column layout */}
         <div className="flex flex-1 min-h-0">
-          {/* Left Column: Task Details */}
+          {/* Left Column: Task Details (always editable) */}
           <div className="w-1/2 overflow-y-auto p-6 space-y-6 border-r border-border">
             {/* Description */}
-            {isEditingDetails ? (
-              <div>
-                <label className="block text-sm font-semibold text-text mb-2">Description</label>
-                <textarea
-                  value={editDescription}
-                  onChange={(e) => setEditDescription(e.target.value)}
-                  rows="4"
-                  className="w-full px-4 py-3 rounded-lg border-2 border-input-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none text-sm leading-relaxed"
-                  placeholder="Add a description..."
-                />
-                <div className="mt-4">
-                  <label className="block text-sm font-semibold text-text mb-2">Due Date</label>
-                  <input
-                    type="date"
-                    value={editDueDate}
-                    onChange={(e) => setEditDueDate(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg border-2 border-input-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors text-sm"
-                  />
-                </div>
-              </div>
-            ) : (
-              task.description && (
-                <div>
-                  <h3 className="text-sm font-semibold text-text mb-2">Description</h3>
-                  <p className="text-sm text-text-secondary leading-relaxed bg-bg-tertiary p-3 rounded">
-                    {task.description}
-                  </p>
-                </div>
-              )
-            )}
+            <div>
+              <label className="block text-sm font-semibold text-text mb-2">Description</label>
+              <textarea
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                onBlur={handleSaveDetails}
+                rows="4"
+                className="w-full px-4 py-3 rounded-lg border-2 border-input-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none text-sm leading-relaxed"
+                placeholder="Add a description..."
+              />
+            </div>
+
+            {/* Due Date */}
+            <div>
+              <label className="block text-sm font-semibold text-text mb-2">Due Date</label>
+              <input
+                type="date"
+                value={editDueDate}
+                onChange={(e) => setEditDueDate(e.target.value)}
+                onBlur={handleSaveDetails}
+                className="w-full px-4 py-3 rounded-lg border-2 border-input-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors text-sm"
+              />
+            </div>
             
             {/* Labels */}
             {task.labels && task.labels.length > 0 && (
@@ -246,16 +194,6 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
                       {label.name}
                     </span>
                   ))}
-                </div>
-              </div>
-            )}
-
-            {/* Due Date */}
-            {!isEditingDetails && task.dueDate && (
-              <div>
-                <h3 className="text-sm font-semibold text-text mb-2">Due Date</h3>
-                <div className="flex items-center gap-2 text-sm text-text-secondary bg-bg-tertiary p-3 rounded w-fit">
-                  📅 {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </div>
               </div>
             )}
