@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Edit3, Save, X } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Edit3, Save, X, Trash2 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { taskService } from '../../services/taskService.js';
 
 const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
+  const { user } = useAuth();
   const [newComment, setNewComment] = useState('');
   const [isAddingComment, setIsAddingComment] = useState(false);
   const [isEditingDetails, setIsEditingDetails] = useState(false);
@@ -10,13 +13,37 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
   const [editDueDate, setEditDueDate] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
+  // Comment state
+  const [comments, setComments] = useState([]);
+  const [isLoadingComments, setIsLoadingComments] = useState(false);
+  const [commentsPagination, setCommentsPagination] = useState({ page: 1, limit: 50, total: 0, hasMore: false });
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [deletingCommentId, setDeletingCommentId] = useState(null);
+
+  const fetchComments = useCallback(async (taskId, page = 1, append = false) => {
+    if (!taskId) return;
+    setIsLoadingComments(true);
+    const res = await taskService.getComments(taskId, page);
+    if (res.success) {
+      const fetched = res.data.data || [];
+      setComments((prev) => (append ? [...prev, ...fetched] : fetched));
+      setCommentsPagination(res.data.pagination || { page: 1, limit: 50, total: 0, hasMore: false });
+    } else {
+      if (!append) setComments([]);
+    }
+    setIsLoadingComments(false);
+  }, []);
+
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && task?.id) {
       setIsEditingDetails(false);
       setNewComment('');
       setIsAddingComment(false);
+      setComments([]);
+      setCommentsPagination({ page: 1, limit: 50, total: 0, hasMore: false });
+      fetchComments(task.id);
     }
-  }, [isOpen, task?.id]);
+  }, [isOpen, task?.id, fetchComments]);
 
   if (!isOpen || !task) return null;
 
@@ -44,19 +71,59 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
     }
   };
 
-  const handleAddComment = () => {
-    if (newComment.trim()) {
-      const updatedTask = {
-        ...task,
-        comments: [...(task.comments || []), { id: Date.now(), text: newComment, author: 'You', time: 'now' }]
-      };
-      onUpdate(updatedTask);
+  const handleAddComment = async () => {
+    if (!newComment.trim() || !task?.id) return;
+    setIsSubmittingComment(true);
+    const res = await taskService.createComment(task.id, newComment.trim());
+    if (res.success) {
+      const created = res.data;
+      setComments((prev) => [created, ...prev]);
+      setCommentsPagination((prev) => ({ ...prev, total: prev.total + 1 }));
       setNewComment('');
       setIsAddingComment(false);
     }
+    setIsSubmittingComment(false);
   };
 
-  const commentCount = Array.isArray(task.comments) ? task.comments.length : 0;
+  const handleDeleteComment = async (commentId) => {
+    setDeletingCommentId(commentId);
+    const res = await taskService.deleteComment(commentId);
+    if (res.success) {
+      setComments((prev) => prev.filter((c) => c.id !== commentId));
+      setCommentsPagination((prev) => ({ ...prev, total: Math.max(0, prev.total - 1) }));
+    }
+    setDeletingCommentId(null);
+  };
+
+  const handleLoadMore = () => {
+    const nextPage = commentsPagination.page + 1;
+    fetchComments(task.id, nextPage, true);
+  };
+
+  const formatTimestamp = (isoString) => {
+    const date = new Date(isoString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return 'just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  const getAuthorInitials = (fullName) => {
+    if (!fullName) return '?';
+    return fullName
+      .split(/\s+/)
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
     <>
@@ -237,25 +304,71 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
           {/* Comments Section */}
           <div>
             <h3 className="text-sm font-semibold text-text mb-3">
-              Comments <span className="text-text-secondary">({commentCount})</span>
+              Comments <span className="text-text-secondary">({commentsPagination.total})</span>
             </h3>
-            
-            <div className="space-y-3 mb-4">
-              {Array.isArray(task.comments) && task.comments.map((comment) => (
-                <div key={comment.id} className="bg-bg-tertiary p-3 rounded border border-border">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-button text-white text-[10px] font-bold flex items-center justify-center">
-                        {comment.author.charAt(0)}
+
+            {isLoadingComments && comments.length === 0 ? (
+              <div className="text-sm text-text-secondary py-4 text-center">Loading comments...</div>
+            ) : (
+              <>
+                <div className="space-y-3 mb-4">
+                  {comments.map((comment) => {
+                    const authorName = comment.author?.fullName || comment.author?.email || 'Unknown';
+                    const isOwn = user?.id === comment.authorId;
+                    return (
+                      <div key={comment.id} className="bg-bg-tertiary p-3 rounded border border-border">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            {comment.author?.avatarUrl ? (
+                              <img
+                                src={comment.author.avatarUrl}
+                                alt={authorName}
+                                className="w-6 h-6 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-6 h-6 rounded-full bg-button text-white text-[10px] font-bold flex items-center justify-center">
+                                {getAuthorInitials(authorName)}
+                              </div>
+                            )}
+                            <span className="text-sm font-medium text-text">{authorName}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-text-secondary">
+                              {formatTimestamp(comment.createdAt)}
+                            </span>
+                            {isOwn && (
+                              <button
+                                onClick={() => handleDeleteComment(comment.id)}
+                                disabled={deletingCommentId === comment.id}
+                                className="p-1 text-text-secondary hover:text-red-500 rounded transition-colors disabled:opacity-50"
+                                title="Delete comment"
+                              >
+                                {deletingCommentId === comment.id ? (
+                                  <span className="text-xs">...</span>
+                                ) : (
+                                  <Trash2 size={14} />
+                                )}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        <p className="text-sm text-text-secondary leading-relaxed whitespace-pre-wrap">{comment.content}</p>
                       </div>
-                      <span className="text-sm font-medium text-text">{comment.author}</span>
-                    </div>
-                    <span className="text-xs text-text-secondary">{comment.time}</span>
-                  </div>
-                  <p className="text-sm text-text-secondary leading-relaxed">{comment.text}</p>
+                    );
+                  })}
                 </div>
-              ))}
-            </div>
+
+                {commentsPagination.hasMore && (
+                  <button
+                    onClick={handleLoadMore}
+                    disabled={isLoadingComments}
+                    className="w-full py-2 text-sm text-text-accent hover:text-text-accent/80 transition-colors disabled:opacity-50"
+                  >
+                    {isLoadingComments ? 'Loading...' : 'Load more comments'}
+                  </button>
+                )}
+              </>
+            )}
 
             {/* Add Comment Form */}
             <div className="border-t border-border pt-4">
@@ -266,16 +379,20 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
                 className="w-full p-3 bg-bg-tertiary border border-border rounded text-sm text-text placeholder-text-secondary resize-none focus:outline-none focus:border-input-border-focus transition-colors"
                 rows="3"
               />
-              {newComment.trim() && (
+              {(newComment.trim() || isAddingComment) && (
                 <div className="flex gap-2 mt-2">
                   <button
                     onClick={handleAddComment}
-                    className="px-4 py-2 bg-button hover:bg-button-hover text-white text-sm font-medium rounded transition-colors"
+                    disabled={isSubmittingComment || !newComment.trim()}
+                    className="px-4 py-2 bg-button hover:bg-button-hover text-white text-sm font-medium rounded transition-colors disabled:opacity-50"
                   >
-                    Comment
+                    {isSubmittingComment ? 'Posting...' : 'Comment'}
                   </button>
                   <button
-                    onClick={() => setNewComment('')}
+                    onClick={() => {
+                      setNewComment('');
+                      setIsAddingComment(false);
+                    }}
                     className="px-4 py-2 bg-button-secondary text-button-secondary-text hover:bg-button-secondary-hover text-sm font-medium rounded transition-colors"
                   >
                     Cancel
