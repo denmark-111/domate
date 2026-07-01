@@ -3,7 +3,7 @@ import { X, Trash2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { taskService } from '../../services/taskService.js';
 
-const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
+const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange }) => {
   const { user } = useAuth();
   const [newComment, setNewComment] = useState('');
   const [isAddingComment, setIsAddingComment] = useState(false);
@@ -76,6 +76,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
       setCommentsPagination((prev) => ({ ...prev, total: prev.total + 1 }));
       setNewComment('');
       setIsAddingComment(false);
+      onCommentChange?.(task.id, 1);
     }
     setIsSubmittingComment(false);
   };
@@ -86,6 +87,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
     if (res.success) {
       setComments((prev) => prev.filter((c) => c.id !== commentId));
       setCommentsPagination((prev) => ({ ...prev, total: Math.max(0, prev.total - 1) }));
+      onCommentChange?.(task.id, -1);
     }
     setDeletingCommentId(null);
   };

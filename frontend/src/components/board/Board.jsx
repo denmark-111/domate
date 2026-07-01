@@ -507,7 +507,27 @@ const Board = () => {
         </div>
       )}
 
-      <TaskModal task={selectedTask} isOpen={isTaskModalOpen} onClose={() => setIsTaskModalOpen(false)} onUpdate={handleTaskUpdate} />
+      <TaskModal
+        task={selectedTask}
+        isOpen={isTaskModalOpen}
+        onClose={() => setIsTaskModalOpen(false)}
+        onUpdate={handleTaskUpdate}
+        onCommentChange={(taskId, delta) => {
+          setData((prevData) =>
+            prevData.map((column) => ({
+              ...column,
+              tasks: column.tasks.map((t) =>
+                t.id === taskId
+                  ? { ...t, _count: { comments: (t._count?.comments ?? 0) + delta } }
+                  : t
+              )
+            }))
+          );
+          if (selectedTask?.id === taskId) {
+            setSelectedTask((prev) => prev ? { ...prev, _count: { comments: (prev._count?.comments ?? 0) + delta } } : prev);
+          }
+        }}
+      />
     </>
   );
 };

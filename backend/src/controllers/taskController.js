@@ -1,5 +1,11 @@
 import prisma from "../client.js";
 
+const fullTaskInclude = {
+    _count: {
+        select: { comments: true }
+    }
+};
+
 export const getTasks = async (req, res, next) => {
     const { listId } = req.validated.params;
 
@@ -9,7 +15,8 @@ export const getTasks = async (req, res, next) => {
         },
         orderBy: {
             position: 'asc'
-        }
+        },
+        include: fullTaskInclude
     });
 
     res.status(200).json({
@@ -35,7 +42,8 @@ export const createTask = async (req, res, next) => {
             dueDate,
             position,
             listId
-        }
+        },
+        include: fullTaskInclude
     });
 
     res.status(201).json({
@@ -48,7 +56,8 @@ export const getTaskById = async (req, res, next) => {
     const { taskId } = req.validated.params;
 
     const task = await prisma.task.findUnique({
-        where: { id: taskId }
+        where: { id: taskId },
+        include: fullTaskInclude
     });
 
     if (!task) {
@@ -70,7 +79,8 @@ export const updateTask = async (req, res, next) => {
             name,
             description,
             dueDate
-        }
+        },
+        include: fullTaskInclude
     });
 
     res.status(200).json({
@@ -174,7 +184,8 @@ export const moveTask = async (req, res, next) => {
             data: {
                 listId: targetListId,
                 position: newPosition
-            }
+            },
+            include: fullTaskInclude
         });
     });
 
