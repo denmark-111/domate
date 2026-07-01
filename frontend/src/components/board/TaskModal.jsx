@@ -134,9 +134,9 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
       />
 
       {/* Modal */}
-      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-bg rounded-lg shadow-2xl">
+      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-4xl max-h-[90vh] flex flex-col bg-bg rounded-lg shadow-2xl">
         {/* Header */}
-        <div className="sticky top-0 flex items-center justify-between p-6 border-b border-border bg-bg">
+        <div className="flex items-center justify-between p-6 border-b border-border bg-bg rounded-t-lg">
           <div className="flex-1 pr-4">
             {isEditingDetails ? (
               <div className="space-y-2">
@@ -196,122 +196,149 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-6 space-y-6">
-          {/* Description */}
-          {isEditingDetails ? (
-            <div>
-              <label className="block text-sm font-semibold text-text mb-2">Description</label>
-              <textarea
-                value={editDescription}
-                onChange={(e) => setEditDescription(e.target.value)}
-                rows="4"
-                className="w-full px-4 py-3 rounded-lg border-2 border-input-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none text-sm leading-relaxed"
-                placeholder="Add a description..."
-              />
-              <div className="mt-4">
-                <label className="block text-sm font-semibold text-text mb-2">Due Date</label>
-                <input
-                  type="date"
-                  value={editDueDate}
-                  onChange={(e) => setEditDueDate(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border-2 border-input-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors text-sm"
-                />
-              </div>
-            </div>
-          ) : (
-            task.description && (
+        {/* Body: two-column layout */}
+        <div className="flex flex-1 min-h-0">
+          {/* Left Column: Task Details */}
+          <div className="w-1/2 overflow-y-auto p-6 space-y-6 border-r border-border">
+            {/* Description */}
+            {isEditingDetails ? (
               <div>
-                <h3 className="text-sm font-semibold text-text mb-2">Description</h3>
-                <p className="text-sm text-text-secondary leading-relaxed bg-bg-tertiary p-3 rounded">
-                  {task.description}
-                </p>
+                <label className="block text-sm font-semibold text-text mb-2">Description</label>
+                <textarea
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  rows="4"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-input-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none text-sm leading-relaxed"
+                  placeholder="Add a description..."
+                />
+                <div className="mt-4">
+                  <label className="block text-sm font-semibold text-text mb-2">Due Date</label>
+                  <input
+                    type="date"
+                    value={editDueDate}
+                    onChange={(e) => setEditDueDate(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg border-2 border-input-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors text-sm"
+                  />
+                </div>
               </div>
-            )
-          )}
-          
-          {/* Labels */}
-          {task.labels && task.labels.length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold text-text mb-2">
-                Labels
-              </h3>
-
-              <div className="flex gap-2 flex-wrap">
-                {task.labels.map((label) => (
-                  <span
-                    key={label.id}
-                    className="px-3 py-1 text-xs font-bold rounded uppercase text-white"
-                    style={{ backgroundColor: label.color }}
-                  >
-                    {label.name}
-                  </span>
-                ))}
+            ) : (
+              task.description && (
+                <div>
+                  <h3 className="text-sm font-semibold text-text mb-2">Description</h3>
+                  <p className="text-sm text-text-secondary leading-relaxed bg-bg-tertiary p-3 rounded">
+                    {task.description}
+                  </p>
+                </div>
+              )
+            )}
+            
+            {/* Labels */}
+            {task.labels && task.labels.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-text mb-2">Labels</h3>
+                <div className="flex gap-2 flex-wrap">
+                  {task.labels.map((label) => (
+                    <span
+                      key={label.id}
+                      className="px-3 py-1 text-xs font-bold rounded uppercase text-white"
+                      style={{ backgroundColor: label.color }}
+                    >
+                      {label.name}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-
-          {/* Due Date */}
-          {!isEditingDetails && task.dueDate && (
-            <div>
-              <h3 className="text-sm font-semibold text-text mb-2">Due Date</h3>
-              <div className="flex items-center gap-2 text-sm text-text-secondary bg-bg-tertiary p-3 rounded w-fit">
-                📅 {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            {/* Due Date */}
+            {!isEditingDetails && task.dueDate && (
+              <div>
+                <h3 className="text-sm font-semibold text-text mb-2">Due Date</h3>
+                <div className="flex items-center gap-2 text-sm text-text-secondary bg-bg-tertiary p-3 rounded w-fit">
+                  📅 {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Assigned Members */}
-          {task.assignedMembers && task.assignedMembers.length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold text-text mb-2">Assigned To</h3>
-              <div className="flex gap-2 flex-wrap">
-                {task.assignedMembers.map((member) => (
-                  <div key={member.id} className="flex items-center gap-2 bg-bg-tertiary px-3 py-2 rounded border border-border">
-                    <div className="w-6 h-6 rounded-full bg-button text-white text-[10px] font-bold flex items-center justify-center">
-                      {member.initials}
+            {/* Assigned Members */}
+            {task.assignedMembers && task.assignedMembers.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-text mb-2">Assigned To</h3>
+                <div className="flex gap-2 flex-wrap">
+                  {task.assignedMembers.map((member) => (
+                    <div key={member.id} className="flex items-center gap-2 bg-bg-tertiary px-3 py-2 rounded border border-border">
+                      <div className="w-6 h-6 rounded-full bg-button text-white text-[10px] font-bold flex items-center justify-center">
+                        {member.initials}
+                      </div>
+                      <span className="text-sm text-text-secondary">{member.name}</span>
                     </div>
-                    <span className="text-sm text-text-secondary">{member.name}</span>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Attachments */}
-          {task.attachments && task.attachments.length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold text-text mb-2">Attachments</h3>
-              <div className="space-y-2">
-                {task.attachments.map((attachment) => (
-                  <a
-                    key={attachment.id}
-                    href="#"
-                    className="flex items-center gap-3 p-2 bg-bg-tertiary rounded border border-border hover:bg-bg-secondary transition-colors group"
-                  >
-                    <span className="text-lg">📎</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-text-accent group-hover:underline truncate">{attachment.name}</p>
-                      <p className="text-xs text-text-secondary">{attachment.size}</p>
-                    </div>
-                  </a>
-                ))}
+            {/* Attachments */}
+            {task.attachments && task.attachments.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-text mb-2">Attachments</h3>
+                <div className="space-y-2">
+                  {task.attachments.map((attachment) => (
+                    <a
+                      key={attachment.id}
+                      href="#"
+                      className="flex items-center gap-3 p-2 bg-bg-tertiary rounded border border-border hover:bg-bg-secondary transition-colors group"
+                    >
+                      <span className="text-lg">📎</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-text-accent group-hover:underline truncate">{attachment.name}</p>
+                        <p className="text-xs text-text-secondary">{attachment.size}</p>
+                      </div>
+                    </a>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
-          {/* Comments Section */}
-          <div>
-            <h3 className="text-sm font-semibold text-text mb-3">
+          {/* Right Column: Comments (entire column scrolls together) */}
+          <div className="w-1/2 overflow-y-auto p-6 space-y-4">
+            <h3 className="text-sm font-semibold text-text">
               Comments <span className="text-text-secondary">({commentsPagination.total})</span>
             </h3>
+
+            <textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Add a comment..."
+              className="w-full p-3 bg-bg-tertiary border border-border rounded text-sm text-text placeholder-text-secondary resize-none focus:outline-none focus:border-input-border-focus transition-colors"
+              rows="3"
+            />
+            {(newComment.trim() || isAddingComment) && (
+              <div className="flex gap-2">
+                <button
+                  onClick={handleAddComment}
+                  disabled={isSubmittingComment || !newComment.trim()}
+                  className="px-4 py-2 bg-button hover:bg-button-hover text-white text-sm font-medium rounded transition-colors disabled:opacity-50"
+                >
+                  {isSubmittingComment ? 'Posting...' : 'Comment'}
+                </button>
+                <button
+                  onClick={() => {
+                    setNewComment('');
+                    setIsAddingComment(false);
+                  }}
+                  className="px-4 py-2 bg-button-secondary text-button-secondary-text hover:bg-button-secondary-hover text-sm font-medium rounded transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
 
             {isLoadingComments && comments.length === 0 ? (
               <div className="text-sm text-text-secondary py-4 text-center">Loading comments...</div>
             ) : (
               <>
-                <div className="space-y-3 mb-4">
+                <div className="space-y-3">
                   {comments.map((comment) => {
                     const authorName = comment.author?.fullName || comment.author?.email || 'Unknown';
                     const isOwn = user?.id === comment.authorId;
@@ -369,37 +396,6 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate }) => {
                 )}
               </>
             )}
-
-            {/* Add Comment Form */}
-            <div className="border-t border-border pt-4">
-              <textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Add a comment..."
-                className="w-full p-3 bg-bg-tertiary border border-border rounded text-sm text-text placeholder-text-secondary resize-none focus:outline-none focus:border-input-border-focus transition-colors"
-                rows="3"
-              />
-              {(newComment.trim() || isAddingComment) && (
-                <div className="flex gap-2 mt-2">
-                  <button
-                    onClick={handleAddComment}
-                    disabled={isSubmittingComment || !newComment.trim()}
-                    className="px-4 py-2 bg-button hover:bg-button-hover text-white text-sm font-medium rounded transition-colors disabled:opacity-50"
-                  >
-                    {isSubmittingComment ? 'Posting...' : 'Comment'}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setNewComment('');
-                      setIsAddingComment(false);
-                    }}
-                    className="px-4 py-2 bg-button-secondary text-button-secondary-text hover:bg-button-secondary-hover text-sm font-medium rounded transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </div>

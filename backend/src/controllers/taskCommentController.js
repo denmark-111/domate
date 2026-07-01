@@ -28,7 +28,7 @@ export const getComments = async (req, res, next) => {
   ]);
 
   res.status(200).json({
-    data: comments.reverse(),
+    data: comments,
     pagination: {
       page: Number(page),
       limit: Number(limit),
