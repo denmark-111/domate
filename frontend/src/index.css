@@ -105,6 +105,31 @@ html[data-theme='dark'] {
   --font-sans: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
 }
 
+/* Custom scrollbar styles */
+html *::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+html *::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html *::-webkit-scrollbar-thumb {
+  background: var(--text-tertiary);
+  border-radius: 4px;
+}
+
+html *::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: auto;
+  scrollbar-color: var(--text-tertiary) transparent;
+}
+
 html,
 body,
 #root {

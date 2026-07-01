@@ -5,7 +5,12 @@ const fullBoardInclude = {
         orderBy: { position: "asc" },
         include: {
             tasks: {
-                orderBy: { position: "asc" }
+                orderBy: { position: "asc" },
+                include: {
+                    _count: {
+                        select: { comments: true }
+                    }
+                }
             }
         }
     }

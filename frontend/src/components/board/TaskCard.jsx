@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import ConfirmModal from '../common/ConfirmModal';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Calendar, MessageSquare } from 'lucide-react';
 
 const TaskCard = ({ task, sortableId, onClick, onDelete }) => {
-  const commentCount = Array.isArray(task.comments) ? task.comments.length : 0;
+  const commentCount = task._count?.comments ?? 0;
   const [showDeleteTask, setShowDeleteTask] = useState(false);
   const [isDeletingTask, setIsDeletingTask] = useState(false);
   const {
@@ -69,11 +69,15 @@ const TaskCard = ({ task, sortableId, onClick, onDelete }) => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-text-secondary">
           {task.dueDate && (
-            <span className={`text-xs ${new Date(task.dueDate) < new Date() ? 'text-red-500' : ''}`}>
-              📅 {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            <span className={`flex items-center gap-1 text-xs ${new Date(task.dueDate) < new Date() ? 'text-red-500' : ''}`}>
+              <Calendar size={12} />
+              {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </span>
           )}
-          <span className="text-xs">💬 {commentCount}</span>
+          <span className="flex items-center gap-1 text-xs">
+            <MessageSquare size={12} />
+            {commentCount}
+          </span>
         </div>
         <div className="w-6 h-6 rounded-full bg-button border-2 border-bg flex items-center justify-center text-[8px] text-white font-bold">
           {task.assigneeInitials || '?'}
