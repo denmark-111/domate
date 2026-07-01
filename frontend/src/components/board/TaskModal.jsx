@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { X, Trash2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { taskService } from '../../services/taskService.js';
@@ -21,6 +21,10 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange }) => {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [deletingCommentId, setDeletingCommentId] = useState(null);
 
+  // Infinite scroll refs
+  const scrollContainerRef = useRef(null);
+  const sentinelRef = useRef(null);
+
   const fetchComments = useCallback(async (taskId, page = 1, append = false) => {
     if (!taskId) return;
     setIsLoadingComments(true);
@@ -35,6 +39,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange }) => {
     setIsLoadingComments(false);
   }, []);
 
+  // Reset state when modal opens
   useEffect(() => {
     if (isOpen && task?.id) {
       setEditName(task.name || task.title || '');
@@ -47,6 +52,26 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange }) => {
       fetchComments(task.id);
     }
   }, [isOpen, task?.id, fetchComments]);
+
+  // Infinite scroll: observe sentinel
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    const container = scrollContainerRef.current;
+    if (!sentinel || !container || !commentsPagination.hasMore || isLoadingComments) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && commentsPagination.hasMore && !isLoadingComments) {
+          const nextPage = commentsPagination.page + 1;
+          fetchComments(task.id, nextPage, true);
+        }
+      },
+      { root: container, rootMargin: '200px' }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [commentsPagination, isLoadingComments, task?.id, fetchComments]);
 
   if (!isOpen || !task) return null;
 
@@ -90,11 +115,6 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange }) => {
       onCommentChange?.(task.id, -1);
     }
     setDeletingCommentId(null);
-  };
-
-  const handleLoadMore = () => {
-    const nextPage = commentsPagination.page + 1;
-    fetchComments(task.id, nextPage, true);
   };
 
   const formatTimestamp = (isoString) => {
@@ -241,7 +261,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange }) => {
           </div>
 
           {/* Right Column: Comments (entire column scrolls together) */}
-          <div className="w-1/2 overflow-y-auto p-6 space-y-4">
+          <div ref={scrollContainerRef} className="w-1/2 overflow-y-auto p-6 space-y-4">
             <h3 className="text-sm font-semibold text-text">
               Comments <span className="text-text-secondary">({commentsPagination.total})</span>
             </h3>
@@ -325,14 +345,14 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange }) => {
                   })}
                 </div>
 
+                {/* Sentinel for infinite scroll */}
                 {commentsPagination.hasMore && (
-                  <button
-                    onClick={handleLoadMore}
-                    disabled={isLoadingComments}
-                    className="w-full py-2 text-sm text-text-accent hover:text-text-accent/80 transition-colors disabled:opacity-50"
-                  >
-                    {isLoadingComments ? 'Loading...' : 'Load more comments'}
-                  </button>
+                  <div ref={sentinelRef} className="h-4" />
+                )}
+
+                {/* Loading indicator for next pages */}
+                {isLoadingComments && comments.length > 0 && (
+                  <div className="text-sm text-text-secondary py-2 text-center">Loading more...</div>
                 )}
               </>
             )}

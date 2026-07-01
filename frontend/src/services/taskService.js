@@ -74,7 +74,7 @@ export const taskService = {
 
   // --- Comment endpoints ---
 
-  getComments: async (taskId, page = 1, limit = 15) => {
+  getComments: async (taskId, page = 1, limit = 50) => {
     try {
       const headers = await getAuthHeaders();
       const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/comments?page=${page}&limit=${limit}`, { headers });

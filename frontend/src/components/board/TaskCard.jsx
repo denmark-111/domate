@@ -74,10 +74,12 @@ const TaskCard = ({ task, sortableId, onClick, onDelete }) => {
               {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </span>
           )}
-          <span className="flex items-center gap-1 text-xs">
-            <MessageSquare size={12} />
-            {commentCount}
-          </span>
+          {commentCount > 0 && (
+            <span className="flex items-center gap-1 text-xs">
+              <MessageSquare size={12} />
+              {commentCount}
+            </span>
+          )}
         </div>
         <div className="w-6 h-6 rounded-full bg-button border-2 border-bg flex items-center justify-center text-[8px] text-white font-bold">
           {task.assigneeInitials || '?'}
