@@ -1,10 +1,15 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { X, Trash2 } from 'lucide-react';
+import { X, Trash2, Upload, File, Image as ImageIcon, Loader } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useWorkspace } from '../../context/WorkspaceContext';
 import { taskService } from '../../services/taskService.js';
+import { supabaseStorageService } from '../../services/index.js';
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
 const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange }) => {
   const { user } = useAuth();
+  const { activeWorkspace } = useWorkspace();
   const [newComment, setNewComment] = useState('');
   const [isAddingComment, setIsAddingComment] = useState(false);
 
@@ -21,9 +26,19 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange }) => {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [deletingCommentId, setDeletingCommentId] = useState(null);
 
+  // Attachment state
+  const [attachments, setAttachments] = useState([]); // uploaded attachment metadata
+  const [loadingFiles, setLoadingFiles] = useState([]); // files currently uploading
+  const [previewUrls, setPreviewUrls] = useState({}); // storagePath -> signed URL
+  const [isSavingAttachments, setIsSavingAttachments] = useState(false);
+
   // Infinite scroll refs
   const scrollContainerRef = useRef(null);
   const sentinelRef = useRef(null);
+
+  const isImageAttachment = (attachment) => {
+    return attachment.mimeType?.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(attachment.fileName);
+  };
 
   const fetchComments = useCallback(async (taskId, page = 1, append = false) => {
     if (!taskId) return;
@@ -39,18 +54,48 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange }) => {
     setIsLoadingComments(false);
   }, []);
 
-  // Reset state when modal opens
+  // Reset state when modal opens and load signed URLs for existing attachments
   useEffect(() => {
-    if (isOpen && task?.id) {
-      setEditName(task.name || task.title || '');
-      setEditDescription(task.description || '');
-      setEditDueDate(task.dueDate ? task.dueDate.substring(0, 10) : '');
-      setNewComment('');
-      setIsAddingComment(false);
-      setComments([]);
-      setCommentsPagination({ page: 1, limit: 50, total: 0, hasMore: false });
-      fetchComments(task.id);
-    }
+    let cancelled = false;
+
+    const init = async () => {
+      if (isOpen && task?.id) {
+        setEditName(task.name || task.title || '');
+        setEditDescription(task.description || '');
+        setEditDueDate(task.dueDate ? task.dueDate.substring(0, 10) : '');
+        setNewComment('');
+        setIsAddingComment(false);
+        setComments([]);
+        setCommentsPagination({ page: 1, limit: 50, total: 0, hasMore: false });
+        setLoadingFiles([]);
+        setIsSavingAttachments(false);
+        fetchComments(task.id);
+
+        // Initialize attachments from the task
+        const existingAttachments = task.attachments || [];
+        setAttachments(existingAttachments);
+
+        // Load signed URLs for existing image attachments
+        const imageAtts = existingAttachments.filter(isImageAttachment);
+        const urls = {};
+        for (const att of imageAtts) {
+          try {
+            const url = await supabaseStorageService.getFileUrl(att.storagePath, 3600);
+            if (!cancelled && url) {
+              urls[att.storagePath] = url;
+            }
+          } catch (err) {
+            console.error('Failed to load preview for', att.fileName, err);
+          }
+        }
+        if (!cancelled) {
+          setPreviewUrls((prev) => ({ ...prev, ...urls }));
+        }
+      }
+    };
+
+    init();
+    return () => { cancelled = true; };
   }, [isOpen, task?.id, fetchComments]);
 
   // Infinite scroll: observe sentinel
@@ -75,15 +120,121 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange }) => {
 
   if (!isOpen || !task) return null;
 
+  // Persist the current attachment set to the backend immediately
+  const saveAttachments = async (updatedAttachments) => {
+    if (isSavingAttachments) return;
+    setIsSavingAttachments(true);
+    try {
+      const payload = {
+        name: editName.trim() || task.name,
+        description: editDescription.trim() || task.description || '',
+        dueDate: editDueDate || task.dueDate || null,
+        attachments: updatedAttachments.map((a) => ({
+          fileName: a.fileName,
+          fileSize: a.fileSize,
+          mimeType: a.mimeType,
+          storagePath: a.storagePath,
+        })),
+      };
+      await onUpdate({ ...task, ...payload });
+    } finally {
+      setIsSavingAttachments(false);
+    }
+  };
+
+  const handleFileSelect = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    const workspaceId = activeWorkspace?.id;
+    if (!workspaceId) {
+      console.error('No active workspace');
+      return;
+    }
+
+    const newLoading = [...loadingFiles];
+    const newAttachments = [...attachments];
+
+    // Show loading spinners for all files immediately
+    for (const file of files) {
+      if (file.size > MAX_FILE_SIZE) {
+        console.error(`File "${file.name}" exceeds the 10 MB limit.`);
+        continue;
+      }
+      newLoading.push({ id: crypto.randomUUID(), name: file.name, status: 'uploading' });
+    }
+    setLoadingFiles([...newLoading]);
+
+    // Upload all files to Supabase Storage in parallel
+    const uploadPromises = files
+      .filter((file) => file.size <= MAX_FILE_SIZE)
+      .map(async (file) => {
+        const metadata = await supabaseStorageService.uploadTaskFile(workspaceId, file);
+        // Create preview for image files
+        if (file.type.startsWith('image/')) {
+          try {
+            const url = await supabaseStorageService.getFileUrl(metadata.storagePath, 3600);
+            if (url) {
+              setPreviewUrls((prev) => ({ ...prev, [metadata.storagePath]: url }));
+            }
+          } catch {
+            // preview not essential
+          }
+        }
+        return metadata;
+      });
+
+    const results = await Promise.allSettled(uploadPromises);
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        newAttachments.push(result.value);
+      } else {
+        console.error(result.reason?.message || 'File upload failed');
+      }
+    }
+
+    // Update state once and auto-save
+    setAttachments([...newAttachments]);
+    setLoadingFiles([]);
+    await saveAttachments(newAttachments);
+
+    e.target.value = '';
+  };
+
+  const removeAttachment = async (index) => {
+    const attachment = attachments[index];
+    // Clean up preview URL
+    setPreviewUrls((prev) => {
+      const next = { ...prev };
+      delete next[attachment.storagePath];
+      return next;
+    });
+    // If it was newly uploaded (has no DB id), delete from storage
+    if (!attachment.id) {
+      try {
+        await supabaseStorageService.deleteFile(attachment.storagePath);
+      } catch {
+        // Silently fail - storage cleanup is best-effort
+      }
+    }
+    const newAttachments = attachments.filter((_, i) => i !== index);
+    setAttachments(newAttachments);
+
+    // Auto-save: persist the updated attachment set immediately
+    await saveAttachments(newAttachments);
+  };
+
   const handleSaveDetails = async () => {
     if (!editName.trim()) return;
     setIsSaving(true);
+
     const updatedTask = {
       ...task,
       name: editName.trim(),
       description: editDescription.trim(),
       dueDate: editDueDate || null,
     };
+
     try {
       await onUpdate(updatedTask);
     } finally {
@@ -201,7 +352,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange }) => {
                 className="w-full px-4 py-3 rounded-lg border-2 border-input-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors text-sm"
               />
             </div>
-            
+
             {/* Labels */}
             {task.labels && task.labels.length > 0 && (
               <div>
@@ -238,26 +389,93 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange }) => {
             )}
 
             {/* Attachments */}
-            {task.attachments && task.attachments.length > 0 && (
-              <div>
-                <h3 className="text-sm font-semibold text-text mb-2">Attachments</h3>
-                <div className="space-y-2">
-                  {task.attachments.map((attachment) => (
-                    <a
-                      key={attachment.id}
-                      href="#"
-                      className="flex items-center gap-3 p-2 bg-bg-tertiary rounded border border-border hover:bg-bg-secondary transition-colors group"
-                    >
-                      <span className="text-lg">📎</span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-text-accent group-hover:underline truncate">{attachment.name}</p>
-                        <p className="text-xs text-text-secondary">{attachment.size}</p>
+            <div>
+              <label className="block text-sm font-semibold text-text mb-2">
+                Attachments {attachments.length > 0 && <span className="text-text-secondary">({attachments.length})</span>}
+                {isSavingAttachments && <Loader size={12} className="inline ml-1 text-accent animate-spin" />}
+              </label>
+
+              {/* Attachment list */}
+              {attachments.length > 0 && (
+                <div className="space-y-2 mb-3">
+                  {attachments.map((attachment, index) => {
+                    const previewUrl = previewUrls[attachment.storagePath];
+                    const isImage = isImageAttachment(attachment);
+                    return (
+                      <div
+                        key={attachment.storagePath || attachment.id || index}
+                        className="flex items-center justify-between p-2 bg-bg-tertiary rounded-lg border border-border"
+                      >
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          {isImage && previewUrl ? (
+                            <img
+                              src={previewUrl}
+                              alt={attachment.fileName}
+                              className="w-10 h-10 rounded-md object-cover border border-border shrink-0"
+                            />
+                          ) : isImage ? (
+                            <div className="w-10 h-10 flex items-center justify-center bg-bg rounded-md border border-border shrink-0">
+                              <ImageIcon size={16} className="text-text-secondary" />
+                            </div>
+                          ) : (
+                            <File size={16} className="text-text-secondary shrink-0" />
+                          )}
+                          <div className="min-w-0">
+                            <p className="text-sm text-text-accent truncate">{attachment.fileName}</p>
+                            <p className="text-xs text-text-secondary">
+                              {attachment.fileSize ? formatFileSize(attachment.fileSize) : ''}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeAttachment(index)}
+                          disabled={isSavingAttachments}
+                          className="p-1.5 text-text-secondary hover:text-red-500 rounded transition-colors shrink-0 ml-2 disabled:opacity-50"
+                          title="Remove file"
+                        >
+                          <Trash2 size={14} />
+                        </button>
                       </div>
-                    </a>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Currently uploading files */}
+              {loadingFiles.length > 0 && (
+                <div className="space-y-2 mb-3">
+                  {loadingFiles.map((file) => (
+                    <div
+                      key={file.id}
+                      className="flex items-center gap-2 p-2 bg-bg-tertiary rounded-lg border border-border"
+                    >
+                      <Loader size={16} className="text-accent animate-spin shrink-0" />
+                      <span className="text-sm text-text-secondary">{file.name}</span>
+                      <span className="text-xs text-accent ml-auto">Uploading...</span>
+                    </div>
                   ))}
                 </div>
-              </div>
-            )}
+              )}
+
+              {/* File picker */}
+              <label className={`flex items-center gap-2 px-4 py-3 rounded-lg border-2 border-dashed border-border bg-bg cursor-pointer hover:border-accent/50 transition-colors ${isSavingAttachments ? 'opacity-50 pointer-events-none' : ''}`}>
+                <Upload size={18} className="text-text-secondary" />
+                <span className="text-sm font-medium text-text-secondary">
+                  {loadingFiles.length > 0
+                    ? 'Add another file...'
+                    : 'Click to upload files'}
+                </span>
+                <span className="text-xs text-text-secondary ml-auto">Max 10 MB per file</span>
+                <input
+                  type="file"
+                  multiple
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  disabled={loadingFiles.length > 0 || isSavingAttachments}
+                />
+              </label>
+            </div>
           </div>
 
           {/* Right Column: Comments (entire column scrolls together) */}
@@ -361,6 +579,12 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange }) => {
       </div>
     </>
   );
+};
+
+const formatFileSize = (bytes) => {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
 export default TaskModal;

@@ -41,6 +41,41 @@ export const supabaseStorageService = {
   },
 
   /**
+   * Upload a single file to a task and return the attachment metadata needed by the backend.
+   * Path format: tasks/{workspaceId}/{uuid}/{filename}
+   * The backend validates that the storagePath starts with tasks/{workspaceId}/
+   * @param {string} workspaceId
+   * @param {File} file
+   * @returns {Promise<{ fileName: string, fileSize: number, mimeType: string, storagePath: string }>}
+   */
+  uploadTaskFile: async (workspaceId, file) => {
+    const uuid = crypto.randomUUID();
+    const storagePath = `tasks/${workspaceId}/${uuid}/${file.name}`;
+
+    const { data, error } = await supabase.storage
+      .from('attachments')
+      .upload(storagePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+      });
+
+    if (error) {
+      throw new Error(`Failed to upload file: ${error.message}`);
+    }
+
+    if (!data?.path) {
+      throw new Error('File upload succeeded but no path was returned');
+    }
+
+    return {
+      fileName: file.name,
+      fileSize: file.size,
+      mimeType: file.type,
+      storagePath: data.path,
+    };
+  },
+
+  /**
    * Delete a file from Supabase Storage (used when removing attachments before saving).
    * @param {string} storagePath - The path of the file to delete
    */

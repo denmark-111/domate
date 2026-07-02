@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import ConfirmModal from '../common/ConfirmModal';
-import { Trash2, Calendar, MessageSquare } from 'lucide-react';
+import { Trash2, Calendar, MessageSquare, Paperclip } from 'lucide-react';
 
 const TaskCard = ({ task, sortableId, onClick, onDelete }) => {
   const commentCount = task._count?.comments ?? 0;
@@ -72,6 +72,12 @@ const TaskCard = ({ task, sortableId, onClick, onDelete }) => {
             <span className={`flex items-center gap-1 text-xs ${new Date(task.dueDate) < new Date() ? 'text-red-500' : ''}`}>
               <Calendar size={12} />
               {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            </span>
+          )}
+          {task.attachments?.length > 0 && (
+            <span className="flex items-center gap-1 text-xs">
+              <Paperclip size={12} />
+              {task.attachments.length}
             </span>
           )}
           {commentCount > 0 && (
