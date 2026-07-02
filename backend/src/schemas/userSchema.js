@@ -18,3 +18,18 @@ export const userIdParamSchema = z.object({
         userId: z.string().uuid("Invalid user ID format")
     })
 });
+
+export const logVisitSchema = z.object({
+    body: z.object({
+        entityType: z.enum(["workspace", "board"], {
+            errorMap: () => ({ message: "entityType must be 'workspace' or 'board'" })
+        }),
+        entityId: z.string().uuid("Invalid entity ID format")
+    })
+});
+
+export const getRecentSchema = z.object({
+	query: z.object({
+		limit: z.coerce.number().int().positive().max(100).optional()
+	})
+});

@@ -139,6 +139,7 @@ model User {
   messages             ChatMessage[]
   attachments          Attachment[]
   taskComments         TaskComment[]
+  recentVisits         RecentVisit[]
   sentInvitations      Invitation[]      @relation("SentInvitations")
 
   createdAt            DateTime @default(now())
@@ -195,6 +196,19 @@ model TaskComment {
   updatedAt DateTime @updatedAt
 
   @@index([taskId, createdAt])
+}
+
+model RecentVisit {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  entityType  String   @db.VarChar(20)
+  entityId    String   @db.Uuid
+  visitedAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, entityType, entityId])
+  @@index([userId, entityType, visitedAt])
 }
 
 // Files attached to an entity. Exclusive belongs-to: exactly one parent FK is set
