@@ -1,8 +1,23 @@
 import prisma from "../client.js";
+import { ApiError } from "../middleware/errorHandler.js";
 
 const fullTaskInclude = {
     _count: {
         select: { comments: true }
+    },
+    attachments: true
+};
+
+// Storage paths are workspace-scoped: tasks/{workspaceId}/{random}/{filename}
+// The taskId is intentionally NOT in the path — on create it doesn't exist yet
+// (files are uploaded before the task is POSTed), and the DB FK is the real
+// source of truth. The {random} UUID guarantees uniqueness.
+const validateAttachmentPaths = (attachments, workspaceId) => {
+    const prefix = `tasks/${workspaceId}/`;
+    for (const a of attachments) {
+        if (!a.storagePath.startsWith(prefix)) {
+            throw new ApiError(422, "Attachment storagePath does not match the expected location");
+        }
     }
 };
 
@@ -26,7 +41,9 @@ export const getTasks = async (req, res, next) => {
 
 export const createTask = async (req, res, next) => {
     const { listId } = req.validated.params;
-    const { name, description, dueDate } = req.validated.body;
+    const { workspaceId } = req.authorization;
+    const userId = req.supabase.user.id;
+    const { name, description, dueDate, attachments } = req.validated.body;
 
     const lastTask = await prisma.task.findFirst({
         where: { listId },
@@ -35,14 +52,30 @@ export const createTask = async (req, res, next) => {
 
     const position = lastTask ? lastTask.position + 1 : 0;
 
+    const data = {
+        name,
+        description,
+        dueDate,
+        position,
+        listId
+    };
+
+    if (attachments?.length) {
+        // workspaceId is already resolved by requireListWorkspaceMember middleware
+        validateAttachmentPaths(attachments, workspaceId);
+        data.attachments = {
+            create: attachments.map(({ fileName, fileSize, mimeType, storagePath }) => ({
+                fileName,
+                fileSize,
+                mimeType,
+                storagePath,
+                uploadedById: userId
+            }))
+        };
+    }
+
     const task = await prisma.task.create({
-        data: {
-            name,
-            description,
-            dueDate,
-            position,
-            listId
-        },
+        data,
         include: fullTaskInclude
     });
 
@@ -71,15 +104,37 @@ export const getTaskById = async (req, res, next) => {
 
 export const updateTask = async (req, res, next) => {
     const { taskId } = req.validated.params;
-    const { name, description, dueDate } = req.validated.body;
+    const { workspaceId } = req.authorization;
+    const userId = req.supabase.user.id;
+    const { name, description, dueDate, attachments } = req.validated.body;
+
+    const data = {
+        name,
+        description,
+        dueDate
+    };
+
+    // "attachments" present => full replacement of the set (existing rows deleted, the
+    // provided set created). "attachments" omitted => leave attachments untouched, so a
+    // plain name/description/dueDate edit doesn't require resending the file list.
+    if (attachments !== undefined) {
+        // workspaceId is already resolved by requireTaskWorkspaceMember middleware
+        validateAttachmentPaths(attachments, workspaceId);
+        data.attachments = {
+            deleteMany: { taskId },
+            create: attachments.map(({ fileName, fileSize, mimeType, storagePath }) => ({
+                fileName,
+                fileSize,
+                mimeType,
+                storagePath,
+                uploadedById: userId
+            }))
+        };
+    }
 
     const task = await prisma.task.update({
         where: { id: taskId },
-        data: {
-            name,
-            description,
-            dueDate
-        },
+        data,
         include: fullTaskInclude
     });
 

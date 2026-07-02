@@ -9,7 +9,8 @@ const fullBoardInclude = {
                 include: {
                     _count: {
                         select: { comments: true }
-                    }
+                    },
+                    attachments: true
                 }
             }
         }

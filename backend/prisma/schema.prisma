@@ -122,6 +122,7 @@ model Task {
   updatedAt   DateTime  @updatedAt
 
   comments    TaskComment[]
+  attachments Attachment[]
 
   @@index([listId])
   @@index([listId, position])
@@ -212,8 +213,7 @@ model RecentVisit {
 }
 
 // Files attached to an entity. Exclusive belongs-to: exactly one parent FK is set
-// (enforced at the API layer). Add a nullable taskId later via one migration to support
-// task attachments without a new table.
+// (enforced at the API layer).
 model Attachment {
   id              String        @id @default(uuid()) @db.Uuid
   fileName        String        @db.Text
@@ -224,6 +224,9 @@ model Attachment {
   announcementId  String?       @db.Uuid
   announcement    Announcement? @relation(fields: [announcementId], references: [id], onDelete: Cascade)
 
+  taskId          String?       @db.Uuid
+  task            Task?         @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
   uploadedById    String        @db.Uuid
   uploadedBy      User          @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
 
@@ -231,5 +234,6 @@ model Attachment {
   updatedAt       DateTime      @updatedAt
 
   @@index([announcementId])
+  @@index([taskId])
   @@index([uploadedById])
 }
