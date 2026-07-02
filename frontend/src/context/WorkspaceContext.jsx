@@ -95,7 +95,10 @@ export const WorkspaceProvider = ({ children }) => {
         }
         setIsLoadingInvitations(false);
       };
-      fetchInvitations();
+      // Only the workspace owner can fetch/manage invitations
+      if (activeWorkspace?.role === 'OWNER') {
+        fetchInvitations();
+      }
 
       return () => controller.abort();
     } else {

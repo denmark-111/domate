@@ -44,15 +44,20 @@ export const getWorkspaces = async (req, res, next) => {
         include: {
             _count: {
                 select: { memberships: true }
+            },
+            memberships: {
+                where: { userId },
+                select: { role: true }
             }
         }
     });
 
     const formattedWorkspaces = workspaces.map(ws => {
-        const { _count, ...rest } = ws;
+        const { _count, memberships, ...rest } = ws;
 
         return {
             ...rest,
+            role: memberships[0]?.role,
             type: getWorkspaceType(_count.memberships)
         };
     });
