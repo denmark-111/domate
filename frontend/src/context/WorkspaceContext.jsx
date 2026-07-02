@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
-import { workspaceService, boardService, listService, taskService, invitationService } from '../services/index.js';
+import { useParams, useLocation } from 'react-router-dom';
+import { workspaceService, boardService, listService, taskService, invitationService, activityService } from '../services/index.js';
 import { useAuth } from './AuthContext';
 
 const WorkspaceContext = createContext();
 
 export const WorkspaceProvider = ({ children }) => {
   const { workspaceId } = useParams();
+  const location = useLocation();
   const { isAuthenticated } = useAuth();
 
   const [workspaces, setWorkspaces] = useState([]);
@@ -43,11 +44,21 @@ export const WorkspaceProvider = ({ children }) => {
     ? workspaces.find(w => w.id === workspaceId) 
     : null;
 
-  // Reset local workspace state when the workspace itself changes
+  // Log board visit whenever the active board changes to a non-null board
+  useEffect(() => {
+    if (activeBoard?.id && activeWorkspace) {
+      activityService.logVisit('board', activeBoard.id);
+    }
+  }, [activeBoard?.id, activeWorkspace]);
+
+  // Log workspace visit and reset local workspace state when the workspace itself changes
   useEffect(() => {
     if (workspaceId) {
       setActiveView('Overview');
       setActiveBoard(null);
+
+      // Log the workspace visit (fire-and-forget)
+      activityService.logVisit('workspace', workspaceId);
 
       const controller = new AbortController();
 
@@ -55,6 +66,17 @@ export const WorkspaceProvider = ({ children }) => {
         const res = await boardService.getWorkspaceBoards(workspaceId, { signal: controller.signal });
         if (res.success) {
           setBoards(res.data);
+          // Check if navigation state has a board to auto-select
+          const selectBoardId = location.state?.selectBoardId;
+          if (selectBoardId) {
+            const boardToSelect = res.data.find(b => b.id === selectBoardId);
+            if (boardToSelect) {
+              setActiveBoard(boardToSelect);
+              setActiveView('Board');
+            }
+            // Clear the navigation state so it doesn't re-trigger
+            window.history.replaceState({}, document.title);
+          }
         } else {
           setBoards([]);
         }

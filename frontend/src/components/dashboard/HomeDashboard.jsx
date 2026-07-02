@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWorkspace } from '../../context/WorkspaceContext';
-import { invitationService } from '../../services/index.js';
+import { invitationService, activityService } from '../../services/index.js';
 import CreateWorkspaceForm from '../workspace/CreateWorkspaceForm';
 import { useAuth } from '../../context/AuthContext';
 
@@ -14,6 +14,10 @@ const HomeDashboard = () => {
   const [pendingInvites, setPendingInvites] = useState([]);
   const [isLoadingInvites, setIsLoadingInvites] = useState(true);
 
+  const [recentWorkspaces, setRecentWorkspaces] = useState([]);
+  const [recentBoards, setRecentBoards] = useState([]);
+  const [isLoadingRecent, setIsLoadingRecent] = useState(true);
+
   useEffect(() => {
     const load = async () => {
       setIsLoadingInvites(true);
@@ -25,6 +29,25 @@ const HomeDashboard = () => {
     };
     load();
   }, []);
+
+  useEffect(() => {
+    const loadRecent = async () => {
+      setIsLoadingRecent(true);
+      const res = await activityService.getRecent(5);
+      if (res.success) {
+        setRecentWorkspaces(res.data.recentWorkspaces || []);
+        setRecentBoards(res.data.recentBoards || []);
+      }
+      setIsLoadingRecent(false);
+    };
+    loadRecent();
+  }, []);
+
+  const handleBoardClick = (board) => {
+    if (board.workspace?.id) {
+      navigate(`/workspaces/${board.workspace.id}`, { state: { selectBoardId: board.id } });
+    }
+  };
 
   return (
     <div className="flex-1 overflow-y-auto bg-bg-secondary p-8 sm:p-12">
@@ -111,29 +134,47 @@ const HomeDashboard = () => {
               </div>
             </button>
           ))}
-
         </section>
 
-        {/* Recent Activity or Pinned Boards could go here later */}
-        <section className="mt-16">
-          <h2 className="text-sm font-bold text-text-secondary uppercase tracking-widest mb-6 px-2">Recent Boards</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="p-4 bg-bg rounded-xl border border-border-light shadow-sm flex items-center gap-4 hover:bg-bg-secondary cursor-pointer transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-bg-tertiary flex items-center justify-center text-xl text-text">#</div>
-              <div>
-                <h4 className="text-sm font-bold text-text">Development</h4>
-                <p className="text-xs text-text-secondary">Product Team</p>
-              </div>
+        {/* Recent Activity Section */}
+        {!isLoadingRecent && (recentWorkspaces.length > 0 || recentBoards.length > 0) && (
+          <section className="mt-16">
+            <h2 className="text-sm font-bold text-text-secondary uppercase tracking-widest mb-6 px-2">Recent</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Recent Workspaces */}
+              {recentWorkspaces.map((ws) => (
+                <button
+                  key={`ws-${ws.id}`}
+                  onClick={() => navigate(`/workspaces/${ws.id}`)}
+                  className="p-4 bg-bg rounded-xl border border-border-light shadow-sm flex items-center gap-4 hover:bg-bg-secondary cursor-pointer transition-colors text-left"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-button flex items-center justify-center text-white text-sm font-bold shadow-sm">
+                    {ws.name[0]}
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="text-sm font-bold text-text truncate">{ws.name}</h4>
+                    <p className="text-xs text-text-secondary">Workspace &middot; {ws.type}</p>
+                  </div>
+                </button>
+              ))}
+
+              {/* Recent Boards */}
+              {recentBoards.map((board) => (
+                <button
+                  key={`board-${board.id}`}
+                  onClick={() => handleBoardClick(board)}
+                  className="p-4 bg-bg rounded-xl border border-border-light shadow-sm flex items-center gap-4 hover:bg-bg-secondary cursor-pointer transition-colors text-left"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-bg-tertiary flex items-center justify-center text-xl text-text">#</div>
+                  <div className="min-w-0">
+                    <h4 className="text-sm font-bold text-text truncate">{board.name}</h4>
+                    <p className="text-xs text-text-secondary truncate">{board.workspace?.name || 'Board'}</p>
+                  </div>
+                </button>
+              ))}
             </div>
-            <div className="p-4 bg-bg rounded-xl border border-border-light shadow-sm flex items-center gap-4 hover:bg-bg-secondary cursor-pointer transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-bg-tertiary flex items-center justify-center text-xl text-text">#</div>
-              <div>
-                <h4 className="text-sm font-bold text-text">Daily Routine</h4>
-                <p className="text-xs text-text-secondary">Personal Tasks</p>
-              </div>
-            </div>
-          </div>
-        </section>
+          </section>
+        )}
       </div>
 
       {/* Create Workspace Modal */}
