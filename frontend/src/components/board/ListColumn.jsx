@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -28,6 +28,7 @@ const ListColumn = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(title);
   const inputRef = useRef(null);
+  const scrollContainerRef = useRef(null);
   const {
     attributes,
     listeners,
@@ -43,6 +44,19 @@ const ListColumn = ({
     id: taskListDroppableId,
     data: { type: 'task-list', listId: id }
   });
+
+  // Combined ref: merge the droppable ref onto our scroll container ref
+  const setCombinedRef = useCallback((node) => {
+    setTasksNodeRef(node);
+    scrollContainerRef.current = node;
+  }, [setTasksNodeRef]);
+
+  // Auto-scroll to bottom when adding a task
+  useEffect(() => {
+    if (isAddingTask && scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
+  }, [isAddingTask]);
 
   const handleDeleteList = async () => {
     setIsDeletingList(true);
@@ -80,7 +94,7 @@ const ListColumn = ({
         transform: CSS.Transform.toString(transform),
         transition
       }}
-      className={`w-80 flex-shrink-0 flex flex-col gap-4 ${isDragging ? 'opacity-50' : ''}`}
+      className={`w-80 flex-shrink-0 flex flex-col gap-4 max-h-full ${isDragging ? 'opacity-50' : ''}`}
     >
       <div className="flex items-center justify-between px-2 group/list">
         <div className="flex items-center gap-2 min-w-0">
@@ -131,8 +145,8 @@ const ListColumn = ({
       </div>
 
       <div
-        ref={setTasksNodeRef}
-        className={`flex-1 flex flex-col gap-3 rounded-md transition-colors ${isOver ? 'bg-bg-tertiary/70' : ''}`}
+        ref={setCombinedRef}
+        className={`flex-1 flex flex-col gap-3 rounded-md transition-colors overflow-y-auto overflow-x-hidden min-h-0 ${isOver ? 'bg-bg-tertiary/70' : ''}`}
       >
         <SortableContext items={tasks.map((task) => taskSortableId(task.id))} strategy={verticalListSortingStrategy}>
           {tasks.map((task) => (
@@ -145,23 +159,25 @@ const ListColumn = ({
             />
           ))}
         </SortableContext>
-        {!isAddingTask ? (
-          <button
-            onClick={() => onAddTask(id)}
-            className="w-full py-2 text-sm text-text-secondary hover:bg-bg-tertiary rounded-md border-2 border-dashed border-border transition-colors"
-          >
-            + Add Task
-          </button>
-        ) : (
-          <AddTaskForm
-            columnTitle={title}
-            onSubmit={(data) => {
-              onSubmitTask(id, data);
-              onCancelAddTask();
-            }}
-            onCancel={onCancelAddTask}
-          />
-        )}
+        <div className="sticky bottom-0 bg-bg-secondary rounded-b-md">
+          {!isAddingTask ? (
+            <button
+              onClick={() => onAddTask(id)}
+              className="w-full py-2 text-sm text-text-secondary hover:bg-bg-tertiary rounded-md border-2 border-dashed border-border transition-colors"
+            >
+              + Add Task
+            </button>
+          ) : (
+            <AddTaskForm
+              columnTitle={title}
+              onSubmit={(data) => {
+                onSubmitTask(id, data);
+                onCancelAddTask();
+              }}
+              onCancel={onCancelAddTask}
+            />
+          )}
+        </div>
       </div>
 
       <ConfirmModal

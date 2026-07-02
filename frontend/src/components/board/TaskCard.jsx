@@ -38,7 +38,7 @@ const TaskCard = ({ task, sortableId, onClick, onDelete }) => {
         transition
       }}
       onClick={onClick}
-      className={`bg-bg-secondary p-4 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer group relative ${isDragging ? 'opacity-50' : ''}`}
+      className={`bg-bg-secondary p-4 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer group relative ${isDragging ? 'opacity-50 z-50' : ''}`}
       {...attributes}
       {...listeners}
     >

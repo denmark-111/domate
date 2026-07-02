@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from 'react';
 import {
   closestCenter,
   DndContext,
+  DragOverlay,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -16,6 +17,7 @@ import {
 import AddListForm from './AddListForm';
 import TaskModal from './TaskModal';
 import ListColumn from './ListColumn';
+import TaskCard from './TaskCard';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { boardService, listService, taskService } from '../../services/index.js';
 import { Info } from 'lucide-react';
@@ -104,6 +106,7 @@ const Board = () => {
   const [isLoading, setIsLoading] = useState(false);
   const dragStartData = useRef(null);
   const activeDrag = useRef(null);
+  const [activeTask, setActiveTask] = useState(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -231,9 +234,20 @@ const Board = () => {
     }
   };
 
+  const findTaskById = (taskId) => {
+    for (const list of data) {
+      const task = list.tasks.find((t) => t.id === taskId);
+      if (task) return task;
+    }
+    return null;
+  };
+
   const handleDragStart = ({ active }) => {
     dragStartData.current = data;
     activeDrag.current = active.data.current;
+    if (active.data.current?.type === 'task') {
+      setActiveTask(findTaskById(active.data.current.taskId));
+    }
   };
 
   const handleDragOver = ({ active, over }) => {
@@ -252,6 +266,7 @@ const Board = () => {
     }
     dragStartData.current = null;
     activeDrag.current = null;
+    setActiveTask(null);
   };
 
   const handleDragEnd = async ({ active, over }) => {
@@ -259,6 +274,7 @@ const Board = () => {
     const dragData = active.data.current || activeDrag.current;
     dragStartData.current = null;
     activeDrag.current = null;
+    setActiveTask(null);
 
     if (!previousData || !dragData) return;
     if (!over) {
@@ -349,7 +365,7 @@ const Board = () => {
 
   return (
     <>
-      <section className="flex-1 min-h-0 flex flex-col overflow-x-auto overflow-y-auto bg-bg-secondary">
+      <section className="flex-1 min-h-0 flex flex-col overflow-x-auto bg-bg-secondary">
         {isLoading ? (
           <div className="flex-1 flex items-center justify-center text-text-secondary">
             Loading board...
@@ -429,6 +445,19 @@ const Board = () => {
                   <AddListForm onSubmit={handleAddList} onCancel={() => setShowAddList(false)} />
                 )}
               </div>
+
+              <DragOverlay dropAnimation={null}>
+                {activeTask ? (
+                  <div className="opacity-85 rotate-3">
+                    <TaskCard
+                      task={activeTask}
+                      sortableId={`overlay-${activeTask.id}`}
+                      onClick={() => {}}
+                      onDelete={() => {}}
+                    />
+                  </div>
+                ) : null}
+              </DragOverlay>
             </DndContext>
           </>
         )}
