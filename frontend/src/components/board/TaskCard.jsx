@@ -3,6 +3,12 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import ConfirmModal from '../common/ConfirmModal';
 import { Trash2, Calendar, MessageSquare, Paperclip } from 'lucide-react';
+import { supabaseStorageService } from '../../services/index.js';
+
+const getInitials = (name) => {
+  if (!name) return '?';
+  return name.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2);
+};
 
 const TaskCard = ({ task, sortableId, onClick, onDelete }) => {
   const commentCount = task._count?.comments ?? 0;
@@ -87,9 +93,31 @@ const TaskCard = ({ task, sortableId, onClick, onDelete }) => {
             </span>
           )}
         </div>
-        <div className="w-6 h-6 rounded-full bg-button border-2 border-bg flex items-center justify-center text-[8px] text-white font-bold">
-          {task.assigneeInitials || '?'}
-        </div>
+        {task.assignments?.length > 0 && (
+          <div className="flex items-center" title={task.assignments.map(a => a.user?.fullName || a.user?.email || '?').join(', ')}>
+            {task.assignments.slice(0, 3).map((a, i) => {
+              const avatarUrl = a.user?.avatarUrl ? supabaseStorageService.getAvatarUrl(a.user.avatarUrl) : null;
+              return (
+                <div
+                  key={a.userId}
+                  className="w-6 h-6 rounded-full bg-button border-2 border-bg flex items-center justify-center text-[8px] text-white font-bold -ml-[6px] first:ml-0 overflow-hidden"
+                  style={{ zIndex: 3 - i }}
+                >
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    getInitials(a.user?.fullName || a.user?.email)
+                  )}
+                </div>
+              );
+            })}
+            {task.assignments.length > 3 && (
+              <div className="w-6 h-6 rounded-full bg-bg-tertiary border-2 border-bg flex items-center justify-center text-[8px] text-text-secondary font-bold -ml-[6px]">
+                +{task.assignments.length - 3}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <ConfirmModal

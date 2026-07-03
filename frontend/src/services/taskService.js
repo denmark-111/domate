@@ -72,6 +72,31 @@ export const taskService = {
     }
   },
 
+  // --- Assignment endpoints ---
+
+  setTaskAssignees: async (taskId, userIds) => {
+    try {
+      const result = await apiCall(`/tasks/${taskId}/assignees`, {
+        method: 'PUT',
+        body: JSON.stringify({ userIds }),
+      });
+      return { success: true, data: result };
+    } catch (error) {
+      console.error('Error in setTaskAssignees:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  getTaskAssignees: async (taskId) => {
+    try {
+      const data = await apiCall(`/tasks/${taskId}/assignees`);
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error in getTaskAssignees:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
   // --- Comment endpoints ---
 
   getComments: async (taskId, page = 1, limit = 50) => {

@@ -198,6 +198,10 @@ export const WorkspaceProvider = ({ children }) => {
     return await taskService.updateTask(taskId, data);
   };
 
+  const setTaskAssignees = async (taskId, userIds) => {
+    return await taskService.setTaskAssignees(taskId, userIds);
+  };
+
   const deleteTask = async (taskId) => {
     return await taskService.deleteTask(taskId);
   };
@@ -234,6 +238,7 @@ export const WorkspaceProvider = ({ children }) => {
       updateList,
       deleteList,
       updateTask,
+      setTaskAssignees,
       deleteTask,
       moveTask
     }}>

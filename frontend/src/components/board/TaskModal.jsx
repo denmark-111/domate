@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { taskService } from '../../services/taskService.js';
 import { supabaseStorageService } from '../../services/index.js';
+import MemberPicker from '../common/MemberPicker.jsx';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
@@ -25,6 +26,10 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange }) => {
   const [commentsPagination, setCommentsPagination] = useState({ page: 1, limit: 50, total: 0, hasMore: false });
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [deletingCommentId, setDeletingCommentId] = useState(null);
+
+  // Assignment state
+  const [assignments, setAssignments] = useState([]);
+  const [isSavingAssignees, setIsSavingAssignees] = useState(false);
 
   // Attachment state
   const [attachments, setAttachments] = useState([]); // uploaded attachment metadata
@@ -69,6 +74,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange }) => {
         setCommentsPagination({ page: 1, limit: 50, total: 0, hasMore: false });
         setLoadingFiles([]);
         setIsSavingAttachments(false);
+        setAssignments(task.assignments || []);
         fetchComments(task.id);
 
         // Initialize attachments from the task
@@ -372,21 +378,43 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange }) => {
             )}
 
             {/* Assigned Members */}
-            {task.assignedMembers && task.assignedMembers.length > 0 && (
-              <div>
-                <h3 className="text-sm font-semibold text-text mb-2">Assigned To</h3>
-                <div className="flex gap-2 flex-wrap">
-                  {task.assignedMembers.map((member) => (
-                    <div key={member.id} className="flex items-center gap-2 bg-bg-tertiary px-3 py-2 rounded border border-border">
-                      <div className="w-6 h-6 rounded-full bg-button text-white text-[10px] font-bold flex items-center justify-center">
-                        {member.initials}
-                      </div>
-                      <span className="text-sm text-text-secondary">{member.name}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            <div>
+              <h3 className="text-sm font-semibold text-text mb-2">
+                Assigned To
+                {isSavingAssignees && <Loader size={12} className="inline ml-1 text-accent animate-spin" />}
+              </h3>
+              <MemberPicker
+                workspaceId={activeWorkspace?.id}
+                selectedUserIds={assignments.map(a => a.userId)}
+                selectedUsers={assignments.map(a => a.user)}
+                onChange={async (userIds) => {
+                  setIsSavingAssignees(true);
+                  try {
+                    // Persist assignments first
+                    const res = await taskService.setTaskAssignees(task.id, userIds);
+                    if (res.success) {
+                      setAssignments(res.data);
+                    }
+                    // Then sync board state — onUpdate calls updateTask which
+                    // returns fullTaskInclude including the new assignments
+                    const updatedData = {
+                      name: editName.trim() || task.name,
+                      description: editDescription.trim() || task.description || '',
+                      dueDate: editDueDate || task.dueDate || null,
+                      attachments: attachments.map(a => ({
+                        fileName: a.fileName,
+                        fileSize: a.fileSize,
+                        mimeType: a.mimeType,
+                        storagePath: a.storagePath,
+                      })),
+                    };
+                    await onUpdate({ ...task, ...updatedData });
+                  } finally {
+                    setIsSavingAssignees(false);
+                  }
+                }}
+              />
+            </div>
 
             {/* Attachments */}
             <div>
