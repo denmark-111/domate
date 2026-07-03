@@ -1,6 +1,16 @@
 import { apiCall, API_BASE_URL, getAuthHeaders } from './apiConfig.js';
 
 export const taskService = {
+  getMyTasks: async () => {
+    try {
+      const data = await apiCall('/tasks/my');
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error in getMyTasks:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
   getListTasks: async (listId) => {
     try {
       const data = await apiCall(`/lists/${listId}/tasks`);

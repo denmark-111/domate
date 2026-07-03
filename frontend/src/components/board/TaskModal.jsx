@@ -8,9 +8,10 @@ import MemberPicker from '../common/MemberPicker.jsx';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
-const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, onMoveTask }) => {
+const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, onMoveTask, workspaceId: propWorkspaceId }) => {
   const { user } = useAuth();
   const { activeWorkspace } = useWorkspace();
+  const workspaceId = propWorkspaceId || activeWorkspace?.id;
   const [newComment, setNewComment] = useState('');
   const [isAddingComment, setIsAddingComment] = useState(false);
 
@@ -155,9 +156,8 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
-    const workspaceId = activeWorkspace?.id;
     if (!workspaceId) {
-      console.error('No active workspace');
+      console.error('No workspace context');
       return;
     }
 
@@ -344,24 +344,26 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                 className="w-full text-xl font-bold text-text bg-transparent -ml-3 -mt-2 px-3 py-2 border-none outline-none focus:bg-bg-tertiary rounded transition-colors"
                 placeholder="Task name"
               />
-              <div className="flex items-center gap-2 mt-1">
-                <select
-                  value={task.listId}
-                  onChange={(e) => {
-                    const targetListId = e.target.value;
-                    if (targetListId !== task.listId) {
-                      onMoveTask?.(task.id, targetListId);
-                    }
-                  }}
-                  className="text-sm text-text-secondary bg-transparent border border-border rounded px-2 py-0.5 outline-none focus:border-input-border-focus cursor-pointer"
-                >
-                  {lists?.map((list) => (
-                    <option key={list.id} value={list.id}>
-                      {list.title}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {onMoveTask && lists?.length > 0 && (
+                <div className="flex items-center gap-2 mt-1">
+                  <select
+                    value={task.listId}
+                    onChange={(e) => {
+                      const targetListId = e.target.value;
+                      if (targetListId !== task.listId) {
+                        onMoveTask?.(task.id, targetListId);
+                      }
+                    }}
+                    className="text-sm text-text-secondary bg-transparent border border-border rounded px-2 py-0.5 outline-none focus:border-input-border-focus cursor-pointer"
+                  >
+                    {lists?.map((list) => (
+                      <option key={list.id} value={list.id}>
+                        {list.title || list.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
           </div>
           <button
@@ -426,7 +428,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                 {isSavingAssignees && <Loader size={12} className="inline ml-1 text-accent animate-spin" />}
               </h3>
               <MemberPicker
-                workspaceId={activeWorkspace?.id}
+                workspaceId={workspaceId}
                 selectedUserIds={assignments.map(a => a.userId)}
                 selectedUsers={assignments.map(a => a.user)}
                 onChange={async (userIds) => {

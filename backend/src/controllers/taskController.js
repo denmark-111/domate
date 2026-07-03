@@ -42,6 +42,49 @@ const validateAttachmentPaths = (attachments, workspaceId) => {
     }
 };
 
+export const getMyTasks = async (req, res, next) => {
+    const userId = req.supabase.user.id;
+
+    const assignments = await prisma.taskAssignment.findMany({
+        where: {
+            userId,
+            task: {
+                completedAt: null
+            }
+        },
+        include: {
+            task: {
+                include: {
+                    ...fullTaskInclude,
+                    list: {
+                        include: {
+                            board: {
+                                include: {
+                                    workspace: {
+                                        select: {
+                                            id: true,
+                                            name: true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        orderBy: {
+            task: {
+                updatedAt: 'desc'
+            }
+        }
+    });
+
+    res.status(200).json({
+        data: assignments
+    });
+};
+
 export const getTasks = async (req, res, next) => {
     const { listId } = req.validated.params;
 
