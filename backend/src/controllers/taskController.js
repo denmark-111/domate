@@ -127,13 +127,17 @@ export const updateTask = async (req, res, next) => {
     const { taskId } = req.validated.params;
     const { workspaceId } = req.authorization;
     const userId = req.supabase.user.id;
-    const { name, description, dueDate, attachments } = req.validated.body;
+    const { name, description, dueDate, completed, attachments } = req.validated.body;
 
     const data = {
         name,
         description,
         dueDate
     };
+
+    if (completed !== undefined) {
+        data.completedAt = completed ? new Date() : null;
+    }
 
     // "attachments" present => full replacement of the set (existing rows deleted, the
     // provided set created). "attachments" omitted => leave attachments untouched, so a

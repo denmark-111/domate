@@ -18,6 +18,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange }) => {
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editDueDate, setEditDueDate] = useState('');
+  const [editCompletedAt, setEditCompletedAt] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
 
   // Comment state
@@ -68,6 +69,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange }) => {
         setEditName(task.name || task.title || '');
         setEditDescription(task.description || '');
         setEditDueDate(task.dueDate ? task.dueDate.substring(0, 10) : '');
+        setEditCompletedAt(task.completedAt || null);
         setNewComment('');
         setIsAddingComment(false);
         setComments([]);
@@ -135,6 +137,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange }) => {
         name: editName.trim() || task.name,
         description: editDescription.trim() || task.description || '',
         dueDate: editDueDate || task.dueDate || null,
+        completedAt: editCompletedAt || null,
         attachments: updatedAttachments.map((a) => ({
           fileName: a.fileName,
           fileSize: a.fileSize,
@@ -239,6 +242,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange }) => {
       name: editName.trim(),
       description: editDescription.trim(),
       dueDate: editDueDate || null,
+      completedAt: editCompletedAt || null,
     };
 
     try {
@@ -311,16 +315,37 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange }) => {
       <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-4xl max-h-[90vh] flex flex-col bg-bg rounded-lg shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border bg-bg rounded-t-lg">
-          <div className="flex-1 pr-4">
-            <input
-              type="text"
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-              onBlur={handleSaveDetails}
-              className="w-full text-xl font-bold text-text bg-transparent -ml-3 -mt-2 px-3 py-2 border-none outline-none focus:bg-bg-tertiary rounded transition-colors"
-              placeholder="Task name"
-            />
-            <p className="text-sm text-text-secondary mt-1">{task.column}</p>
+          <div className="flex items-center gap-3 flex-1 pr-4">
+            <label onClick={(e) => e.stopPropagation()} className="shrink-0">
+              <input
+                type="checkbox"
+                checked={!!editCompletedAt}
+                onChange={async (e) => {
+                  const newCompletedAt = e.target.checked ? new Date().toISOString() : null;
+                  setEditCompletedAt(newCompletedAt);
+                  const updatedTask = {
+                    ...task,
+                    name: editName.trim() || task.name,
+                    description: editDescription.trim() || task.description || '',
+                    dueDate: editDueDate || task.dueDate || null,
+                    completedAt: newCompletedAt,
+                  };
+                  await onUpdate(updatedTask);
+                }}
+                className="w-5 h-5 rounded border-text-secondary accent-button cursor-pointer"
+              />
+            </label>
+            <div className="flex-1">
+              <input
+                type="text"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                onBlur={handleSaveDetails}
+                className="w-full text-xl font-bold text-text bg-transparent -ml-3 -mt-2 px-3 py-2 border-none outline-none focus:bg-bg-tertiary rounded transition-colors"
+                placeholder="Task name"
+              />
+              <p className="text-sm text-text-secondary mt-1">{task.column}</p>
+            </div>
           </div>
           <button
             onClick={onClose}
@@ -401,6 +426,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange }) => {
                       name: editName.trim() || task.name,
                       description: editDescription.trim() || task.description || '',
                       dueDate: editDueDate || task.dueDate || null,
+                      completedAt: editCompletedAt || null,
                       attachments: attachments.map(a => ({
                         fileName: a.fileName,
                         fileSize: a.fileSize,

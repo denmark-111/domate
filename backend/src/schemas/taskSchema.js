@@ -26,6 +26,7 @@ export const updateTaskSchema = z.object({
         name: z.string().min(1, "Task name is required").max(255).optional(),
         description: z.string().max(500).optional(),
         dueDate: z.coerce.date().optional().nullable(),
+        completed: z.boolean().optional(),
         // When present, attachments are treated as the full intended set (removed ones are
         // pruned). When omitted, existing attachments are left untouched.
         attachments: z.array(attachmentInput).optional()

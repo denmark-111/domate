@@ -10,7 +10,8 @@ const getInitials = (name) => {
   return name.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2);
 };
 
-const TaskCard = ({ task, sortableId, onClick, onDelete }) => {
+const TaskCard = ({ task, sortableId, onClick, onDelete, onToggleComplete }) => {
+  const isCompleted = !!task.completedAt;
   const commentCount = task._count?.comments ?? 0;
   const [showDeleteTask, setShowDeleteTask] = useState(false);
   const [isDeletingTask, setIsDeletingTask] = useState(false);
@@ -44,7 +45,7 @@ const TaskCard = ({ task, sortableId, onClick, onDelete }) => {
         transition
       }}
       onClick={onClick}
-      className={`bg-bg-secondary p-4 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer group relative ${isDragging ? 'opacity-50 z-50' : ''}`}
+      className={`bg-bg-secondary p-4 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer group relative ${isDragging ? 'opacity-50 z-50' : ''} ${isCompleted ? 'opacity-60' : ''}`}
       {...attributes}
       {...listeners}
     >
@@ -58,18 +59,36 @@ const TaskCard = ({ task, sortableId, onClick, onDelete }) => {
       >
         <Trash2 size={14} />
       </button>
-      <div className="flex gap-2 mb-3 flex-wrap">
-        {task.labels?.map((label) => (
-          <span
-            key={label.id}
-            className="px-2 py-0.5 text-[10px] font-bold rounded uppercase text-white"
-            style={{ backgroundColor: label.color }}
-          >
-            {label.name}
-          </span>
-        ))}
+      <div className="flex items-start gap-3 mb-3">
+        <label
+          onClick={(e) => e.stopPropagation()}
+          className="mt-0.5 shrink-0"
+        >
+          <input
+            type="checkbox"
+            checked={isCompleted}
+            onChange={(e) => {
+              e.stopPropagation();
+              onToggleComplete?.(task.id, isCompleted ? null : new Date().toISOString());
+            }}
+            className="w-4 h-4 rounded border-text-secondary accent-button cursor-pointer"
+          />
+        </label>
+        <div className="flex-1 min-w-0">
+          <div className="flex gap-2 flex-wrap">
+            {task.labels?.map((label) => (
+              <span
+                key={label.id}
+                className="px-2 py-0.5 text-[10px] font-bold rounded uppercase text-white"
+                style={{ backgroundColor: label.color }}
+              >
+                {label.name}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
-      <p className="text-sm text-text font-medium mb-4 group-hover:text-text-accent transition-colors">
+      <p className={`text-sm font-medium mb-4 transition-colors ${isCompleted ? 'text-text-secondary line-through' : 'text-text group-hover:text-text-accent'}`}>
         {task.name || task.title}
       </p>
       <div className="flex items-center justify-between">

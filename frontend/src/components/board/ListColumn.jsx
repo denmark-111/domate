@@ -21,7 +21,8 @@ const ListColumn = ({
   onSubmitTask,
   onDeleteList,
   onDeleteTask,
-  onSaveList
+  onSaveList,
+  onToggleComplete
 }) => {
   const [showDeleteList, setShowDeleteList] = useState(false);
   const [isDeletingList, setIsDeletingList] = useState(false);
@@ -156,6 +157,7 @@ const ListColumn = ({
               sortableId={taskSortableId(task.id)}
               onClick={() => onTaskClick(task)}
               onDelete={onDeleteTask}
+              onToggleComplete={onToggleComplete}
             />
           ))}
         </SortableContext>

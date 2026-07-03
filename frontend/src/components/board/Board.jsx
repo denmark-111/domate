@@ -197,7 +197,8 @@ const Board = () => {
     const payload = { 
       name: updatedTask.name || updatedTask.title, 
       description: updatedTask.description || '', 
-      dueDate: updatedTask.dueDate || null 
+      dueDate: updatedTask.dueDate || null,
+      completed: !!updatedTask.completedAt
     };
     if (updatedTask.attachments) {
       payload.attachments = updatedTask.attachments;
@@ -209,6 +210,36 @@ const Board = () => {
         tasks: column.tasks.map((t) => (t.id === updatedTask.id ? res.data : t))
       })));
       setSelectedTask(res.data);
+    }
+  };
+
+  const handleToggleComplete = async (taskId, completedAt) => {
+    let prevCompletedAt = null;
+    setData((prevData) => {
+      const snapshot = { completedAt: null };
+      const next = prevData.map((column) => ({
+        ...column,
+        tasks: column.tasks.map((t) => {
+          if (t.id === taskId) {
+            snapshot.completedAt = t.completedAt;
+            return { ...t, completedAt };
+          }
+          return t;
+        })
+      }));
+      prevCompletedAt = snapshot.completedAt;
+      return next;
+    });
+    setSelectedTask((prev) => prev?.id === taskId ? { ...prev, completedAt } : prev);
+    const res = await updateTask(taskId, { completed: !!completedAt });
+    if (!res.success) {
+      setData((prevData) => prevData.map((column) => ({
+        ...column,
+        tasks: column.tasks.map((t) =>
+          t.id === taskId ? { ...t, completedAt: prevCompletedAt } : t
+        )
+      })));
+      setSelectedTask((prev) => prev?.id === taskId ? { ...prev, completedAt: prevCompletedAt } : prev);
     }
   };
 
@@ -428,6 +459,7 @@ const Board = () => {
                         }
                       }}
                       onSaveList={handleSaveList}
+                      onToggleComplete={handleToggleComplete}
                     />
                   ))}
                 </SortableContext>
@@ -454,6 +486,7 @@ const Board = () => {
                       sortableId={`overlay-${activeTask.id}`}
                       onClick={() => {}}
                       onDelete={() => {}}
+                      onToggleComplete={() => {}}
                     />
                   </div>
                 ) : null}

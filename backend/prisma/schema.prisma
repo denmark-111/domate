@@ -114,6 +114,7 @@ model Task {
   description String?
   position    Int
   dueDate     DateTime? @db.Date
+  completedAt DateTime?
 
   listId      String    @db.Uuid
   list        List      @relation(fields: [listId], references: [id], onDelete: Cascade)
