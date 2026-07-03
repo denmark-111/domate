@@ -6,6 +6,7 @@ import { nestedRouter as boardRouter } from "./boardRoutes.js";
 import { nestedRouter as announcementRouter } from "./announcementRoutes.js";
 import { nestedRouter as chatRouter } from "./chatRoutes.js";
 import { nestedRouter as invitationRouter } from "./invitationRoutes.js";
+import { nestedRouter as memberRouter } from "./memberRoutes.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { requireWorkspaceMember, requireWorkspaceOwner } from "../middleware/authorize.js";
 
@@ -28,5 +29,8 @@ router.use('/:workspaceId/chat', validate(workspaceIdParamSchema), requireWorksp
 
 // mount nested invitation routes (owner-only — only owners see/manage invitations)
 router.use('/:workspaceId/invitations', validate(workspaceIdParamSchema), requireWorkspaceOwner, invitationRouter);
+
+// mount nested member routes (any workspace member can list members)
+router.use('/:workspaceId/members', validate(workspaceIdParamSchema), requireWorkspaceMember, memberRouter);
 
 export default router;

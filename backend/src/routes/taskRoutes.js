@@ -5,6 +5,7 @@ import { createTaskSchema, updateTaskSchema, taskIdParamSchema, moveTaskSchema }
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { requireTaskWorkspaceMember } from "../middleware/authorize.js";
 import { nestedRouter as commentRouter } from "./taskCommentRoutes.js";
+import { nestedRouter as taskAssignmentRouter } from "./taskAssignmentRoutes.js";
 
 export const router = express.Router();
 export const nestedRouter = express.Router({ mergeParams: true });
@@ -22,3 +23,6 @@ router.patch('/:taskId/move', validate(moveTaskSchema), requireTaskWorkspaceMemb
 
 // mount nested comment routes under /tasks/:taskId/comments
 router.use('/:taskId/comments', validate(taskIdParamSchema), requireTaskWorkspaceMember, commentRouter);
+
+// mount nested task assignment routes under /tasks/:taskId/assignees
+router.use('/:taskId/assignees', validate(taskIdParamSchema), requireTaskWorkspaceMember, taskAssignmentRouter);

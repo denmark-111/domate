@@ -10,7 +10,28 @@ const fullBoardInclude = {
                     _count: {
                         select: { comments: true }
                     },
-                    attachments: true
+                    attachments: true,
+                    assignments: {
+                        select: {
+                            id: true,
+                            userId: true,
+                            assignedById: true,
+                            user: {
+                                select: {
+                                    id: true,
+                                    email: true,
+                                    fullName: true,
+                                    avatarUrl: true
+                                }
+                            },
+                            assignedBy: {
+                                select: {
+                                    id: true,
+                                    fullName: true
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

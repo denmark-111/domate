@@ -123,9 +123,29 @@ model Task {
 
   comments    TaskComment[]
   attachments Attachment[]
+  assignments TaskAssignment[]
 
   @@index([listId])
   @@index([listId, position])
+}
+
+model TaskAssignment {
+  id        String   @id @default(uuid()) @db.Uuid
+
+  taskId    String   @db.Uuid
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  userId    String   @db.Uuid
+  user      User     @relation("TaskAssignees", fields: [userId], references: [id], onDelete: Cascade)
+
+  assignedById String @db.Uuid
+  assignedBy   User   @relation("AssignedTasks", fields: [assignedById], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([taskId, userId])
+  @@index([taskId])
+  @@index([userId])
 }
 
 model User {
@@ -142,6 +162,8 @@ model User {
   taskComments         TaskComment[]
   recentVisits         RecentVisit[]
   sentInvitations      Invitation[]      @relation("SentInvitations")
+  taskAssignments      TaskAssignment[]  @relation("TaskAssignees")
+  assignedTasks        TaskAssignment[]  @relation("AssignedTasks")
 
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
