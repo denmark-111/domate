@@ -243,6 +243,29 @@ const Board = () => {
     }
   };
 
+  const handleMoveTaskToList = async (taskId, targetListId) => {
+    let prevSnapshot = null;
+    setData((prevData) => {
+      prevSnapshot = prevData.map((col) => ({ ...col, tasks: [...col.tasks] }));
+      return prevData.map((col) => {
+        if (col.id === targetListId) {
+          const taskToMove = prevData.flatMap((c) => c.tasks).find((t) => t.id === taskId);
+          if (!taskToMove) return col;
+          const moved = { ...taskToMove, listId: targetListId, position: col.tasks.length };
+          return { ...col, tasks: [...col.tasks, moved] };
+        }
+        return { ...col, tasks: col.tasks.filter((t) => t.id !== taskId) };
+      });
+    });
+    setSelectedTask((prev) => prev?.id === taskId ? { ...prev, listId: targetListId } : prev);
+    const targetList = data.find((col) => col.id === targetListId);
+    const position = targetList ? targetList.tasks.length : 0;
+    const res = await moveTask(taskId, { listId: targetListId, position });
+    if (!res.success) {
+      if (prevSnapshot) setData(prevSnapshot);
+    }
+  };
+
   const handleAddList = async (listData) => {
     if (!activeBoard?.id) return;
     const res = await listService.createList(activeBoard.id, { name: listData.title });
@@ -582,6 +605,8 @@ const Board = () => {
         isOpen={isTaskModalOpen}
         onClose={() => setIsTaskModalOpen(false)}
         onUpdate={handleTaskUpdate}
+        lists={data}
+        onMoveTask={handleMoveTaskToList}
         onCommentChange={(taskId, delta) => {
           setData((prevData) =>
             prevData.map((column) => ({
