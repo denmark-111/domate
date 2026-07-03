@@ -99,9 +99,7 @@ const Tasks = () => {
   };
 
   const handleMoveTaskToList = async (taskId, targetListId) => {
-    const res = await taskService.getListTasks(targetListId);
-    const position = res.success ? res.data.length : 0;
-    const moveRes = await moveTask(taskId, { listId: targetListId, position });
+    const moveRes = await moveTask(taskId, { listId: targetListId });
     if (moveRes.success) {
       setTasks((prev) =>
         prev.map((a) =>

@@ -242,7 +242,7 @@ export const deleteTask = async (req, res, next) => {
 
 export const moveTask = async (req, res, next) => {
     const { taskId } = req.validated.params;
-    const { listId: targetListId, position: newPosition } = req.validated.body;
+    const { listId: targetListId, position: reqPosition } = req.validated.body;
 
     const task = await prisma.task.findUnique({
         where: { id: taskId },
@@ -264,6 +264,16 @@ export const moveTask = async (req, res, next) => {
     const sourceListId = task.listId;
     const oldPosition = task.position;
     const isSameList = sourceListId === targetListId;
+
+    // If position is not provided, auto-calculate as the end of the target list
+    let newPosition = reqPosition;
+    if (newPosition === undefined) {
+        const lastTask = await prisma.task.findFirst({
+            where: { listId: targetListId },
+            orderBy: { position: 'desc' }
+        });
+        newPosition = lastTask ? lastTask.position + 1 : 0;
+    }
 
     const updatedTask = await prisma.$transaction(async (tx) => {
         if (isSameList) {

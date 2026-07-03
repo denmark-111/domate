@@ -45,6 +45,6 @@ export const moveTaskSchema = z.object({
     }),
     body: z.object({
         listId: z.string().uuid("Invalid list ID format"),
-        position: z.number().int().min(0)
+        position: z.number().int().min(0).optional()
     })
 });
