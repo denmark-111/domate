@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { taskService, listService, labelService } from '../../services/index.js';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import TaskModal from '../board/TaskModal.jsx';
@@ -9,6 +9,7 @@ const Tasks = () => {
   const [activeTab, setActiveTab] = useState('active');
   const [tasks, setTasks] = useState([]);
   const [completedTasks, setCompletedTasks] = useState([]);
+  const [activePagination, setActivePagination] = useState(null);
   const [completedPagination, setCompletedPagination] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCompletedLoading, setIsCompletedLoading] = useState(false);
@@ -18,13 +19,20 @@ const Tasks = () => {
   const [updatingIds, setUpdatingIds] = useState(new Set());
   const [boardLists, setBoardLists] = useState([]);
   const [boardLabels, setBoardLabels] = useState([]);
+  const scrollContainerRef = useRef(null);
+  const sentinelRef = useRef(null);
 
-  const fetchTasks = useCallback(async () => {
+  const fetchTasks = useCallback(async (page = 1) => {
     setIsLoading(true);
     setError(null);
-    const res = await taskService.getMyTasks();
+    const res = await taskService.getMyTasks({ status: 'active', page, limit: 15 });
     if (res.success) {
-      setTasks(res.data);
+      if (page === 1) {
+        setTasks(res.data);
+      } else {
+        setTasks(prev => [...prev, ...res.data]);
+      }
+      setActivePagination(res.pagination);
     } else {
       setError(res.error);
     }
@@ -32,9 +40,9 @@ const Tasks = () => {
   }, []);
 
   const fetchCompletedTasks = useCallback(async (page = 1) => {
-    if (page === 1) setIsCompletedLoading(true);
+    setIsCompletedLoading(true);
     setError(null);
-    const res = await taskService.getMyTasks({ status: 'completed', page, limit: 25, weeks: 12 });
+    const res = await taskService.getMyTasks({ status: 'completed', page, limit: 15, weeks: 12 });
     if (res.success) {
       if (page === 1) {
         setCompletedTasks(res.data);
@@ -49,31 +57,50 @@ const Tasks = () => {
   }, []);
 
   useEffect(() => {
-    fetchTasks();
+    fetchTasks(1);
   }, [fetchTasks]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
+    setError(null);
     if (tab === 'completed') {
       setIsCompletedLoading(true);
-      setError(null);
       fetchCompletedTasks(1);
+    } else if (tab === 'active' && !activePagination) {
+      setIsLoading(true);
+      fetchTasks(1);
     }
   };
 
-  const handleToggleComplete = async (assignmentId, taskId, completedAt) => {
+  const handleToggleComplete = async (assignment, completedAt) => {
+    const taskId = assignment.task.id;
     setUpdatingIds((prev) => new Set(prev).add(taskId));
     const res = await updateTask(taskId, { completed: !!completedAt });
     if (res.success) {
       setTasks((prev) =>
         completedAt
-          ? prev.filter((a) => a.id !== assignmentId)
+          ? prev.filter((a) => a.id !== assignment.id)
           : prev.map((a) =>
               a.task.id === taskId
                 ? { ...a, task: { ...a.task, completedAt: null } }
                 : a
           )
       );
+      setCompletedTasks((prev) =>
+        completedAt
+          ? [{ ...assignment, task: { ...assignment.task, completedAt } }, ...prev]
+          : prev.filter((a) => a.id !== assignment.id)
+      );
+      setActivePagination((prev) => {
+        if (!prev) return prev;
+        const total = prev.total - 1;
+        return { ...prev, total, hasMore: prev.page * prev.limit < total };
+      });
+      setCompletedPagination((prev) => {
+        if (!prev) return prev;
+        const total = prev.total + 1;
+        return { ...prev, total, hasMore: prev.page * prev.limit < total };
+      });
     }
     setUpdatingIds((prev) => {
       const next = new Set(prev);
@@ -91,6 +118,16 @@ const Tasks = () => {
         { ...assignment, task: res.data },
         ...prev,
       ]);
+      setActivePagination((prev) => {
+        if (!prev) return prev;
+        const total = prev.total + 1;
+        return { ...prev, total, hasMore: prev.page * prev.limit < total };
+      });
+      setCompletedPagination((prev) => {
+        if (!prev) return prev;
+        const total = prev.total - 1;
+        return { ...prev, total, hasMore: prev.page * prev.limit < total };
+      });
     }
     setUpdatingIds((prev) => {
       const next = new Set(prev);
@@ -99,11 +136,32 @@ const Tasks = () => {
     });
   };
 
-  const handleLoadMore = () => {
-    if (completedPagination?.hasMore && !isCompletedLoading) {
-      fetchCompletedTasks(completedPagination.page + 1);
-    }
-  };
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    const container = scrollContainerRef.current;
+    if (!sentinel || !container) return;
+
+    const pagination = activeTab === 'active' ? activePagination : completedPagination;
+    const isLoadingState = activeTab === 'active' ? isLoading : isCompletedLoading;
+
+    if (!pagination?.hasMore || isLoadingState) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          if (activeTab === 'active') {
+            fetchTasks(pagination.page + 1);
+          } else {
+            fetchCompletedTasks(pagination.page + 1);
+          }
+        }
+      },
+      { root: container, rootMargin: '200px' }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [activeTab, activePagination, completedPagination, isLoading, isCompletedLoading, fetchTasks, fetchCompletedTasks]);
 
   const normalizeTask = (task) => ({
     ...task,
@@ -234,7 +292,7 @@ const Tasks = () => {
                 if (isCompleted) {
                   handleToggleUncomplete(assignment, task.id);
                 } else {
-                  handleToggleComplete(assignment.id, task.id, e.target.checked ? new Date().toISOString() : null);
+                  handleToggleComplete(assignment, e.target.checked ? new Date().toISOString() : null);
                 }
               }}
               className="w-5 h-5 rounded-full border-text-secondary accent-button cursor-pointer disabled:opacity-50"
@@ -299,44 +357,18 @@ const Tasks = () => {
     );
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex-1 overflow-y-auto p-8 bg-bg-secondary">
-        <div className="max-w-4xl mx-auto w-full flex items-center justify-center py-20">
-          <Loader size={24} className="text-text-accent animate-spin" />
-        </div>
-      </div>
-    );
-  }
-
-  if (error && activeTab === 'active') {
-    return (
-      <div className="flex-1 overflow-y-auto p-8 bg-bg-secondary">
-        <div className="max-w-4xl mx-auto w-full text-center py-20">
-          <p className="text-red-500">Failed to load tasks: {error}</p>
-          <button
-            onClick={fetchTasks}
-            className="mt-4 px-4 py-2 bg-button text-white text-sm font-medium rounded hover:bg-button-hover transition-colors"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   const listItems = activeTab === 'active' ? tasks : completedTasks;
   const isEmpty = listItems.length === 0;
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 bg-bg-secondary">
+    <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-8 bg-bg-secondary">
       <div className="max-w-4xl mx-auto w-full">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-text">Your Unified Task List</h1>
           <p className="text-text-secondary">All tasks assigned to you across all workspaces.</p>
         </div>
 
-        <div className="flex gap-6 mb-6 border-b border-border">
+        <div className="flex gap-6 border-b border-border">
           <button
             onClick={() => handleTabChange('active')}
             className={`pb-3 text-sm font-semibold transition-colors ${
@@ -359,9 +391,39 @@ const Tasks = () => {
           </button>
         </div>
 
+        {activeTab === 'active' && activePagination && (
+          <p className="text-xs text-text-secondary mt-6 mb-2">
+            {activePagination.total} active task{activePagination.total !== 1 ? 's' : ''}
+          </p>
+        )}
+
+        {activeTab === 'completed' && completedPagination && (
+          <p className="text-xs text-text-secondary mt-6 mb-2">
+            {completedPagination.total} completed task{completedPagination.total !== 1 ? 's' : ''}
+          </p>
+        )}
+
+        {activeTab === 'active' && isLoading && tasks.length === 0 && (
+          <div className="flex items-center justify-center py-20">
+            <Loader size={24} className="text-text-accent animate-spin" />
+          </div>
+        )}
+
         {activeTab === 'completed' && isCompletedLoading && completedTasks.length === 0 && (
           <div className="flex items-center justify-center py-20">
             <Loader size={24} className="text-text-accent animate-spin" />
+          </div>
+        )}
+
+        {activeTab === 'active' && error && (
+          <div className="text-center py-20">
+            <p className="text-red-500">Failed to load tasks: {error}</p>
+            <button
+              onClick={() => fetchTasks(1)}
+              className="mt-4 px-4 py-2 bg-button text-white text-sm font-medium rounded hover:bg-button-hover transition-colors"
+            >
+              Retry
+            </button>
           </div>
         )}
 
@@ -377,7 +439,7 @@ const Tasks = () => {
           </div>
         )}
 
-        {!isCompletedLoading && isEmpty && !error && (
+        {(activeTab === 'active' ? !isLoading : !isCompletedLoading) && isEmpty && !error && (
           <div className="text-center py-20">
             <p className="text-text-secondary">
               {activeTab === 'active' ? "No pending tasks. You're all caught up!" : 'No completed tasks in the last 12 weeks.'}
@@ -391,27 +453,16 @@ const Tasks = () => {
           </div>
         )}
 
-        {activeTab === 'completed' && completedPagination?.hasMore && (
-          <div className="flex justify-center mt-6">
-            <button
-              onClick={handleLoadMore}
-              disabled={isCompletedLoading}
-              className="px-6 py-2 bg-button text-white text-sm font-medium rounded hover:bg-button-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              {isCompletedLoading ? (
-                <Loader size={16} className="animate-spin" />
-              ) : (
-                'Load More'
-              )}
-            </button>
+        {!isEmpty && !error && (
+          <div ref={sentinelRef} className="h-4" />
+        )}
+
+        {(activeTab === 'active' ? isLoading : isCompletedLoading) && !isEmpty && (
+          <div className="flex justify-center py-6">
+            <Loader size={20} className="animate-spin text-text-accent" />
           </div>
         )}
 
-        {activeTab === 'completed' && completedPagination && (
-          <p className="text-center text-xs text-text-secondary mt-3">
-            Showing {completedTasks.length} of {completedPagination.total} completed tasks
-          </p>
-        )}
       </div>
 
       <TaskModal
