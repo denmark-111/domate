@@ -1,10 +1,24 @@
 import { apiCall, API_BASE_URL, getAuthHeaders } from './apiConfig.js';
 
 export const taskService = {
-  getMyTasks: async () => {
+  getMyTasks: async (params = {}) => {
     try {
-      const data = await apiCall('/tasks/my');
-      return { success: true, data };
+      const query = new URLSearchParams();
+      if (params.status) query.set('status', params.status);
+      if (params.page) query.set('page', params.page);
+      if (params.limit) query.set('limit', params.limit);
+      if (params.weeks) query.set('weeks', params.weeks);
+      const qs = query.toString();
+      const endpoint = `/tasks/my${qs ? '?' + qs : ''}`;
+
+      const headers = await getAuthHeaders();
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, { headers });
+      if (!response.ok) {
+        const body = await response.text().catch(() => null);
+        throw new Error(body ? `API error: ${response.status} - ${body}` : `API error: ${response.status}`);
+      }
+      const json = await response.json();
+      return { success: true, data: json.data, pagination: json.pagination };
     } catch (error) {
       console.error('Error in getMyTasks:', error);
       return { success: false, error: error.message };

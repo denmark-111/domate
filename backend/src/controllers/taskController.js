@@ -49,26 +49,41 @@ const validateAttachmentPaths = (attachments, workspaceId) => {
 
 export const getMyTasks = async (req, res, next) => {
     const userId = req.supabase.user.id;
+    const { status, page, limit, weeks } = req.validated.query;
 
-    const assignments = await prisma.taskAssignment.findMany({
-        where: {
-            userId,
-            task: {
-                completedAt: null
-            }
-        },
-        include: {
-            task: {
-                include: {
-                    ...fullTaskInclude,
-                    list: {
-                        include: {
-                            board: {
-                                include: {
-                                    workspace: {
-                                        select: {
-                                            id: true,
-                                            name: true
+    const where = {
+        userId,
+        task: {}
+    };
+
+    if (status === 'active') {
+        where.task.completedAt = null;
+    } else {
+        const cutoff = new Date();
+        cutoff.setDate(cutoff.getDate() - weeks * 7);
+        where.task.completedAt = { gte: cutoff };
+    }
+
+    const orderBy = status === 'completed'
+        ? { task: { completedAt: 'desc' } }
+        : { task: { updatedAt: 'desc' } };
+
+    const [assignments, total] = await Promise.all([
+        prisma.taskAssignment.findMany({
+            where,
+            include: {
+                task: {
+                    include: {
+                        ...fullTaskInclude,
+                        list: {
+                            include: {
+                                board: {
+                                    include: {
+                                        workspace: {
+                                            select: {
+                                                id: true,
+                                                name: true
+                                            }
                                         }
                                     }
                                 }
@@ -76,17 +91,22 @@ export const getMyTasks = async (req, res, next) => {
                         }
                     }
                 }
-            }
-        },
-        orderBy: {
-            task: {
-                updatedAt: 'desc'
-            }
-        }
-    });
+            },
+            orderBy,
+            skip: (page - 1) * limit,
+            take: limit
+        }),
+        prisma.taskAssignment.count({ where })
+    ]);
 
     res.status(200).json({
-        data: assignments
+        data: assignments,
+        pagination: {
+            page,
+            limit,
+            total,
+            hasMore: page * limit < total
+        }
     });
 };
 

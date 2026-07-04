@@ -6,8 +6,12 @@ import { Calendar, MessageSquare, Paperclip, Loader } from 'lucide-react';
 
 const Tasks = () => {
   const { updateTask, moveTask } = useWorkspace();
+  const [activeTab, setActiveTab] = useState('active');
   const [tasks, setTasks] = useState([]);
+  const [completedTasks, setCompletedTasks] = useState([]);
+  const [completedPagination, setCompletedPagination] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCompletedLoading, setIsCompletedLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -27,9 +31,35 @@ const Tasks = () => {
     setIsLoading(false);
   }, []);
 
+  const fetchCompletedTasks = useCallback(async (page = 1) => {
+    if (page === 1) setIsCompletedLoading(true);
+    setError(null);
+    const res = await taskService.getMyTasks({ status: 'completed', page, limit: 25, weeks: 12 });
+    if (res.success) {
+      if (page === 1) {
+        setCompletedTasks(res.data);
+      } else {
+        setCompletedTasks(prev => [...prev, ...res.data]);
+      }
+      setCompletedPagination(res.pagination);
+    } else {
+      setError(res.error);
+    }
+    setIsCompletedLoading(false);
+  }, []);
+
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    if (tab === 'completed') {
+      setIsCompletedLoading(true);
+      setError(null);
+      fetchCompletedTasks(1);
+    }
+  };
 
   const handleToggleComplete = async (assignmentId, taskId, completedAt) => {
     setUpdatingIds((prev) => new Set(prev).add(taskId));
@@ -42,7 +72,7 @@ const Tasks = () => {
               a.task.id === taskId
                 ? { ...a, task: { ...a.task, completedAt: null } }
                 : a
-            )
+          )
       );
     }
     setUpdatingIds((prev) => {
@@ -50,6 +80,29 @@ const Tasks = () => {
       next.delete(taskId);
       return next;
     });
+  };
+
+  const handleToggleUncomplete = async (assignment, taskId) => {
+    setUpdatingIds((prev) => new Set(prev).add(taskId));
+    const res = await updateTask(taskId, { completed: false });
+    if (res.success) {
+      setCompletedTasks((prev) => prev.filter((a) => a.id !== assignment.id));
+      setTasks((prev) => [
+        { ...assignment, task: res.data },
+        ...prev,
+      ]);
+    }
+    setUpdatingIds((prev) => {
+      const next = new Set(prev);
+      next.delete(taskId);
+      return next;
+    });
+  };
+
+  const handleLoadMore = () => {
+    if (completedPagination?.hasMore && !isCompletedLoading) {
+      fetchCompletedTasks(completedPagination.page + 1);
+    }
   };
 
   const normalizeTask = (task) => ({
@@ -92,18 +145,29 @@ const Tasks = () => {
     const res = await updateTask(updatedTask.id, payload);
     if (res.success) {
       const normalized = normalizeTask(res.data);
-      setTasks((prev) =>
-        prev.map((a) =>
-          a.task.id === updatedTask.id
-            ? { ...a, task: normalized }
-            : a
-        )
-      );
       setSelectedTask(normalized);
 
-      if (normalized.completedAt) {
-        setTasks((prev) => prev.filter((a) => a.task.id !== updatedTask.id));
-      }
+      setTasks((prev) => {
+        const inActive = prev.some((a) => a.task.id === updatedTask.id);
+        if (!inActive) return prev;
+        if (normalized.completedAt) {
+          return prev.filter((a) => a.task.id !== updatedTask.id);
+        }
+        return prev.map((a) =>
+          a.task.id === updatedTask.id ? { ...a, task: normalized } : a
+        );
+      });
+
+      setCompletedTasks((prev) => {
+        const inCompleted = prev.some((a) => a.task.id === updatedTask.id);
+        if (!inCompleted) return prev;
+        if (!normalized.completedAt) {
+          return prev.filter((a) => a.task.id !== updatedTask.id);
+        }
+        return prev.map((a) =>
+          a.task.id === updatedTask.id ? { ...a, task: normalized } : a
+        );
+      });
     }
     return res;
   };
@@ -112,6 +176,13 @@ const Tasks = () => {
     const moveRes = await moveTask(taskId, { listId: targetListId });
     if (moveRes.success) {
       setTasks((prev) =>
+        prev.map((a) =>
+          a.task.id === taskId
+            ? { ...a, task: { ...a.task, listId: targetListId } }
+            : a
+        )
+      );
+      setCompletedTasks((prev) =>
         prev.map((a) =>
           a.task.id === taskId
             ? { ...a, task: { ...a.task, listId: targetListId } }
@@ -141,6 +212,93 @@ const Tasks = () => {
     return name.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
+  const renderTaskRow = (assignment, isCompleted) => {
+    const task = assignment.task;
+    const due = dueLabel(task.dueDate);
+    const commentCount = task._count?.comments ?? 0;
+    const isUpdating = updatingIds.has(task.id);
+    return (
+      <div
+        key={assignment.id}
+        className="bg-bg-secondary p-4 rounded-xl border border-border shadow-sm flex items-center justify-between group hover:border-input-border-focus transition-colors cursor-pointer"
+        onClick={() => openModal(assignment)}
+      >
+        <div className="flex items-center gap-4 min-w-0 flex-1">
+          <label onClick={(e) => e.stopPropagation()} className="shrink-0">
+            <input
+              type="checkbox"
+              checked={isCompleted}
+              disabled={isUpdating}
+              onChange={(e) => {
+                e.stopPropagation();
+                if (isCompleted) {
+                  handleToggleUncomplete(assignment, task.id);
+                } else {
+                  handleToggleComplete(assignment.id, task.id, e.target.checked ? new Date().toISOString() : null);
+                }
+              }}
+              className="w-5 h-5 rounded-full border-text-secondary accent-button cursor-pointer disabled:opacity-50"
+            />
+          </label>
+          <div className="min-w-0 flex-1">
+            <p className={`text-sm font-bold truncate ${isUpdating ? 'opacity-50' : ''} ${isCompleted ? 'line-through text-text-secondary' : 'text-text'}`}>
+              {task.name}
+            </p>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <span className="text-[10px] font-bold text-text-accent bg-input-bg px-2 py-0.5 rounded">
+                {task.list?.board?.workspace?.name || 'Workspace'}
+              </span>
+              <span className="text-[10px] font-medium text-text-secondary">•</span>
+              <span className="text-[10px] font-medium text-text-secondary">
+                {task.list?.board?.name || 'Board'}
+              </span>
+              {commentCount > 0 && (
+                <span className="flex items-center gap-1 text-[10px] text-text-secondary">
+                  <MessageSquare size={10} />
+                  {commentCount}
+                </span>
+              )}
+              {task.attachments?.length > 0 && (
+                <span className="flex items-center gap-1 text-[10px] text-text-secondary">
+                  <Paperclip size={10} />
+                  {task.attachments.length}
+                </span>
+              )}
+            </div>
+          </div>
+          {task.assignments?.length > 0 && (
+            <div className="hidden sm:flex items-center shrink-0" title={task.assignments.map(a => a.user?.fullName || a.user?.email || '?').join(', ')}>
+              {task.assignments.slice(0, 3).map((a, i, arr) => (
+                <div
+                  key={a.userId}
+                  className="w-6 h-6 rounded-full bg-button border-2 border-bg-secondary flex items-center justify-center text-[8px] text-white font-bold -ml-[6px] first:ml-0 overflow-hidden"
+                  style={{ zIndex: arr.length - i }}
+                >
+                  {getInitials(a.user?.fullName || a.user?.email)}
+                </div>
+              ))}
+              {task.assignments.length > 3 && (
+                <div className="w-6 h-6 rounded-full bg-bg-tertiary border-2 border-bg-secondary flex items-center justify-center text-[8px] text-text-secondary font-bold -ml-[6px]">
+                  +{task.assignments.length - 3}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        <div className="flex items-center gap-3 shrink-0 ml-4">
+          {due && (
+            <span className={`text-xs font-semibold whitespace-nowrap transition-colors ${
+              due.urgent ? 'text-red-500' : 'text-text-secondary group-hover:text-text-accent'
+            }`}>
+              <Calendar size={12} className="inline mr-1" />
+              {due.text}
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="flex-1 overflow-y-auto p-8 bg-bg-secondary">
@@ -151,7 +309,7 @@ const Tasks = () => {
     );
   }
 
-  if (error) {
+  if (error && activeTab === 'active') {
     return (
       <div className="flex-1 overflow-y-auto p-8 bg-bg-secondary">
         <div className="max-w-4xl mx-auto w-full text-center py-20">
@@ -167,6 +325,9 @@ const Tasks = () => {
     );
   }
 
+  const listItems = activeTab === 'active' ? tasks : completedTasks;
+  const isEmpty = listItems.length === 0;
+
   return (
     <div className="flex-1 overflow-y-auto p-8 bg-bg-secondary">
       <div className="max-w-4xl mx-auto w-full">
@@ -175,99 +336,81 @@ const Tasks = () => {
           <p className="text-text-secondary">All tasks assigned to you across all workspaces.</p>
         </div>
 
-        {tasks.length === 0 ? (
+        <div className="flex gap-6 mb-6 border-b border-border">
+          <button
+            onClick={() => handleTabChange('active')}
+            className={`pb-3 text-sm font-semibold transition-colors ${
+              activeTab === 'active'
+                ? 'text-text border-b-2 border-button'
+                : 'text-text-secondary hover:text-text'
+            }`}
+          >
+            Active
+          </button>
+          <button
+            onClick={() => handleTabChange('completed')}
+            className={`pb-3 text-sm font-semibold transition-colors ${
+              activeTab === 'completed'
+                ? 'text-text border-b-2 border-button'
+                : 'text-text-secondary hover:text-text'
+            }`}
+          >
+            Completed
+          </button>
+        </div>
+
+        {activeTab === 'completed' && isCompletedLoading && completedTasks.length === 0 && (
+          <div className="flex items-center justify-center py-20">
+            <Loader size={24} className="text-text-accent animate-spin" />
+          </div>
+        )}
+
+        {activeTab === 'completed' && error && (
           <div className="text-center py-20">
-            <p className="text-text-secondary">No pending tasks. You're all caught up!</p>
+            <p className="text-red-500">Failed to load completed tasks: {error}</p>
+            <button
+              onClick={() => fetchCompletedTasks(1)}
+              className="mt-4 px-4 py-2 bg-button text-white text-sm font-medium rounded hover:bg-button-hover transition-colors"
+            >
+              Retry
+            </button>
           </div>
-        ) : (
+        )}
+
+        {!isCompletedLoading && isEmpty && !error && (
+          <div className="text-center py-20">
+            <p className="text-text-secondary">
+              {activeTab === 'active' ? "No pending tasks. You're all caught up!" : 'No completed tasks in the last 12 weeks.'}
+            </p>
+          </div>
+        )}
+
+        {!isEmpty && !error && (
           <div className="space-y-4">
-            {tasks.map((assignment) => {
-              const task = assignment.task;
-              const due = dueLabel(task.dueDate);
-              const commentCount = task._count?.comments ?? 0;
-              const isUpdating = updatingIds.has(task.id);
-              return (
-                <div
-                  key={assignment.id}
-                  className="bg-bg-secondary p-4 rounded-xl border border-border shadow-sm flex items-center justify-between group hover:border-input-border-focus transition-colors cursor-pointer"
-                  onClick={() => openModal(assignment)}
-                >
-                  <div className="flex items-center gap-4 min-w-0 flex-1">
-                    <label onClick={(e) => e.stopPropagation()} className="shrink-0">
-                      <input
-                        type="checkbox"
-                        checked={!!task.completedAt}
-                        disabled={isUpdating}
-                        onChange={(e) => {
-                          e.stopPropagation();
-                          handleToggleComplete(
-                            assignment.id,
-                            task.id,
-                            e.target.checked ? new Date().toISOString() : null
-                          );
-                        }}
-                        className="w-5 h-5 rounded-full border-text-secondary accent-button cursor-pointer disabled:opacity-50"
-                      />
-                    </label>
-                    <div className="min-w-0 flex-1">
-                      <p className={`text-sm font-bold text-text truncate ${isUpdating ? 'opacity-50' : ''}`}>
-                        {task.name}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <span className="text-[10px] font-bold text-text-accent bg-input-bg px-2 py-0.5 rounded">
-                          {task.list?.board?.workspace?.name || 'Workspace'}
-                        </span>
-                        <span className="text-[10px] font-medium text-text-secondary">•</span>
-                        <span className="text-[10px] font-medium text-text-secondary">
-                          {task.list?.board?.name || 'Board'}
-                        </span>
-                        {commentCount > 0 && (
-                          <span className="flex items-center gap-1 text-[10px] text-text-secondary">
-                            <MessageSquare size={10} />
-                            {commentCount}
-                          </span>
-                        )}
-                        {task.attachments?.length > 0 && (
-                          <span className="flex items-center gap-1 text-[10px] text-text-secondary">
-                            <Paperclip size={10} />
-                            {task.attachments.length}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    {task.assignments?.length > 0 && (
-                      <div className="hidden sm:flex items-center shrink-0" title={task.assignments.map(a => a.user?.fullName || a.user?.email || '?').join(', ')}>
-                        {task.assignments.slice(0, 3).map((a, i, arr) => (
-                          <div
-                            key={a.userId}
-                            className="w-6 h-6 rounded-full bg-button border-2 border-bg-secondary flex items-center justify-center text-[8px] text-white font-bold -ml-[6px] first:ml-0 overflow-hidden"
-                            style={{ zIndex: arr.length - i }}
-                          >
-                            {getInitials(a.user?.fullName || a.user?.email)}
-                          </div>
-                        ))}
-                        {task.assignments.length > 3 && (
-                          <div className="w-6 h-6 rounded-full bg-bg-tertiary border-2 border-bg-secondary flex items-center justify-center text-[8px] text-text-secondary font-bold -ml-[6px]">
-                            +{task.assignments.length - 3}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0 ml-4">
-                    {due && (
-                      <span className={`text-xs font-semibold whitespace-nowrap transition-colors ${
-                        due.urgent ? 'text-red-500' : 'text-text-secondary group-hover:text-text-accent'
-                      }`}>
-                        <Calendar size={12} className="inline mr-1" />
-                        {due.text}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+            {listItems.map((assignment) => renderTaskRow(assignment, activeTab === 'completed'))}
           </div>
+        )}
+
+        {activeTab === 'completed' && completedPagination?.hasMore && (
+          <div className="flex justify-center mt-6">
+            <button
+              onClick={handleLoadMore}
+              disabled={isCompletedLoading}
+              className="px-6 py-2 bg-button text-white text-sm font-medium rounded hover:bg-button-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isCompletedLoading ? (
+                <Loader size={16} className="animate-spin" />
+              ) : (
+                'Load More'
+              )}
+            </button>
+          </div>
+        )}
+
+        {activeTab === 'completed' && completedPagination && (
+          <p className="text-center text-xs text-text-secondary mt-3">
+            Showing {completedTasks.length} of {completedPagination.total} completed tasks
+          </p>
         )}
       </div>
 

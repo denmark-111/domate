@@ -48,3 +48,12 @@ export const moveTaskSchema = z.object({
         position: z.number().int().min(0).optional()
     })
 });
+
+export const getMyTasksQuerySchema = z.object({
+    query: z.object({
+        status: z.enum(['active', 'completed']).default('active'),
+        page: z.coerce.number().int().min(1).default(1),
+        limit: z.coerce.number().int().min(1).max(100).default(25),
+        weeks: z.coerce.number().int().min(1).max(52).default(12)
+    })
+});
