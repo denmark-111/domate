@@ -204,7 +204,18 @@ export const updateTask = async (req, res, next) => {
     };
 
     if (completed !== undefined) {
-        data.completedAt = completed ? new Date() : null;
+        // Only update completedAt when the completion status actually changes.
+        // This prevents re-setting completedAt to now() when a user merely edits
+        // the name/description of an already-completed task, which would otherwise
+        // bump it to the top of the "completed" list (ordered by completedAt DESC).
+        const existing = await prisma.task.findUnique({
+            where: { id: taskId },
+            select: { completedAt: true }
+        });
+        const isCurrentlyCompleted = existing?.completedAt !== null;
+        if (completed !== isCurrentlyCompleted) {
+            data.completedAt = completed ? new Date() : null;
+        }
     }
 
     // "attachments" present => full replacement of the set (existing rows deleted, the
