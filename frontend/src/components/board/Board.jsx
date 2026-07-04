@@ -19,8 +19,14 @@ import TaskModal from './TaskModal';
 import ListColumn from './ListColumn';
 import TaskCard from './TaskCard';
 import { useWorkspace } from '../../context/WorkspaceContext';
-import { boardService, listService, taskService } from '../../services/index.js';
-import { Info } from 'lucide-react';
+import { boardService, listService, taskService, labelService } from '../../services/index.js';
+import { Info, Tag, Plus, X, Check, Pencil } from 'lucide-react';
+
+const LABEL_COLORS = [
+  '#61BD4F', '#F2D600', '#FF9F1A', '#EB5A46',
+  '#C377E0', '#0079BF', '#00C2E0', '#51E898',
+  '#FF78CB', '#B3BAC5',
+];
 
 const listSortableId = (listId) => `list:${listId}`;
 const taskSortableId = (taskId) => `task:${taskId}`;
@@ -124,6 +130,7 @@ const Board = () => {
         try {
           const res = await boardService.getBoardById(activeBoard.id);
           if (res.success && res.data) {
+            setBoardLabels(res.data.labels || []);
             const formattedLists = (res.data.lists || [])
               .sort((a, b) => a.position - b.position)
               .map((list) => ({
@@ -132,7 +139,11 @@ const Board = () => {
                 position: list.position,
                 tasks: (list.tasks || [])
                   .sort((a, b) => a.position - b.position)
-                  .map((task) => ({ ...task, listId: list.id }))
+                  .map((task) => ({
+                    ...task,
+                    listId: list.id,
+                    labels: (task.taskLabels || []).map(tl => tl.boardLabel)
+                  }))
               }));
             setData(formattedLists);
           } else {
@@ -155,6 +166,17 @@ const Board = () => {
   const [boardForm, setBoardForm] = useState({ name: '', description: '' });
   const [isSavingBoard, setIsSavingBoard] = useState(false);
   const [boardError, setBoardError] = useState('');
+  const [boardDetailTab, setBoardDetailTab] = useState('details');
+
+  // Label management state
+  const [boardLabels, setBoardLabels] = useState([]);
+  const [editingLabelId, setEditingLabelId] = useState(null);
+  const [editLabelName, setEditLabelName] = useState('');
+  const [editLabelColor, setEditLabelColor] = useState('');
+  const [newLabelName, setNewLabelName] = useState('');
+  const [newLabelColor, setNewLabelColor] = useState(LABEL_COLORS[0]);
+  const [showNewLabelForm, setShowNewLabelForm] = useState(false);
+  const [isSavingLabel, setIsSavingLabel] = useState(false);
 
   useEffect(() => {
     setEditingBoard(false);
@@ -173,7 +195,7 @@ const Board = () => {
   const handleSubmitTask = async (listId, taskData) => {
     const res = await taskService.createTask(listId, { name: taskData.title, description: '' });
     if (res.success) {
-      const newTask = res.data;
+      const newTask = normalizeTask(res.data);
       setData((prevData) =>
         prevData.map((col) => {
           if (col.id === listId) {
@@ -193,6 +215,11 @@ const Board = () => {
     setIsTaskModalOpen(true);
   };
 
+  const normalizeTask = (task) => ({
+    ...task,
+    labels: (task.taskLabels || []).map(tl => tl.boardLabel)
+  });
+
   const handleTaskUpdate = async (updatedTask) => {
     const payload = { 
       name: updatedTask.name || updatedTask.title, 
@@ -205,11 +232,12 @@ const Board = () => {
     }
     const res = await updateTask(updatedTask.id, payload);
     if (res.success) {
+      const normalized = normalizeTask(res.data);
       setData((prevData) => prevData.map((column) => ({
         ...column,
-        tasks: column.tasks.map((t) => (t.id === updatedTask.id ? res.data : t))
+        tasks: column.tasks.map((t) => (t.id === updatedTask.id ? normalized : t))
       })));
-      setSelectedTask(res.data);
+      setSelectedTask(normalized);
     }
   };
 
@@ -232,7 +260,16 @@ const Board = () => {
     });
     setSelectedTask((prev) => prev?.id === taskId ? { ...prev, completedAt } : prev);
     const res = await updateTask(taskId, { completed: !!completedAt });
-    if (!res.success) {
+    if (res.success) {
+      const normalized = normalizeTask(res.data);
+      setData((prevData) => prevData.map((column) => ({
+        ...column,
+        tasks: column.tasks.map((t) =>
+          t.id === taskId ? normalized : t
+        )
+      })));
+      setSelectedTask(normalized);
+    } else {
       setData((prevData) => prevData.map((column) => ({
         ...column,
         tasks: column.tasks.map((t) =>
@@ -417,6 +454,52 @@ const Board = () => {
     }
   };
 
+  // Label CRUD handlers
+  const handleCreateLabel = async (e) => {
+    e.preventDefault();
+    if (!newLabelName.trim() || !activeBoard?.id) return;
+    setIsSavingLabel(true);
+    const res = await labelService.createBoardLabel(activeBoard.id, {
+      name: newLabelName.trim(),
+      color: newLabelColor,
+    });
+    if (res.success) {
+      setBoardLabels(prev => [...prev, res.data]);
+      setNewLabelName('');
+      setNewLabelColor(LABEL_COLORS[0]);
+      setShowNewLabelForm(false);
+    }
+    setIsSavingLabel(false);
+  };
+
+  const handleStartEditLabel = (label) => {
+    setEditingLabelId(label.id);
+    setEditLabelName(label.name);
+    setEditLabelColor(label.color);
+  };
+
+  const handleSaveEditLabel = async (labelId) => {
+    if (!editLabelName.trim() || !activeBoard?.id) return;
+    setIsSavingLabel(true);
+    const res = await labelService.updateBoardLabel(activeBoard.id, labelId, {
+      name: editLabelName.trim(),
+      color: editLabelColor,
+    });
+    if (res.success) {
+      setBoardLabels(prev => prev.map(l => l.id === labelId ? res.data : l));
+      setEditingLabelId(null);
+    }
+    setIsSavingLabel(false);
+  };
+
+  const handleDeleteLabel = async (labelId) => {
+    if (!activeBoard?.id) return;
+    const res = await labelService.deleteBoardLabel(activeBoard.id, labelId);
+    if (res.success) {
+      setBoardLabels(prev => prev.filter(l => l.id !== labelId));
+    }
+  };
+
   return (
     <>
       <section className="flex-1 min-h-0 flex flex-col overflow-x-auto bg-bg-secondary">
@@ -521,81 +604,248 @@ const Board = () => {
 
       {isBoardDetailOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onPointerDown={handleBoardDetailBackdropPointerDown}>
-          <div className="bg-bg border border-border rounded-xl shadow-xl w-full max-w-lg mx-4">
-            {!editingBoard ? (
-              <div className="p-6 space-y-4">
-                <div>
-                  <h2 className="text-xl font-extrabold text-text">{activeBoard?.name}</h2>
-                  {activeBoard?.description ? (
-                    <p className="mt-2 text-sm text-text-secondary whitespace-pre-wrap">{activeBoard.description}</p>
+          <div className="bg-bg border border-border rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[80vh] flex flex-col">
+            {/* Tab bar */}
+            <div className="flex border-b border-border shrink-0">
+              <button
+                onClick={() => setBoardDetailTab('details')}
+                className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                  boardDetailTab === 'details'
+                    ? 'text-text border-b-2 border-accent'
+                    : 'text-text-secondary hover:text-text'
+                }`}
+              >
+                Details
+              </button>
+              <button
+                onClick={() => setBoardDetailTab('labels')}
+                className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                  boardDetailTab === 'labels'
+                    ? 'text-text border-b-2 border-accent'
+                    : 'text-text-secondary hover:text-text'
+                }`}
+              >
+                Labels
+              </button>
+            </div>
+
+            <div className="overflow-y-auto p-6">
+              {boardDetailTab === 'details' && (
+                <>
+                  {!editingBoard ? (
+                    <div className="space-y-4">
+                      <div>
+                        <h2 className="text-xl font-extrabold text-text">{activeBoard?.name}</h2>
+                        {activeBoard?.description ? (
+                          <p className="mt-2 text-sm text-text-secondary whitespace-pre-wrap">{activeBoard.description}</p>
+                        ) : (
+                          <p className="mt-2 text-sm text-text-tertiary italic">No description provided</p>
+                        )}
+                      </div>
+                      <div className="flex justify-end gap-2 pt-2">
+                        <button
+                          onClick={() => setEditingBoard(true)}
+                          className="px-4 py-2 bg-button hover:bg-button-hover text-white text-sm font-medium rounded transition-colors"
+                        >
+                          Edit Details
+                        </button>
+                      </div>
+                    </div>
                   ) : (
-                    <p className="mt-2 text-sm text-text-tertiary italic">No description provided</p>
+                    <form onSubmit={handleSaveBoardFromModal} className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-text-secondary mb-1">Board Name</label>
+                        <input
+                          type="text"
+                          value={boardForm.name}
+                          onChange={(e) => setBoardForm((prev) => ({ ...prev, name: e.target.value }))}
+                          className="w-full text-lg font-extrabold text-text bg-bg-tertiary px-3 py-2 rounded border border-input-border outline-none focus:border-input-border-focus"
+                          placeholder="Board name"
+                          autoFocus
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-text-secondary mb-1">Description</label>
+                        <textarea
+                          value={boardForm.description}
+                          onChange={(e) => setBoardForm((prev) => ({ ...prev, description: e.target.value }))}
+                          rows="4"
+                          className="w-full px-3 py-2 rounded border border-input-border bg-bg-tertiary text-sm text-text outline-none focus:border-input-border-focus resize-none"
+                          placeholder="Board description"
+                        />
+                      </div>
+                      {boardError && (
+                        <div className="p-2 bg-error-bg border border-error-border rounded text-sm text-error-text">
+                          {boardError}
+                        </div>
+                      )}
+                      <div className="flex justify-end gap-2 pt-2">
+                        <button
+                          type="submit"
+                          disabled={isSavingBoard}
+                          className="px-4 py-2 bg-button hover:bg-button-hover text-white text-sm font-medium rounded transition-colors disabled:opacity-50"
+                        >
+                          {isSavingBoard ? 'Saving...' : 'Save'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingBoard(false);
+                            setBoardError('');
+                          }}
+                          className="px-4 py-2 bg-button-secondary text-button-secondary-text hover:bg-button-secondary-hover text-sm font-medium rounded transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
                   )}
-                </div>
-                <div className="flex justify-end gap-2 pt-2">
-                  <button
-                    onClick={() => setEditingBoard(true)}
-                    className="px-4 py-2 bg-button hover:bg-button-hover text-white text-sm font-medium rounded transition-colors"
-                  >
-                    Edit Details
-                  </button>
-                  <button
-                    onClick={closeBoardDetail}
-                    className="px-4 py-2 bg-button-secondary text-button-secondary-text hover:bg-button-secondary-hover text-sm font-medium rounded transition-colors"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={handleSaveBoardFromModal} className="p-6 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">Board Name</label>
-                  <input
-                    type="text"
-                    value={boardForm.name}
-                    onChange={(e) => setBoardForm((prev) => ({ ...prev, name: e.target.value }))}
-                    className="w-full text-lg font-extrabold text-text bg-bg-tertiary px-3 py-2 rounded border border-input-border outline-none focus:border-input-border-focus"
-                    placeholder="Board name"
-                    autoFocus
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">Description</label>
-                  <textarea
-                    value={boardForm.description}
-                    onChange={(e) => setBoardForm((prev) => ({ ...prev, description: e.target.value }))}
-                    rows="4"
-                    className="w-full px-3 py-2 rounded border border-input-border bg-bg-tertiary text-sm text-text outline-none focus:border-input-border-focus resize-none"
-                    placeholder="Board description"
-                  />
-                </div>
-                {boardError && (
-                  <div className="p-2 bg-error-bg border border-error-border rounded text-sm text-error-text">
-                    {boardError}
+                </>
+              )}
+
+              {boardDetailTab === 'labels' && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-extrabold text-text">Board Labels</h3>
+                    <button
+                      onClick={() => setShowNewLabelForm(!showNewLabelForm)}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-button hover:bg-button-hover text-white text-sm font-medium rounded transition-colors"
+                    >
+                      <Plus size={14} />
+                      Add Label
+                    </button>
                   </div>
-                )}
-                <div className="flex justify-end gap-2 pt-2">
-                  <button
-                    type="submit"
-                    disabled={isSavingBoard}
-                    className="px-4 py-2 bg-button hover:bg-button-hover text-white text-sm font-medium rounded transition-colors disabled:opacity-50"
-                  >
-                    {isSavingBoard ? 'Saving...' : 'Save'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingBoard(false);
-                      setBoardError('');
-                    }}
-                    className="px-4 py-2 bg-button-secondary text-button-secondary-text hover:bg-button-secondary-hover text-sm font-medium rounded transition-colors"
-                  >
-                    Cancel
-                  </button>
+
+                  {/* New label form */}
+                  {showNewLabelForm && (
+                    <form onSubmit={handleCreateLabel} className="p-3 bg-bg-tertiary rounded-lg border border-border space-y-3">
+                      <input
+                        type="text"
+                        value={newLabelName}
+                        onChange={(e) => setNewLabelName(e.target.value)}
+                        placeholder="Label name"
+                        className="w-full px-3 py-2 rounded border border-input-border bg-bg text-sm text-text outline-none focus:border-input-border-focus"
+                        autoFocus
+                      />
+                      <div className="flex gap-1.5 flex-wrap">
+                        {LABEL_COLORS.map((color) => (
+                          <button
+                            key={color}
+                            type="button"
+                            onClick={() => setNewLabelColor(color)}
+                            className={`w-6 h-6 rounded-full border-2 transition-all ${
+                              newLabelColor === color ? 'border-white scale-110 ring-2 ring-accent' : 'border-transparent'
+                            }`}
+                            style={{ backgroundColor: color }}
+                          />
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          type="submit"
+                          disabled={isSavingLabel || !newLabelName.trim()}
+                          className="px-3 py-1.5 bg-button hover:bg-button-hover text-white text-xs font-medium rounded transition-colors disabled:opacity-50"
+                        >
+                          {isSavingLabel ? 'Adding...' : 'Add'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowNewLabelForm(false);
+                            setNewLabelName('');
+                          }}
+                          className="px-3 py-1.5 bg-button-secondary text-button-secondary-text hover:bg-button-secondary-hover text-xs font-medium rounded transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  )}
+
+                  {/* Existing labels */}
+                  {boardLabels.length === 0 && !showNewLabelForm && (
+                    <p className="text-sm text-text-secondary text-center py-8">No labels yet. Add one to get started.</p>
+                  )}
+                  <div className="space-y-2">
+                    {boardLabels.map((label) => (
+                      <div
+                        key={label.id}
+                        className="flex items-center gap-3 p-2 rounded-lg border border-border bg-bg-secondary"
+                      >
+                        {editingLabelId === label.id ? (
+                          <>
+                            <input
+                              type="text"
+                              value={editLabelName}
+                              onChange={(e) => setEditLabelName(e.target.value)}
+                              className="flex-1 px-2 py-1 rounded border border-input-border bg-bg text-sm text-text outline-none focus:border-input-border-focus"
+                              autoFocus
+                            />
+                            <div className="flex gap-1">
+                              {LABEL_COLORS.map((color) => (
+                                <button
+                                  key={color}
+                                  type="button"
+                                  onClick={() => setEditLabelColor(color)}
+                                  className={`w-5 h-5 rounded-full border transition-all ${
+                                    editLabelColor === color ? 'border-white scale-110 ring-2 ring-accent' : 'border-transparent'
+                                  }`}
+                                  style={{ backgroundColor: color }}
+                                />
+                              ))}
+                            </div>
+                            <button
+                              onClick={() => handleSaveEditLabel(label.id)}
+                              disabled={isSavingLabel || !editLabelName.trim()}
+                              className="p-1 text-green-500 hover:text-green-600 transition-colors disabled:opacity-50"
+                            >
+                              <Check size={16} />
+                            </button>
+                            <button
+                              onClick={() => setEditingLabelId(null)}
+                              className="p-1 text-text-secondary hover:text-text transition-colors"
+                            >
+                              <X size={16} />
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <span
+                              className="w-4 h-4 rounded shrink-0"
+                              style={{ backgroundColor: label.color }}
+                            />
+                            <span className="flex-1 text-sm text-text">{label.name}</span>
+                            <button
+                              onClick={() => handleStartEditLabel(label)}
+                              className="p-1 text-text-secondary hover:text-text transition-colors"
+                              title="Edit label"
+                            >
+                              <Pencil size={14} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteLabel(label.id)}
+                              className="p-1 text-text-secondary hover:text-red-500 transition-colors"
+                              title="Delete label"
+                            >
+                              <X size={14} />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </form>
-            )}
+              )}
+            </div>
+
+            <div className="flex justify-end p-4 border-t border-border shrink-0">
+              <button
+                onClick={closeBoardDetail}
+                className="px-4 py-2 bg-button-secondary text-button-secondary-text hover:bg-button-secondary-hover text-sm font-medium rounded transition-colors"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -606,6 +856,8 @@ const Board = () => {
         onClose={() => setIsTaskModalOpen(false)}
         onUpdate={handleTaskUpdate}
         lists={data}
+        boardLabels={boardLabels}
+        onBoardLabelCreated={(label) => setBoardLabels(prev => [...prev, label])}
         onMoveTask={handleMoveTaskToList}
         onCommentChange={(taskId, delta) => {
           setData((prevData) =>

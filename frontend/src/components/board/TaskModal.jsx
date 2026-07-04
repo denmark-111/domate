@@ -1,16 +1,22 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { X, Trash2, Upload, File, Image as ImageIcon, Loader } from 'lucide-react';
+import { X, Trash2, Upload, File, Image as ImageIcon, Loader, Plus, Check } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { taskService } from '../../services/taskService.js';
-import { supabaseStorageService } from '../../services/index.js';
+import { labelService, supabaseStorageService } from '../../services/index.js';
 import MemberPicker from '../common/MemberPicker.jsx';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
-const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, onMoveTask, workspaceId: propWorkspaceId }) => {
+const LABEL_COLORS = [
+  '#61BD4F', '#F2D600', '#FF9F1A', '#EB5A46',
+  '#C377E0', '#0079BF', '#00C2E0', '#51E898',
+  '#FF78CB', '#B3BAC5',
+];
+
+const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, onMoveTask, boardLabels, onBoardLabelCreated, workspaceId: propWorkspaceId }) => {
   const { user } = useAuth();
-  const { activeWorkspace } = useWorkspace();
+  const { activeWorkspace, activeBoard } = useWorkspace();
   const workspaceId = propWorkspaceId || activeWorkspace?.id;
   const [newComment, setNewComment] = useState('');
   const [isAddingComment, setIsAddingComment] = useState(false);
@@ -32,6 +38,14 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
   // Assignment state
   const [assignments, setAssignments] = useState([]);
   const [isSavingAssignees, setIsSavingAssignees] = useState(false);
+
+  // Label state
+  const [taskLabels, setTaskLabels] = useState([]);
+  const [showLabelPicker, setShowLabelPicker] = useState(false);
+  const [isSavingLabels, setIsSavingLabels] = useState(false);
+  const [newLabelName, setNewLabelName] = useState('');
+  const [newLabelColor, setNewLabelColor] = useState(LABEL_COLORS[0]);
+  const [isCreatingLabel, setIsCreatingLabel] = useState(false);
 
   // Attachment state
   const [attachments, setAttachments] = useState([]); // uploaded attachment metadata
@@ -78,6 +92,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
         setLoadingFiles([]);
         setIsSavingAttachments(false);
         setAssignments(task.assignments || []);
+        setTaskLabels(task.labels || []);
         fetchComments(task.id);
 
         // Initialize attachments from the task
@@ -150,6 +165,81 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
     } finally {
       setIsSavingAttachments(false);
     }
+  };
+
+  const syncLabelsToBoard = async (newLabels) => {
+    const payload = {
+      name: editName.trim() || task.name,
+      description: editDescription.trim() || task.description || '',
+      dueDate: editDueDate || task.dueDate || null,
+      completedAt: editCompletedAt || null,
+      attachments: attachments.map(a => ({
+        fileName: a.fileName,
+        fileSize: a.fileSize,
+        mimeType: a.mimeType,
+        storagePath: a.storagePath,
+      })),
+    };
+    await onUpdate({ ...task, ...payload });
+  };
+
+  const handleAddLabel = async (boardLabelId) => {
+    if (!task?.id || isSavingLabels) return;
+    const label = boardLabels.find(l => l.id === boardLabelId);
+    if (!label || taskLabels.some(l => l.id === boardLabelId)) return;
+
+    setIsSavingLabels(true);
+    const newLabels = [...taskLabels, label];
+    setTaskLabels(newLabels);
+    setShowLabelPicker(false);
+
+    const res = await labelService.setTaskLabels(task.id, newLabels.map(l => l.id));
+    if (res.success) {
+      await syncLabelsToBoard(newLabels);
+    } else {
+      setTaskLabels(taskLabels);
+    }
+    setIsSavingLabels(false);
+  };
+
+  const handleRemoveLabel = async (boardLabelId) => {
+    if (!task?.id || isSavingLabels) return;
+    const newLabels = taskLabels.filter(l => l.id !== boardLabelId);
+    setTaskLabels(newLabels);
+
+    const res = await labelService.setTaskLabels(task.id, newLabels.map(l => l.id));
+    if (res.success) {
+      await syncLabelsToBoard(newLabels);
+    } else {
+      setTaskLabels(taskLabels);
+    }
+  };
+
+  const handleCreateAndAddLabel = async (e) => {
+    e.preventDefault();
+    const boardId = activeBoard?.id || task?.list?.board?.id;
+    if (!newLabelName.trim() || !boardId || isCreatingLabel) return;
+    setIsCreatingLabel(true);
+    const res = await labelService.createBoardLabel(boardId, {
+      name: newLabelName.trim(),
+      color: newLabelColor,
+    });
+    if (res.success) {
+      const newLabel = res.data;
+      setNewLabelName('');
+      setNewLabelColor(LABEL_COLORS[0]);
+      onBoardLabelCreated?.(newLabel);
+      // Immediately add the newly created label to the task
+      const newLabels = [...taskLabels, newLabel];
+      setTaskLabels(newLabels);
+      const linkRes = await labelService.setTaskLabels(task.id, newLabels.map(l => l.id));
+      if (linkRes.success) {
+        await syncLabelsToBoard(newLabels);
+      } else {
+        setTaskLabels(taskLabels);
+      }
+    }
+    setIsCreatingLabel(false);
   };
 
   const handleFileSelect = async (e) => {
@@ -404,22 +494,95 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
             </div>
 
             {/* Labels */}
-            {task.labels && task.labels.length > 0 && (
-              <div>
-                <h3 className="text-sm font-semibold text-text mb-2">Labels</h3>
-                <div className="flex gap-2 flex-wrap">
-                  {task.labels.map((label) => (
-                    <span
-                      key={label.id}
-                      className="px-3 py-1 text-xs font-bold rounded uppercase text-white"
-                      style={{ backgroundColor: label.color }}
+            <div>
+              <h3 className="text-sm font-semibold text-text mb-2">
+                Labels
+                {isSavingLabels && <Loader size={12} className="inline ml-1 text-accent animate-spin" />}
+              </h3>
+              <div className="flex gap-2 flex-wrap items-center">
+                {taskLabels.map((label) => (
+                  <span
+                    key={label.id}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold rounded uppercase text-white group"
+                    style={{ backgroundColor: label.color }}
+                  >
+                    {label.name}
+                    <button
+                      onClick={() => handleRemoveLabel(label.id)}
+                      className="opacity-0 group-hover:opacity-100 hover:bg-white/20 rounded-sm transition-opacity"
+                      title="Remove label"
                     >
-                      {label.name}
-                    </span>
-                  ))}
+                      <X size={12} />
+                    </button>
+                  </span>
+                ))}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowLabelPicker(!showLabelPicker)}
+                    className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded border border-dashed border-border text-text-secondary hover:text-text hover:border-text-secondary transition-colors"
+                  >
+                    <Plus size={12} />
+                    Label
+                  </button>
+                  {showLabelPicker && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setShowLabelPicker(false)} />
+                      <div className="absolute top-full left-0 mt-1 z-20 w-56 bg-bg border border-border rounded-lg shadow-xl p-2 space-y-1">
+                        {boardLabels && boardLabels.filter((bl) => !taskLabels.some((tl) => tl.id === bl.id)).length > 0 && (
+                          <div className="space-y-1 pb-1 border-b border-border">
+                            {boardLabels
+                              .filter((bl) => !taskLabels.some((tl) => tl.id === bl.id))
+                              .map((label) => (
+                                <button
+                                  key={label.id}
+                                  onClick={() => handleAddLabel(label.id)}
+                                  className="flex items-center gap-2 w-full px-2 py-1.5 rounded hover:bg-bg-tertiary transition-colors text-left"
+                                >
+                                  <span
+                                    className="w-3 h-3 rounded shrink-0"
+                                    style={{ backgroundColor: label.color }}
+                                  />
+                                  <span className="text-sm text-text">{label.name}</span>
+                                </button>
+                              ))
+                            }
+                          </div>
+                        )}
+                        <form onSubmit={handleCreateAndAddLabel} className="space-y-1.5 pt-1">
+                          <input
+                            type="text"
+                            value={newLabelName}
+                            onChange={(e) => setNewLabelName(e.target.value)}
+                            placeholder="New label name..."
+                            className="w-full px-2 py-1 text-xs rounded border border-input-border bg-bg text-text outline-none focus:border-input-border-focus"
+                          />
+                          <div className="flex gap-1 flex-wrap">
+                            {LABEL_COLORS.map((color) => (
+                              <button
+                                key={color}
+                                type="button"
+                                onClick={() => setNewLabelColor(color)}
+                                className={`w-4 h-4 rounded-full border transition-all ${
+                                  newLabelColor === color ? 'border-white scale-110 ring-1 ring-accent' : 'border-transparent'
+                                }`}
+                                style={{ backgroundColor: color }}
+                              />
+                            ))}
+                          </div>
+                          <button
+                            type="submit"
+                            disabled={isCreatingLabel || !newLabelName.trim()}
+                            className="w-full px-2 py-1 bg-button hover:bg-button-hover text-white text-xs font-medium rounded transition-colors disabled:opacity-50"
+                          >
+                            {isCreatingLabel ? 'Creating...' : 'Create'}
+                          </button>
+                        </form>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
-            )}
+            </div>
 
             {/* Assigned Members */}
             <div>

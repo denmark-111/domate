@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { taskService, listService } from '../../services/index.js';
+import { taskService, listService, labelService } from '../../services/index.js';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import TaskModal from '../board/TaskModal.jsx';
 import { Calendar, MessageSquare, Paperclip, Loader } from 'lucide-react';
@@ -13,6 +13,7 @@ const Tasks = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [updatingIds, setUpdatingIds] = useState(new Set());
   const [boardLists, setBoardLists] = useState([]);
+  const [boardLabels, setBoardLabels] = useState([]);
 
   const fetchTasks = useCallback(async () => {
     setIsLoading(true);
@@ -51,17 +52,25 @@ const Tasks = () => {
     });
   };
 
+  const normalizeTask = (task) => ({
+    ...task,
+    labels: (task.taskLabels || []).map(tl => tl.boardLabel)
+  });
+
   const openModal = async (assignment) => {
-    setSelectedTask(assignment.task);
+    setSelectedTask(normalizeTask(assignment.task));
     setBoardLists([]);
+    setBoardLabels([]);
     setIsModalOpen(true);
 
     const boardId = assignment.task.list?.board?.id;
     if (boardId) {
-      const res = await listService.getBoardLists(boardId);
-      if (res.success) {
-        setBoardLists(res.data);
-      }
+      const [listsRes, labelsRes] = await Promise.all([
+        listService.getBoardLists(boardId),
+        labelService.getBoardLabels(boardId),
+      ]);
+      if (listsRes.success) setBoardLists(listsRes.data);
+      if (labelsRes.success) setBoardLabels(labelsRes.data);
     }
   };
 
@@ -82,16 +91,17 @@ const Tasks = () => {
     }
     const res = await updateTask(updatedTask.id, payload);
     if (res.success) {
+      const normalized = normalizeTask(res.data);
       setTasks((prev) =>
         prev.map((a) =>
           a.task.id === updatedTask.id
-            ? { ...a, task: res.data }
+            ? { ...a, task: normalized }
             : a
         )
       );
-      setSelectedTask(res.data);
+      setSelectedTask(normalized);
 
-      if (res.data.completedAt) {
+      if (normalized.completedAt) {
         setTasks((prev) => prev.filter((a) => a.task.id !== updatedTask.id));
       }
     }
@@ -268,6 +278,8 @@ const Tasks = () => {
         onUpdate={handleTaskUpdate}
         onMoveTask={handleMoveTaskToList}
         lists={boardLists}
+        boardLabels={boardLabels}
+        onBoardLabelCreated={(label) => setBoardLabels(prev => [...prev, label])}
         workspaceId={selectedTask?.list?.board?.workspace?.id}
       />
     </div>
