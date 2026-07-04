@@ -6,6 +6,11 @@ const fullTaskInclude = {
         select: { comments: true }
     },
     attachments: true,
+    taskLabels: {
+        include: {
+            boardLabel: true
+        }
+    },
     assignments: {
         select: {
             id: true,

@@ -4,6 +4,7 @@ import { validate } from  "../middleware/validate.js";
 import { createTaskSchema, updateTaskSchema, taskIdParamSchema, moveTaskSchema } from "../schemas/taskSchema.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { requireTaskWorkspaceMember } from "../middleware/authorize.js";
+import { router as taskLabelRouter } from "./taskLabelRoutes.js";
 import { nestedRouter as commentRouter } from "./taskCommentRoutes.js";
 import { nestedRouter as taskAssignmentRouter } from "./taskAssignmentRoutes.js";
 
@@ -27,3 +28,6 @@ router.use('/:taskId/comments', validate(taskIdParamSchema), requireTaskWorkspac
 
 // mount nested task assignment routes under /tasks/:taskId/assignees
 router.use('/:taskId/assignees', validate(taskIdParamSchema), requireTaskWorkspaceMember, taskAssignmentRouter);
+
+// mount nested task label routes under /tasks/:taskId/labels
+router.use('/:taskId/labels', validate(taskIdParamSchema), requireTaskWorkspaceMember, taskLabelRouter);

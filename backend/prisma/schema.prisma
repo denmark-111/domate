@@ -84,11 +84,39 @@ model Board {
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   lists       List[]
+  labels      BoardLabel[]
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
   @@index([workspaceId])
+}
+
+model BoardLabel {
+  id    String @id @default(uuid()) @db.Uuid
+  name  String
+  color String @db.VarChar(7)
+
+  boardId String @db.Uuid
+  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  taskLabels TaskLabel[]
+
+  @@index([boardId])
+}
+
+model TaskLabel {
+  id    String @id @default(uuid()) @db.Uuid
+
+  taskId  String @db.Uuid
+  task    Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  boardLabelId String @db.Uuid
+  boardLabel   BoardLabel @relation(fields: [boardLabelId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, boardLabelId])
+  @@index([taskId])
+  @@index([boardLabelId])
 }
 
 model List {
@@ -122,9 +150,10 @@ model Task {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  comments    TaskComment[]
-  attachments Attachment[]
-  assignments TaskAssignment[]
+    comments    TaskComment[]
+    attachments Attachment[]
+    assignments TaskAssignment[]
+    taskLabels  TaskLabel[]
 
   @@index([listId])
   @@index([listId, position])

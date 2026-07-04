@@ -1,6 +1,7 @@
 import prisma from "../client.js";
 
 const fullBoardInclude = {
+    labels: true,
     lists: {
         orderBy: { position: "asc" },
         include: {
@@ -11,6 +12,11 @@ const fullBoardInclude = {
                         select: { comments: true }
                     },
                     attachments: true,
+                    taskLabels: {
+                        include: {
+                            boardLabel: true
+                        }
+                    },
                     assignments: {
                         select: {
                             id: true,

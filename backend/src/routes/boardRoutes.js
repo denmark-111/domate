@@ -5,6 +5,7 @@ import { createBoardSchema, updateBoardSchema, boardIdParamSchema } from "../sch
 import { nestedRouter as listRouter } from "./listRoutes.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { requireBoardWorkspaceMember } from "../middleware/authorize.js";
+import { router as boardLabelRouter } from "./boardLabelRoutes.js";
 
 export const router = express.Router();
 export const nestedRouter = express.Router({ mergeParams: true });
@@ -20,3 +21,6 @@ router.delete('/:boardId', validate(boardIdParamSchema), requireBoardWorkspaceMe
 
 // mount nested list routes
 router.use('/:boardId/lists', validate(boardIdParamSchema), requireBoardWorkspaceMember, listRouter);
+
+// mount nested label routes
+router.use('/:boardId/labels', validate(boardIdParamSchema), requireBoardWorkspaceMember, boardLabelRouter);
