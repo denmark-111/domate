@@ -17,7 +17,15 @@ const LABEL_COLORS = [
 const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, onMoveTask, boardLabels, onBoardLabelCreated, workspaceId: propWorkspaceId }) => {
   const { user } = useAuth();
   const { activeWorkspace, activeBoard } = useWorkspace();
-  const workspaceId = propWorkspaceId || activeWorkspace?.id;
+  const workspaceIdRef = useRef(null);
+
+  // Preserve workspaceId across task data updates (e.g. after updateTask response
+  // may not include list.board.workspace). Capture it once when the modal opens.
+  if (isOpen && task) {
+    const resolved = propWorkspaceId || activeWorkspace?.id;
+    if (resolved) workspaceIdRef.current = resolved;
+  }
+  const workspaceId = workspaceIdRef.current || propWorkspaceId || activeWorkspace?.id;
   const [newComment, setNewComment] = useState('');
   const [isAddingComment, setIsAddingComment] = useState(false);
 
