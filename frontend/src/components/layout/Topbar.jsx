@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
-import { supabaseStorageService } from '../../services/index.js';
+import { supabaseStorageService, searchService } from '../../services/index.js';
 
 const Topbar = () => {
   const navigate = useNavigate();
@@ -14,14 +14,54 @@ const Topbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState({ workspaces: [], boards: [] });
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const searchRef = useRef(null);
+
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setDropdownOpen(false);
       }
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setShowSearchDropdown(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (searchQuery.length < 2) {
+      setSearchResults({ workspaces: [], boards: [] });
+      setShowSearchDropdown(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearching(true);
+      setShowSearchDropdown(true);
+      const res = await searchService.searchMyStuff(searchQuery);
+      if (res.success) {
+        setSearchResults(res.data);
+      }
+      setIsSearching(false);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        setShowSearchDropdown(false);
+        setSearchQuery('');
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
   }, []);
 
   const avatarUrl = user?.avatarUrl
@@ -40,13 +80,67 @@ const Topbar = () => {
           </div>
         </button>
 
-        <div className="relative group hidden md:block">
+        <div className="relative group hidden md:block" ref={searchRef}>
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary group-focus-within:text-text-accent transition-colors" size={18} />
-          <input 
-            type="text" 
-            placeholder="Search tasks, boards..." 
+          <input
+            type="text"
+            placeholder="Search boards, workspaces..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => searchQuery.length >= 2 && setShowSearchDropdown(true)}
             className="pl-10 pr-4 py-2 bg-bg-secondary border border-transparent rounded-lg text-sm focus:outline-none focus:bg-bg focus:border-input-border-focus transition-all w-64"
           />
+
+          {showSearchDropdown && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-bg border border-border rounded-xl shadow-xl z-50 max-h-80 overflow-y-auto">
+              {isSearching ? (
+                <div className="p-4 text-sm text-text-secondary text-center">Searching...</div>
+              ) : searchResults.workspaces.length === 0 && searchResults.boards.length === 0 ? (
+                <div className="p-4 text-sm text-text-secondary text-center">No results found</div>
+              ) : (
+                <>
+                  {searchResults.workspaces.length > 0 && (
+                    <div>
+                      <div className="px-4 pt-3 pb-1 text-xs font-bold text-text-secondary uppercase tracking-wider">Workspaces</div>
+                      {searchResults.workspaces.map((ws) => (
+                        <button
+                          key={ws.id}
+                          onClick={() => { navigate(`/workspaces/${ws.id}`); setShowSearchDropdown(false); setSearchQuery(''); }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text hover:bg-bg-tertiary transition-colors text-left"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-button flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0">
+                            {ws.name[0]}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-bold truncate">{ws.name}</p>
+                            <p className="text-xs text-text-secondary">Workspace</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {searchResults.boards.length > 0 && (
+                    <div>
+                      <div className="px-4 pt-3 pb-1 text-xs font-bold text-text-secondary uppercase tracking-wider">Boards</div>
+                      {searchResults.boards.map((board) => (
+                        <button
+                          key={board.id}
+                          onClick={() => { navigate(`/workspaces/${board.workspace.id}`, { state: { selectBoardId: board.id } }); setShowSearchDropdown(false); setSearchQuery(''); }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text hover:bg-bg-tertiary transition-colors text-left"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-bg-tertiary flex items-center justify-center text-xs text-text shrink-0">#</div>
+                          <div className="min-w-0">
+                            <p className="font-bold truncate">{board.name}</p>
+                            <p className="text-xs text-text-secondary truncate">{board.workspace?.name}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

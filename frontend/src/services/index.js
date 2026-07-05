@@ -11,4 +11,5 @@ export { invitationService } from './invitationService.js';
 export { activityService } from './activityService.js';
 export { memberService } from './memberService.js';
 export { labelService } from './labelService.js';
+export { searchService } from './searchService.js';
 export { API_BASE_URL, getAuthHeaders, apiCall } from './apiConfig.js';
