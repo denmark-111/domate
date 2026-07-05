@@ -1,30 +1,29 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Loader, Camera, Trash2, Check } from 'lucide-react';
+import { Loader, Camera, Trash2, Check } from 'lucide-react';
 import { supabaseStorageService, profileService } from '../../services/index.js';
 import { useAuth } from '../../context/AuthContext';
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-const ProfileModal = ({ isOpen, onClose }) => {
+const ProfileTab = () => {
   const { user, setUser } = useAuth();
   const fileInputRef = useRef(null);
 
   const [fullName, setFullName] = useState('');
-  const [avatarPreview, setAvatarPreview] = useState(null); // signed/preview URL for display
-  const [selectedFile, setSelectedFile] = useState(null); // file picked but not yet uploaded
-  const [localFilePreview, setLocalFilePreview] = useState(null); // object URL for local preview
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [localFilePreview, setLocalFilePreview] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Derive the current avatar URL from the user context
   const currentAvatarUrl = user?.avatarUrl
     ? supabaseStorageService.getAvatarUrl(user.avatarUrl)
     : null;
 
   useEffect(() => {
-    if (isOpen && user) {
+    if (user) {
       setFullName(user.fullName || '');
       setAvatarPreview(currentAvatarUrl);
       setSelectedFile(null);
@@ -32,9 +31,8 @@ const ProfileModal = ({ isOpen, onClose }) => {
       setError('');
       setSuccess('');
     }
-  }, [isOpen, user]);
+  }, [user]);
 
-  // Cleanup local object URLs
   useEffect(() => {
     return () => {
       if (localFilePreview) {
@@ -47,13 +45,11 @@ const ProfileModal = ({ isOpen, onClose }) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file size
     if (file.size > MAX_FILE_SIZE) {
       setError('Avatar image must be under 10 MB.');
       return;
     }
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       setError('Please select an image file.');
       return;
@@ -62,12 +58,10 @@ const ProfileModal = ({ isOpen, onClose }) => {
     setError('');
     setSelectedFile(file);
 
-    // Revoke previous local preview
     if (localFilePreview) {
       URL.revokeObjectURL(localFilePreview);
     }
 
-    // Show local preview immediately
     setLocalFilePreview(URL.createObjectURL(file));
   };
 
@@ -95,14 +89,12 @@ const ProfileModal = ({ isOpen, onClose }) => {
     try {
       let avatarUrl = user?.avatarUrl;
 
-      // If a new file was selected, upload it first
       if (selectedFile) {
         setIsUploading(true);
         avatarUrl = await supabaseStorageService.uploadAvatar(selectedFile, user.id);
         setIsUploading(false);
       }
 
-      // Handle avatar removal
       if (avatarPreview === null && !selectedFile) {
         avatarUrl = null;
       }
@@ -116,7 +108,6 @@ const ProfileModal = ({ isOpen, onClose }) => {
         throw new Error(result.error || 'Failed to update profile');
       }
 
-      // Update the user in AuthContext so the change is reflected everywhere
       setUser((prev) => ({
         ...prev,
         fullName: fullName.trim(),
@@ -124,9 +115,6 @@ const ProfileModal = ({ isOpen, onClose }) => {
       }));
 
       setSuccess('Profile updated successfully!');
-      setTimeout(() => {
-        onClose();
-      }, 1200);
     } catch (err) {
       setError(err.message || 'Failed to update profile');
     } finally {
@@ -135,32 +123,14 @@ const ProfileModal = ({ isOpen, onClose }) => {
     }
   };
 
-  if (!isOpen) return null;
-
   const displayUrl = localFilePreview || avatarPreview;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div
-        className="relative bg-bg rounded-2xl border border-border shadow-xl max-w-md w-full mx-4"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border">
-          <h2 className="text-lg font-bold text-text">Edit Profile</h2>
-          <button
-            onClick={onClose}
-            className="p-2 text-text-secondary hover:text-text rounded-lg hover:bg-bg-tertiary transition-colors"
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Avatar */}
-          <div className="flex flex-col items-center gap-4">
+    <div className="max-w-lg">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="flex flex-col items-start gap-4">
+          <label className="text-sm font-bold text-text-secondary uppercase tracking-wider">Avatar</label>
+          <div className="flex items-center gap-6">
             <div className="relative group">
               <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-border bg-bg-secondary flex items-center justify-center">
                 {displayUrl ? (
@@ -175,7 +145,6 @@ const ProfileModal = ({ isOpen, onClose }) => {
                   </span>
                 )}
               </div>
-              {/* Overlay on hover */}
               <div
                 className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                 onClick={() => fileInputRef.current?.click()}
@@ -184,11 +153,11 @@ const ProfileModal = ({ isOpen, onClose }) => {
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col gap-2">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="text-sm font-medium text-text-accent hover:underline"
+                className="text-sm font-medium text-text-accent hover:underline text-left"
               >
                 Change photo
               </button>
@@ -196,7 +165,7 @@ const ProfileModal = ({ isOpen, onClose }) => {
                 <button
                   type="button"
                   onClick={handleRemoveAvatar}
-                  className="text-sm font-medium text-error-text hover:underline flex items-center gap-1"
+                  className="text-sm font-medium text-error-text hover:underline flex items-center gap-1 text-left"
                 >
                   <Trash2 size={14} />
                   Remove
@@ -212,73 +181,59 @@ const ProfileModal = ({ isOpen, onClose }) => {
               className="hidden"
             />
           </div>
+        </div>
 
-          {/* Full Name */}
-          <div>
-            <label
-              htmlFor="profile-fullName"
-              className="block text-sm font-bold text-text-secondary uppercase tracking-wider mb-2"
-            >
-              Full Name
-            </label>
-            <input
-              id="profile-fullName"
-              type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border-2 border-border bg-input-bg text-text outline-none focus:border-input-border-focus transition-colors"
-              placeholder="Your full name"
-              maxLength={255}
-            />
-          </div>
-
-          {/* Email (read-only) */}
-          <div>
-            <label
-              htmlFor="profile-email"
-              className="block text-sm font-bold text-text-secondary uppercase tracking-wider mb-2"
-            >
-              Email
-            </label>
-            <input
-              id="profile-email"
-              type="email"
-              value={user?.email || ''}
-              disabled
-              className="w-full px-4 py-3 rounded-lg border-2 border-border bg-bg-tertiary text-text-secondary outline-none cursor-not-allowed"
-            />
-            <p className="text-xs text-text-secondary mt-1">Email cannot be changed</p>
-          </div>
-
-          {/* Error */}
-          {error && (
-            <div className="p-3 bg-error-bg border border-error-border rounded-lg text-sm text-error-text">
-              {error}
-            </div>
-          )}
-
-          {/* Success */}
-          {success && (
-            <div className="p-3 bg-label-done-bg border border-label-done-text rounded-lg text-sm text-label-done-text font-medium flex items-center gap-2">
-              <Check size={16} />
-              {success}
-            </div>
-          )}
-        </form>
-
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-border">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="px-6 py-2.5 rounded-lg font-bold text-text-secondary hover:bg-bg-tertiary transition-colors disabled:opacity-50"
+        <div>
+          <label
+            htmlFor="profile-fullName"
+            className="block text-sm font-bold text-text-secondary uppercase tracking-wider mb-2"
           >
-            Cancel
-          </button>
+            Full Name
+          </label>
+          <input
+            id="profile-fullName"
+            type="text"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            className="w-full px-4 py-3 rounded-lg border-2 border-border bg-input-bg text-text outline-none focus:border-input-border-focus transition-colors"
+            placeholder="Your full name"
+            maxLength={255}
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="profile-email"
+            className="block text-sm font-bold text-text-secondary uppercase tracking-wider mb-2"
+          >
+            Email
+          </label>
+          <input
+            id="profile-email"
+            type="email"
+            value={user?.email || ''}
+            disabled
+            className="w-full px-4 py-3 rounded-lg border-2 border-border bg-bg-tertiary text-text-secondary outline-none cursor-not-allowed"
+          />
+          <p className="text-xs text-text-secondary mt-1">Email cannot be changed</p>
+        </div>
+
+        {error && (
+          <div className="p-3 bg-error-bg border border-error-border rounded-lg text-sm text-error-text">
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="p-3 bg-label-done-bg border border-label-done-text rounded-lg text-sm text-label-done-text font-medium flex items-center gap-2">
+            <Check size={16} />
+            {success}
+          </div>
+        )}
+
+        <div className="flex items-center gap-3 pt-2">
           <button
             type="submit"
-            onClick={handleSubmit}
             disabled={isSubmitting || isUploading}
             className="px-6 py-2.5 rounded-lg font-bold bg-button hover:bg-button-hover text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm flex items-center gap-2"
           >
@@ -290,9 +245,9 @@ const ProfileModal = ({ isOpen, onClose }) => {
               : 'Save Changes'}
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 };
 
-export default ProfileModal;
+export default ProfileTab;

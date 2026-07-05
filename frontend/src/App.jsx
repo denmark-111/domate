@@ -12,6 +12,7 @@ import HomeDashboard from './components/dashboard/HomeDashboard';
 import Tasks from './components/dashboard/Tasks';
 import Workspace from './components/workspace/Workspace';
 import AcceptInvitation from './components/invitation/AcceptInvitation';
+import Settings from './components/settings/Settings';
 
 const AppContent = ({ viewType }) => {
   return (
@@ -25,6 +26,7 @@ const AppContent = ({ viewType }) => {
             {viewType === 'home' && <HomeDashboard />}
             {viewType === 'tasks' && <Tasks />}
             {viewType === 'workspace' && <Workspace />}
+            {viewType === 'settings' && <Settings />}
           </main>
         </div>
       </div>
@@ -43,6 +45,7 @@ function App() {
             <Route path="/dashboard" element={<RequireAuth><AppContent viewType="home" /></RequireAuth>} />
             <Route path="/tasks" element={<RequireAuth><AppContent viewType="tasks" /></RequireAuth>} />
             <Route path="/workspaces/:workspaceId" element={<RequireAuth><AppContent viewType="workspace" /></RequireAuth>} />
+            <Route path="/settings" element={<RequireAuth><AppContent viewType="settings" /></RequireAuth>} />
             <Route path="/invitations/:invitationId" element={<AcceptInvitation />} />
           </Routes>
         </ThemeContextProvider>
