@@ -29,8 +29,17 @@ const Topbar = () => {
     : null;
 
   return (
-    <header className="h-16 border-b border-border bg-bg flex items-center justify-between px-8 z-10">
+    <header className="h-16 border-b border-border bg-bg flex items-center justify-between px-4 z-10">
       <div className="flex items-center gap-4">
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="group shrink-0"
+        >
+          <div className="w-9 h-9 rounded-xl bg-button flex items-center justify-center text-white font-bold shadow-sm group-hover:scale-105 transition-transform">
+            B
+          </div>
+        </button>
+
         <div className="relative group hidden md:block">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary group-focus-within:text-text-accent transition-colors" size={18} />
           <input 

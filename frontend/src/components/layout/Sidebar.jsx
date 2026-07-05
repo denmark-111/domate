@@ -143,7 +143,7 @@ const Sidebar = () => {
 
   const renderHomeSidebar = () => (
     <div className="px-4 space-y-6">
-      <nav className="space-y-1 mt-4">
+        <nav className="space-y-1">
         <button 
           onClick={() => navigate('/dashboard')}
           className={`w-full text-left px-3 py-2 rounded-lg font-bold text-sm flex items-center gap-3 transition-all ${
@@ -188,21 +188,8 @@ const Sidebar = () => {
   );
 
   return (
-    <aside className="w-64 bg-bg-secondary border-r border-border flex flex-col h-screen">
-      {/* Home / Logo Section */}
-      <div className="p-6 border-b border-border bg-bg">
-        <button 
-          onClick={() => navigate('/dashboard')}
-          className="flex items-center gap-3 group"
-        >
-          <div className="w-8 h-8 rounded-lg bg-button flex items-center justify-center text-white font-bold shadow-md group-hover:rotate-12 transition-transform">
-            B
-          </div>
-          <h1 className="text-xl font-bold text-text tracking-tight">Board-Done</h1>
-        </button>
-      </div>
-
-      <div className="flex-1 overflow-y-auto py-2">
+    <aside className="w-64 bg-bg-secondary border-r border-border flex flex-col h-screen shrink-0">
+      <div className="flex-1 overflow-y-auto py-4">
         {activeWorkspace ? renderWorkspaceSidebar() : renderHomeSidebar()}
       </div>
 
