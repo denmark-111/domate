@@ -102,7 +102,7 @@ const InvitationsTab = () => {
                   {inv.workspace?.name || 'Unknown Workspace'}
                 </p>
                 <p className="text-sm text-text-secondary">
-                  Invited by {inv.inviter?.fullName || inv.inviter?.email || 'someone'}{' '}
+                  Invited by {inv.invitedBy?.fullName || inv.invitedBy?.email || 'someone'}{' '}
                   on {formatDate(inv.createdAt)}
                 </p>
               </div>

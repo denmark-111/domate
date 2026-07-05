@@ -141,7 +141,7 @@ const ProfileTab = () => {
                   />
                 ) : (
                   <span className="text-3xl font-bold text-text-secondary">
-                    {(user?.fullName || user?.email || 'U').slice(0, 2).toUpperCase()}
+                    {(user?.fullName || user?.email || 'U').split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                   </span>
                 )}
               </div>

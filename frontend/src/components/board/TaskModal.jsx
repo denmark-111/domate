@@ -761,16 +761,19 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
             ) : (
               <>
                 <div className="space-y-3">
-                  {comments.map((comment) => {
+                    {comments.map((comment) => {
                     const authorName = comment.author?.fullName || comment.author?.email || 'Unknown';
                     const isOwn = user?.id === comment.authorId;
+                    const commentAvatarUrl = comment.author?.avatarUrl
+                      ? supabaseStorageService.getAvatarUrl(comment.author.avatarUrl)
+                      : null;
                     return (
                       <div key={comment.id} className="bg-bg-tertiary p-3 rounded border border-border">
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            {comment.author?.avatarUrl ? (
+                            {commentAvatarUrl ? (
                               <img
-                                src={comment.author.avatarUrl}
+                                src={commentAvatarUrl}
                                 alt={authorName}
                                 className="w-6 h-6 rounded-full object-cover"
                               />

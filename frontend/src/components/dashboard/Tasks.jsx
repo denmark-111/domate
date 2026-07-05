@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { taskService, listService, labelService } from '../../services/index.js';
+import { taskService, listService, labelService, supabaseStorageService } from '../../services/index.js';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import TaskModal from '../board/TaskModal.jsx';
 import { Calendar, MessageSquare, Paperclip, Loader } from 'lucide-react';
@@ -326,15 +326,22 @@ const Tasks = () => {
           </div>
           {task.assignments?.length > 0 && (
             <div className="hidden sm:flex items-center shrink-0" title={task.assignments.map(a => a.user?.fullName || a.user?.email || '?').join(', ')}>
-              {task.assignments.slice(0, 3).map((a, i, arr) => (
-                <div
-                  key={a.userId}
-                  className="w-6 h-6 rounded-full bg-button border-2 border-bg-secondary flex items-center justify-center text-[8px] text-white font-bold -ml-[6px] first:ml-0 overflow-hidden"
-                  style={{ zIndex: arr.length - i }}
-                >
-                  {getInitials(a.user?.fullName || a.user?.email)}
-                </div>
-              ))}
+              {task.assignments.slice(0, 3).map((a, i, arr) => {
+                const avatarUrl = a.user?.avatarUrl ? supabaseStorageService.getAvatarUrl(a.user.avatarUrl) : null;
+                return (
+                  <div
+                    key={a.userId}
+                    className="w-6 h-6 rounded-full bg-button border-2 border-bg-secondary flex items-center justify-center text-[8px] text-white font-bold -ml-[6px] first:ml-0 overflow-hidden"
+                    style={{ zIndex: arr.length - i }}
+                  >
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      getInitials(a.user?.fullName || a.user?.email)
+                    )}
+                  </div>
+                );
+              })}
               {task.assignments.length > 3 && (
                 <div className="w-6 h-6 rounded-full bg-bg-tertiary border-2 border-bg-secondary flex items-center justify-center text-[8px] text-text-secondary font-bold -ml-[6px]">
                   +{task.assignments.length - 3}

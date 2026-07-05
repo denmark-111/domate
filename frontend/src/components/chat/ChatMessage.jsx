@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trash2, User } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { supabaseStorageService } from '../../services/index.js';
 
 const ChatMessage = ({ message, isOwnMessage, onDelete }) => {
@@ -28,8 +28,8 @@ const ChatMessage = ({ message, isOwnMessage, onDelete }) => {
             className="w-9 h-9 rounded-full object-cover bg-bg-tertiary"
           />
         ) : (
-          <div className="w-9 h-9 rounded-full bg-bg-tertiary flex items-center justify-center">
-            <User size={16} className="text-text-tertiary" />
+          <div className="w-9 h-9 rounded-full bg-button flex items-center justify-center text-white text-xs font-bold">
+            {(message.author?.fullName || message.author?.email || 'U').split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)}
           </div>
         )}
       </div>

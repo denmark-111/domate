@@ -182,7 +182,7 @@ const Topbar = () => {
               {avatarUrl ? (
                 <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
               ) : (
-                (user?.fullName || user?.email || 'G').slice(0, 2).toUpperCase()
+                (user?.fullName || user?.email || 'G').split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)
               )}
             </div>
             <ChevronDown

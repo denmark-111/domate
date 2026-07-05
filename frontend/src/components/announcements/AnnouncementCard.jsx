@@ -226,7 +226,13 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
         {/* Author & date */}
         <div className="flex items-center gap-4 mt-2 text-xs text-text-secondary">
           <span className="flex items-center gap-1.5">
-            <User size={14} />
+            <div className="w-6 h-6 rounded-full bg-button flex items-center justify-center text-white text-[10px] font-bold overflow-hidden shrink-0">
+              {announcement.author?.avatarUrl ? (
+                <img src={supabaseStorageService.getAvatarUrl(announcement.author.avatarUrl)} alt="" className="w-full h-full object-cover" />
+              ) : (
+                (announcement.author?.fullName || announcement.author?.email || 'U').split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)
+              )}
+            </div>
             {announcement.author?.fullName || announcement.author?.email || 'Unknown'}
           </span>
           <span className="flex items-center gap-1.5">

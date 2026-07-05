@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useAuth } from '../../context/AuthContext';
 import { Info, Save, Edit3, X, Trash2, UserPlus, XCircle } from 'lucide-react';
-import { workspaceService, invitationService } from '../../services/index.js';
+import { workspaceService, invitationService, supabaseStorageService } from '../../services/index.js';
 import ConfirmModal from '../common/ConfirmModal';
 import InviteMembersForm from './InviteMembersForm';
 
@@ -402,8 +402,12 @@ const WorkspaceOverview = () => {
               {displayWorkspace.memberships.filter(m => m.user).map((membership) => (
                 <div key={membership.user.id} className="flex items-center justify-between p-3 bg-bg rounded-lg border border-border-light">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-button flex items-center justify-center text-white text-xs font-bold shadow-sm">
-                      {(membership.user?.fullName || membership.user?.email || 'U').slice(0, 2).toUpperCase()}
+                    <div className="w-8 h-8 rounded-full bg-button flex items-center justify-center text-white text-xs font-bold shadow-sm overflow-hidden shrink-0">
+                      {membership.user?.avatarUrl ? (
+                        <img src={supabaseStorageService.getAvatarUrl(membership.user.avatarUrl)} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        (membership.user?.fullName || membership.user?.email || 'U').split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                      )}
                     </div>
                     <div>
                       <p className="text-sm font-bold text-text">{membership.user?.fullName || 'Unknown User'}</p>
