@@ -5,6 +5,8 @@ import { ThemeContextProvider } from './context/ThemeContext';
 import { AuthContextProvider } from './context/AuthContext';
 import Landing from './components/auth/Landing';
 import Auth from './components/auth/Auth';
+import ForgotPassword from './components/auth/ForgotPassword';
+import ResetPassword from './components/auth/ResetPassword';
 import RequireAuth from './components/auth/RequireAuth';
 import Sidebar from './components/layout/Sidebar';
 import Topbar from './components/layout/Topbar';
@@ -42,6 +44,8 @@ function App() {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/dashboard" element={<RequireAuth><AppContent viewType="home" /></RequireAuth>} />
             <Route path="/tasks" element={<RequireAuth><AppContent viewType="tasks" /></RequireAuth>} />
             <Route path="/workspaces/:workspaceId" element={<RequireAuth><AppContent viewType="workspace" /></RequireAuth>} />

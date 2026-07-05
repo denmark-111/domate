@@ -122,6 +122,14 @@ export const AuthContextProvider = ({ children }) => {
     return result;
   };
 
+  const sendPasswordReset = async (email) => {
+    return await authService.resetPassword(email);
+  };
+
+  const updatePassword = async (password) => {
+    return await authService.updatePassword(password);
+  };
+
   const logout = async () => {
     setIsLoading(true);
 
@@ -152,6 +160,8 @@ export const AuthContextProvider = ({ children }) => {
         register,
         loginWithOAuth,
         logout,
+        sendPasswordReset,
+        updatePassword,
       }}
     >
       {children}

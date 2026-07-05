@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 // Inline SVG Icons
@@ -388,9 +388,9 @@ const Auth = () => {
                 <input type="checkbox" className="w-4 h-4 rounded" />
                 <span className="text-text-secondary">Remember me</span>
               </label>
-              <button type="button" className="text-text-accent hover:underline">
+              <Link to="/forgot-password" className="text-text-accent hover:underline">
                 Forgot password?
-              </button>
+              </Link>
             </div>
           )}
 
