@@ -1,5 +1,5 @@
-import React from 'react';
-import { Bell, Settings, Search, Sun, Moon, LogOut } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Bell, Settings, Search, Sun, Moon, LogOut, User, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -11,6 +11,18 @@ const Topbar = () => {
   const { activeWorkspace, activeView, activeBoard } = useWorkspace();
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const avatarUrl = user?.avatarUrl
     ? supabaseStorageService.getAvatarUrl(user.avatarUrl)
@@ -53,25 +65,47 @@ const Topbar = () => {
           </button>
         </div>
         
-        <div className="flex items-center gap-3">
-          <div className="text-right hidden sm:block mr-2">
+        <div className="flex items-center gap-3 relative" ref={dropdownRef}>
+          <div className="text-right hidden sm:block">
             <p className="text-sm font-bold text-text leading-none">{user?.fullName || user?.email || 'Guest'}</p>
-            <p className="text-[10px] text-text-secondary font-medium mt-1">{user ? 'Active' : 'Not signed in'}</p>
           </div>
-          <div
-            onClick={() => navigate('/settings')}
-            className="w-9 h-9 rounded-full bg-button flex items-center justify-center text-white text-xs font-bold shadow-sm border-2 border-white group-hover:scale-105 transition-transform cursor-pointer overflow-hidden shrink-0"
+          <button
+            onClick={() => setDropdownOpen((prev) => !prev)}
+            className="flex items-center gap-1 cursor-pointer"
           >
-            {avatarUrl ? (
-              <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-            ) : (
-              (user?.fullName || user?.email || 'G').slice(0, 2).toUpperCase()
-            )}
-          </div>
-          {user && (
-            <button onClick={logout} className="p-2 ml-2 rounded-md hover:bg-bg-tertiary transition-colors" title="Sign out">
-              <LogOut size={18} />
-            </button>
+            <div
+              className="w-9 h-9 rounded-full bg-button flex items-center justify-center text-white text-xs font-bold shadow-sm border-2 border-white overflow-hidden shrink-0"
+            >
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                (user?.fullName || user?.email || 'G').slice(0, 2).toUpperCase()
+              )}
+            </div>
+            <ChevronDown
+              size={14}
+              className={`text-text-secondary transition-transform ${dropdownOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
+
+          {dropdownOpen && (
+            <div className="absolute right-0 top-full mt-2 w-48 bg-bg border border-border rounded-xl shadow-xl z-50 py-1">
+              <button
+                onClick={() => { navigate('/settings'); setDropdownOpen(false); }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text hover:bg-bg-tertiary transition-colors text-left"
+              >
+                <User size={16} className="text-text-secondary" />
+                Profile
+              </button>
+              <div className="border-t border-border mx-2" />
+              <button
+                onClick={() => { logout(); setDropdownOpen(false); }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text hover:bg-bg-tertiary transition-colors text-left"
+              >
+                <LogOut size={16} className="text-text-secondary" />
+                Logout
+              </button>
+            </div>
           )}
         </div>
       </div>
