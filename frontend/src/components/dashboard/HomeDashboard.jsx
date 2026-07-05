@@ -1,34 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWorkspace } from '../../context/WorkspaceContext';
-import { invitationService, activityService } from '../../services/index.js';
+import { activityService } from '../../services/index.js';
 import CreateWorkspaceForm from '../workspace/CreateWorkspaceForm';
 import { useAuth } from '../../context/AuthContext';
 
 const HomeDashboard = () => {
-  const { workspaces, fetchMyPendingInvitations } = useWorkspace();
+  const { workspaces } = useWorkspace();
   const navigate = useNavigate();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const { user } = useAuth();
 
-  const [pendingInvites, setPendingInvites] = useState([]);
-  const [isLoadingInvites, setIsLoadingInvites] = useState(true);
-
   const [recentWorkspaces, setRecentWorkspaces] = useState([]);
   const [recentBoards, setRecentBoards] = useState([]);
   const [isLoadingRecent, setIsLoadingRecent] = useState(true);
-
-  useEffect(() => {
-    const load = async () => {
-      setIsLoadingInvites(true);
-      const res = await invitationService.getMyInvitations();
-      if (res.success) {
-        setPendingInvites(res.data);
-      }
-      setIsLoadingInvites(false);
-    };
-    load();
-  }, []);
 
   useEffect(() => {
     const loadRecent = async () => {
@@ -56,40 +41,6 @@ const HomeDashboard = () => {
           <h1 className="text-3xl font-extrabold text-text mb-2">Welcome back, {user?.fullName || user?.email || 'Guest'}</h1>
           <p className="text-text-secondary">Select a workspace to start collaborating or managing your tasks.</p>
         </header>
-
-        {/* Pending Invitations Banner */}
-        {!isLoadingInvites && pendingInvites.length > 0 && (
-          <div className="mb-8 bg-label-feature-bg border border-yellow-200 rounded-2xl p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-bold text-label-feature-text uppercase tracking-wider">
-                Pending Invitations ({pendingInvites.length})
-              </h2>
-            </div>
-            <div className="space-y-3">
-              {pendingInvites.map((inv) => (
-                <div key={inv.id} className="flex items-center justify-between p-4 bg-bg rounded-xl border border-border-light">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-button flex items-center justify-center text-white text-sm font-bold">
-                      {(inv.workspace?.name || '?')[0]}
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-text">{inv.workspace?.name}</p>
-                      <p className="text-xs text-text-secondary">
-                        Invited by {inv.invitedBy?.fullName || 'someone'} &middot; {inv.workspace?._count?.memberships || 0} {inv.workspace?._count?.memberships === 1 ? 'member' : 'members'}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => navigate(`/invitations/${inv.id}`)}
-                    className="px-4 py-1.5 rounded-lg font-bold bg-button hover:bg-button-hover text-white text-xs transition-colors shadow-sm"
-                  >
-                    View
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Create New Workspace Button */}
