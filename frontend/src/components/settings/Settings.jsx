@@ -15,8 +15,8 @@ const Settings = () => {
   const [activeTab, setActiveTab] = useState('profile');
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
-      <div className="border-b border-border px-8 pt-6">
+    <div className="h-full flex flex-col overflow-hidden items-center">
+      <div className="w-full max-w-3xl border-b border-border pt-6">
         <h1 className="text-2xl font-bold text-text mb-1">Settings</h1>
         <p className="text-sm text-text-secondary mb-4">Manage your account settings and preferences</p>
 
@@ -37,7 +37,7 @@ const Settings = () => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-8 py-6">
+      <div className="flex-1 overflow-y-auto w-full max-w-3xl py-6">
         {activeTab === 'profile' && <ProfileTab />}
         {activeTab === 'invitations' && <InvitationsTab />}
         {activeTab === 'security' && <SecurityTab />}
