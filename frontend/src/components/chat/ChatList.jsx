@@ -36,7 +36,8 @@ const ChatList = () => {
   // Scroll to bottom when new messages arrive (only if already at bottom)
   useEffect(() => {
     if (messages.length > prevMessageCountRef.current && isAtBottomRef.current) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      const el = messagesContainerRef.current;
+      if (el) el.scrollTop = el.scrollHeight;
     }
     prevMessageCountRef.current = messages.length;
   }, [messages.length]);
@@ -139,9 +140,8 @@ const ChatList = () => {
   // Initial scroll to bottom after first load
   useEffect(() => {
     if (!isLoading && messages.length > 0) {
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
-      }, 100);
+      const el = messagesContainerRef.current;
+      if (el) el.scrollTop = el.scrollHeight;
     }
   }, [isLoading]);
 
@@ -180,9 +180,9 @@ const ChatList = () => {
 
   if (isLoading) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-bg">
+      <div className="flex-1 flex flex-col items-center justify-center bg-bg-secondary min-h-0">
         <div className="flex items-center gap-3 text-text-secondary">
-          <Loader size={24} className="animate-spin" />
+          <Loader size={20} className="animate-spin" />
           <span className="text-sm font-medium">Loading messages...</span>
         </div>
       </div>
@@ -190,30 +190,22 @@ const ChatList = () => {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-bg min-h-0">
+    <div className="flex-1 flex flex-col bg-bg-secondary min-h-0">
       {/* Header */}
-      <header className="shrink-0 border-b border-border bg-bg-secondary/50 px-8 py-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-extrabold text-text flex items-center gap-2">
-              <MessageSquare className="text-text-secondary" />
-              Chat
-            </h1>
-            <p className="text-xs text-text-tertiary mt-0.5">
-              Workspace conversation
-            </p>
-          </div>
+      <header className="shrink-0 px-8 py-4">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-2xl font-bold text-text">Chat</h1>
         </div>
       </header>
 
       {/* Error banner */}
       {error && (
-        <div className="shrink-0 px-8 py-3 bg-error-bg border-b border-error-border flex items-center gap-3 text-sm text-error-text">
-          <AlertCircle size={16} className="shrink-0" />
+        <div className="shrink-0 mx-8 mb-2 p-3 bg-error-bg border border-error-border rounded-lg flex items-center gap-2 text-sm text-error-text">
+          <AlertCircle size={14} className="shrink-0" />
           <span>{error}</span>
           <button
             onClick={() => setError('')}
-            className="ml-auto text-error-text/70 hover:text-error-text font-bold"
+            className="ml-auto text-error-text/70 hover:text-error-text font-semibold"
           >
             Dismiss
           </button>
@@ -223,14 +215,14 @@ const ChatList = () => {
       {/* Messages area */}
       <div
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto px-8 py-6"
+        className="flex-1 overflow-y-auto px-8 py-4 min-h-0"
       >
         <div className="max-w-4xl mx-auto">
           {/* Loading more indicator */}
           {isLoadingMore && (
-            <div className="flex items-center justify-center py-4">
+            <div className="flex items-center justify-center py-3">
               <div className="flex items-center gap-2 text-text-secondary">
-                <Loader size={16} className="animate-spin" />
+                <Loader size={14} className="animate-spin" />
                 <span className="text-xs font-medium">Loading older messages...</span>
               </div>
             </div>
@@ -238,8 +230,8 @@ const ChatList = () => {
 
           {/* Has more indicator */}
           {!hasMore && messages.length > 0 && (
-            <div className="text-center py-4">
-              <span className="text-[10px] font-semibold text-text-tertiary uppercase tracking-wider">
+            <div className="text-center py-3">
+              <span className="text-[10px] font-medium text-text-tertiary">
                 Beginning of conversation
               </span>
             </div>
@@ -248,8 +240,10 @@ const ChatList = () => {
           {/* Messages list */}
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="text-5xl mb-4">💬</div>
-              <h3 className="text-xl font-bold text-text mb-2">No messages yet</h3>
+              <div className="w-12 h-12 rounded-xl bg-bg flex items-center justify-center mb-4 border border-border">
+                <MessageSquare size={22} className="text-text-secondary" />
+              </div>
+              <h3 className="text-base font-semibold text-text mb-1">No messages yet</h3>
               <p className="text-text-secondary text-sm max-w-md">
                 Start the conversation by sending a message below.
               </p>

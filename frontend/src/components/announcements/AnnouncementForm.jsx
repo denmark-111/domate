@@ -207,29 +207,29 @@ const AnnouncementForm = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div
-        className="relative bg-bg rounded-2xl border border-border shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] flex flex-col"
+        className="relative bg-bg rounded-xl border border-border max-w-2xl w-full mx-4 max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border">
-          <h2 className="text-lg font-bold text-text">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+          <h2 className="text-base font-semibold text-text">
             {isEditing ? 'Edit Announcement' : 'New Announcement'}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 text-text-secondary hover:text-text rounded-lg hover:bg-bg-tertiary transition-colors"
+            className="p-1.5 text-text-secondary hover:text-text rounded-lg hover:bg-bg-tertiary transition-colors"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
           {/* Title */}
           <div>
             <label
               htmlFor="announcement-title"
-              className="block text-sm font-bold text-text-secondary uppercase tracking-wider mb-2"
+              className="block text-sm font-semibold text-text-secondary mb-1.5"
             >
               Title
             </label>
@@ -238,7 +238,7 @@ const AnnouncementForm = ({
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border-2 border-border bg-input-bg text-text outline-none focus:border-input-border-focus transition-colors"
+              className="w-full px-4 py-2.5 rounded-lg border border-border bg-input-bg text-text outline-none focus:border-input-border-focus transition-colors"
               placeholder="Announcement title"
               maxLength={255}
             />
@@ -248,7 +248,7 @@ const AnnouncementForm = ({
           <div>
             <label
               htmlFor="announcement-content"
-              className="block text-sm font-bold text-text-secondary uppercase tracking-wider mb-2"
+              className="block text-sm font-semibold text-text-secondary mb-1.5"
             >
               Content
             </label>
@@ -257,7 +257,7 @@ const AnnouncementForm = ({
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows="6"
-              className="w-full px-4 py-3 rounded-lg border-2 border-border bg-input-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none"
+              className="w-full px-4 py-2.5 rounded-lg border border-border bg-input-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none"
               placeholder="Write your announcement..."
               maxLength={5000}
             />
@@ -271,12 +271,12 @@ const AnnouncementForm = ({
             <button
               type="button"
               onClick={() => setPinned(!pinned)}
-              className={`relative w-11 h-6 rounded-full transition-colors ${
+              className={`relative w-10 h-5 rounded-full transition-colors ${
                 pinned ? 'bg-accent' : 'bg-border'
               }`}
             >
               <span
-                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${
+                className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
                   pinned ? 'translate-x-5' : ''
                 }`}
               />
@@ -286,46 +286,46 @@ const AnnouncementForm = ({
 
           {/* Attachments */}
           <div>
-            <label className="block text-sm font-bold text-text-secondary uppercase tracking-wider mb-2">
+            <label className="block text-sm font-semibold text-text-secondary mb-1.5">
               Attachments
             </label>
 
             {/* Uploaded files list */}
             {attachments.length > 0 && (
-              <div className="space-y-2 mb-3">
+              <div className="space-y-1.5 mb-3">
                 {attachments.map((attachment, index) => {
                   const previewUrl = previewUrls[attachment.id] || previewUrls[attachment.storagePath];
                   const isImage = isImageAttachment(attachment);
                   return (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-3 bg-bg-secondary rounded-lg border border-border-light"
+                      className="flex items-center justify-between p-2.5 bg-bg-secondary rounded-lg"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-2.5 min-w-0">
                         {isImage && previewUrl ? (
                           <img
                             src={previewUrl}
                             alt={attachment.fileName}
-                            className="w-10 h-10 rounded-md object-cover border border-border-light shrink-0"
+                            className="w-8 h-8 rounded-md object-cover border border-border-light shrink-0"
                           />
                         ) : isImage ? (
-                          <div className="w-10 h-10 flex items-center justify-center bg-bg rounded-md border border-border-light shrink-0">
-                            <Image size={16} className="text-text-secondary" />
+                          <div className="w-8 h-8 flex items-center justify-center bg-bg rounded-md border border-border-light shrink-0">
+                            <Image size={14} className="text-text-secondary" />
                           </div>
                         ) : (
-                          <File size={16} className="text-text-secondary shrink-0" />
+                          <File size={14} className="text-text-secondary shrink-0" />
                         )}
-                        <span className="text-sm font-medium text-text truncate">
+                        <span className="text-sm text-text truncate">
                           {attachment.fileName}
                         </span>
                       </div>
                       <button
                         type="button"
                         onClick={() => removeAttachment(index)}
-                        className="p-1.5 text-text-secondary hover:text-red-500 hover:bg-red-50 rounded transition-colors shrink-0"
+                        className="p-1 text-text-secondary hover:text-red-500 hover:bg-red-50 rounded transition-colors shrink-0"
                         title="Remove file"
                       >
-                        <Trash2 size={14} />
+                        <Trash2 size={13} />
                       </button>
                     </div>
                   );
@@ -335,13 +335,13 @@ const AnnouncementForm = ({
 
             {/* Currently uploading files */}
             {loadingFiles.length > 0 && (
-              <div className="space-y-2 mb-3">
+              <div className="space-y-1.5 mb-3">
                 {loadingFiles.map((file) => (
                   <div
                     key={file.id}
-                    className="flex items-center gap-2 p-3 bg-bg-secondary rounded-lg border border-border-light"
+                    className="flex items-center gap-2 p-2.5 bg-bg-secondary rounded-lg"
                   >
-                    <Loader size={16} className="text-accent animate-spin shrink-0" />
+                    <Loader size={14} className="text-accent animate-spin shrink-0" />
                     <span className="text-sm text-text-secondary">{file.name}</span>
                     <span className="text-xs text-accent ml-auto">Uploading...</span>
                   </div>
@@ -350,9 +350,9 @@ const AnnouncementForm = ({
             )}
 
             {/* File picker */}
-            <label className="flex items-center gap-2 px-4 py-3 rounded-lg border-2 border-dashed border-border bg-input-bg cursor-pointer hover:border-accent/50 transition-colors">
-              <Upload size={18} className="text-text-secondary" />
-              <span className="text-sm font-medium text-text-secondary">
+            <label className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-dashed border-border bg-input-bg cursor-pointer hover:border-accent/50 transition-colors">
+              <Upload size={16} className="text-text-secondary" />
+              <span className="text-sm text-text-secondary">
                 {loadingFiles.length > 0
                   ? 'Add another file...'
                   : 'Click to upload files'}
@@ -377,12 +377,12 @@ const AnnouncementForm = ({
         </form>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-border">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border">
           <button
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="px-6 py-2.5 rounded-lg font-bold text-text-secondary hover:bg-bg-tertiary transition-colors disabled:opacity-50"
+            className="px-5 py-2 rounded-lg font-semibold text-text-secondary hover:bg-bg-tertiary transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
@@ -390,14 +390,14 @@ const AnnouncementForm = ({
             type="submit"
             onClick={handleSubmit}
             disabled={isSubmitting || loadingFiles.length > 0}
-            className="px-6 py-2.5 rounded-lg font-bold bg-button hover:bg-button-hover text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm flex items-center gap-2"
+            className="px-5 py-2 rounded-lg font-semibold bg-button hover:bg-button-hover text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isSubmitting && <Loader size={16} className="animate-spin" />}
             {isSubmitting
               ? 'Saving...'
               : isEditing
               ? 'Save Changes'
-              : 'Create Announcement'}
+              : 'Create'}
           </button>
         </div>
       </div>

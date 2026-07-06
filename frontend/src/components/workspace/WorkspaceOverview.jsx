@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useAuth } from '../../context/AuthContext';
-import { Info, Save, Edit3, X, Trash2, UserPlus, XCircle, Users, Image, Trash } from 'lucide-react';
+import { Save, Edit3, X, Trash2, UserPlus, XCircle, Users, Image, Trash } from 'lucide-react';
 import { workspaceService, invitationService, supabaseStorageService } from '../../services/index.js';
 import ConfirmModal from '../common/ConfirmModal';
 import InviteMembersForm from './InviteMembersForm';
@@ -206,27 +206,21 @@ const WorkspaceOverview = () => {
   if (!displayWorkspace) return null;
 
   return (
-    <div className="flex-1 overflow-y-auto bg-bg p-8 sm:p-12">
+    <div className="flex-1 overflow-y-auto bg-bg-secondary p-8 sm:p-12">
       <div className="max-w-4xl mx-auto">
-        <header className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-extrabold text-text mb-2 flex items-center gap-3">
-              <Info className="text-text-secondary" />
-              Workspace Overview
-            </h1>
-            <p className="text-text-secondary">View and manage your workspace details.</p>
-          </div>
+        <header className="mb-10 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-text">Overview</h1>
           {isOwner && !isEditing && (
             <div className="flex gap-2">
               <button
                 onClick={() => setIsEditing(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-bg-secondary hover:bg-bg-tertiary border border-border rounded-lg text-sm font-bold text-text transition-colors shadow-sm"
+                className="flex items-center gap-2 px-4 py-2 bg-bg-tertiary hover:bg-bg-tertiary/70 rounded-lg text-sm font-semibold text-text transition-colors"
               >
                 <Edit3 size={16} /> Edit
               </button>
               <button
                 onClick={() => setShowDeleteWorkspace(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg text-sm font-bold text-red-600 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-red-500 hover:bg-red-50 rounded-lg text-sm font-semibold transition-colors"
               >
                 <Trash2 size={16} /> Delete
               </button>
@@ -234,50 +228,40 @@ const WorkspaceOverview = () => {
           )}
         </header>
 
-        <div className="bg-bg-secondary rounded-2xl border border-border p-8 shadow-sm mb-8">
+        <div className="rounded-xl border border-border bg-bg p-6 mb-6">
           {!isEditing ? (
-            <div className="space-y-6">
+            <div className="space-y-5">
               <div className="flex items-center gap-4">
                 <WorkspaceIcon
                   workspace={displayWorkspace}
-                  containerClassName="w-14 h-14 rounded-xl"
+                  containerClassName="w-12 h-12 rounded-xl"
                   className="rounded-xl"
                 />
-                <div>
-                  <h3 className="text-sm font-bold text-text-secondary uppercase tracking-wider mb-1">Workspace Name</h3>
-                  <p className="text-xl font-bold text-text">{displayWorkspace.name}</p>
-                </div>
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-text-secondary uppercase tracking-wider mb-2">Description</h3>
-                <p className="text-text-secondary whitespace-pre-wrap">
-                  {displayWorkspace.description || 'No description provided.'}
-                </p>
-              </div>
-              <div className="flex gap-12 pt-4 border-t border-border">
-                <div>
-                  <h3 className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-1">Type</h3>
-                  <p className="text-sm font-semibold text-text flex items-center gap-1.5">
+                <div className="min-w-0">
+                  <p className="text-lg font-bold text-text">{displayWorkspace.name}</p>
+                  <p className="text-xs text-text-secondary mt-0.5">
                     {displayWorkspace.type === 'team' ? (
-                      <><Users size={14} /> Team</>
+                      <><Users size={12} className="inline mr-0.5" /> Team workspace</>
                     ) : (
-                      'Personal'
+                      'Personal workspace'
                     )}
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-1">Created</h3>
-                  <p className="text-sm font-semibold text-text">
-                    {new Date(displayWorkspace.createdAt).toLocaleDateString()}
+                    {' · '}Created {new Date(displayWorkspace.createdAt).toLocaleDateString()}
                   </p>
                 </div>
               </div>
+              {displayWorkspace.description && (
+                <div className="pt-4 border-t border-border-light">
+                  <p className="text-sm text-text-secondary whitespace-pre-wrap leading-relaxed">
+                    {displayWorkspace.description}
+                  </p>
+                </div>
+              )}
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label htmlFor="name" className="block text-sm font-bold text-text-secondary uppercase tracking-wider mb-2">
-                  Workspace Name
+                <label htmlFor="name" className="block text-sm font-semibold text-text-secondary mb-1.5">
+                  Name
                 </label>
                 <input
                   type="text"
@@ -285,13 +269,13 @@ const WorkspaceOverview = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-lg border-2 border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors"
+                  className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors"
                   placeholder="Enter workspace name"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-text-secondary uppercase tracking-wider mb-2">
+                <label className="block text-sm font-semibold text-text-secondary mb-1.5">
                   Color
                 </label>
                 <ColorPicker
@@ -303,7 +287,7 @@ const WorkspaceOverview = () => {
 
               {/* Cover Image */}
               <div>
-                <label className="block text-sm font-bold text-text-secondary uppercase tracking-wider mb-2">
+                <label className="block text-sm font-semibold text-text-secondary mb-1.5">
                   Cover Image
                 </label>
                 <input
@@ -332,7 +316,7 @@ const WorkspaceOverview = () => {
                 ) : (
                   <label
                     htmlFor="coverImageUrl"
-                    className="flex flex-col items-center justify-center w-full h-32 rounded-lg border-2 border-dashed border-border bg-bg hover:bg-bg-secondary cursor-pointer transition-colors"
+                    className="flex flex-col items-center justify-center w-full h-32 rounded-lg border-2 border-dashed border-border bg-bg-secondary hover:bg-bg-tertiary cursor-pointer transition-colors"
                   >
                     <Image size={24} className="text-text-secondary mb-1" />
                     <span className="text-sm text-text-secondary">Click to upload cover image</span>
@@ -341,7 +325,7 @@ const WorkspaceOverview = () => {
               </div>
 
               <div>
-                <label htmlFor="description" className="block text-sm font-bold text-text-secondary uppercase tracking-wider mb-2">
+                <label htmlFor="description" className="block text-sm font-semibold text-text-secondary mb-1.5">
                   Description
                 </label>
                 <textarea
@@ -350,7 +334,7 @@ const WorkspaceOverview = () => {
                   value={formData.description}
                   onChange={handleInputChange}
                   rows="4"
-                  className="w-full px-4 py-3 rounded-lg border-2 border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none"
+                  className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none"
                   placeholder="Add a description..."
                 />
               </div>
@@ -361,19 +345,19 @@ const WorkspaceOverview = () => {
                 </div>
               )}
 
-              <div className="flex gap-3 pt-4 border-t border-border">
+              <div className="flex gap-3 pt-4 border-t border-border-light">
                 <button
                   type="button"
                   onClick={() => setIsEditing(false)}
                   disabled={isSubmitting}
-                  className="px-6 py-2 rounded-lg font-bold text-text-secondary hover:bg-bg-tertiary transition-colors flex items-center gap-2"
+                  className="px-5 py-2 rounded-lg font-semibold text-text-secondary hover:bg-bg-tertiary transition-colors flex items-center gap-2"
                 >
                   <X size={18} /> Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-6 py-2 rounded-lg font-bold bg-button hover:bg-button-hover text-white transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                  className="px-5 py-2 rounded-lg font-semibold bg-button hover:bg-button-hover text-white transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Save size={18} />
                   {isSubmitting ? 'Saving...' : 'Save Changes'}
@@ -385,12 +369,12 @@ const WorkspaceOverview = () => {
 
         {/* Edit Board Section */}
         {editingBoardId && (
-          <div className="bg-bg-secondary rounded-2xl border border-border p-8 shadow-sm mb-8">
-            <h3 className="text-sm font-bold text-text-secondary uppercase tracking-wider mb-4">Edit Board</h3>
+          <div className="rounded-xl border border-border bg-bg p-6 mb-6">
+            <h3 className="text-sm font-semibold text-text-secondary mb-4">Edit Board</h3>
             <form onSubmit={handleSaveBoard} className="space-y-4">
               <div>
-                <label htmlFor="boardName" className="block text-sm font-bold text-text-secondary uppercase tracking-wider mb-2">
-                  Board Name
+                <label htmlFor="boardName" className="block text-sm font-semibold text-text-secondary mb-1.5">
+                  Name
                 </label>
                 <input
                   type="text"
@@ -398,12 +382,12 @@ const WorkspaceOverview = () => {
                   name="name"
                   value={boardForm.name}
                   onChange={(e) => setBoardForm(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-lg border-2 border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors"
+                  className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors"
                   placeholder="Board name"
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-text-secondary uppercase tracking-wider mb-2">
+                <label className="block text-sm font-semibold text-text-secondary mb-1.5">
                   Color
                 </label>
                 <ColorPicker
@@ -413,7 +397,7 @@ const WorkspaceOverview = () => {
                 />
               </div>
               <div>
-                <label htmlFor="boardDesc" className="block text-sm font-bold text-text-secondary uppercase tracking-wider mb-2">
+                <label htmlFor="boardDesc" className="block text-sm font-semibold text-text-secondary mb-1.5">
                   Description
                 </label>
                 <textarea
@@ -422,7 +406,7 @@ const WorkspaceOverview = () => {
                   value={boardForm.description}
                   onChange={(e) => setBoardForm(prev => ({ ...prev, description: e.target.value }))}
                   rows="3"
-                  className="w-full px-4 py-3 rounded-lg border-2 border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none"
+                  className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none"
                   placeholder="Board description"
                 />
               </div>
@@ -431,19 +415,19 @@ const WorkspaceOverview = () => {
                   {boardError}
                 </div>
               )}
-              <div className="flex gap-3 pt-4 border-t border-border">
+              <div className="flex gap-3 pt-4 border-t border-border-light">
                 <button
                   type="button"
                   onClick={() => setEditingBoardId(null)}
                   disabled={isSavingBoard}
-                  className="px-6 py-2 rounded-lg font-bold text-text-secondary hover:bg-bg-tertiary transition-colors"
+                  className="px-5 py-2 rounded-lg font-semibold text-text-secondary hover:bg-bg-tertiary transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSavingBoard}
-                  className="px-6 py-2 rounded-lg font-bold bg-button hover:bg-button-hover text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                  className="px-5 py-2 rounded-lg font-semibold bg-button hover:bg-button-hover text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSavingBoard ? 'Saving...' : 'Save Board'}
                 </button>
@@ -454,40 +438,40 @@ const WorkspaceOverview = () => {
 
         {/* Boards List Section */}
         {displayWorkspace.boards && displayWorkspace.boards.length > 0 && (
-          <div className="bg-bg-secondary rounded-2xl border border-border p-8 shadow-sm mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-text-secondary uppercase tracking-wider">Boards</h3>
-            </div>
-            <div className="space-y-3">
+          <div className="rounded-xl border border-border bg-bg p-6 mb-6">
+            <h2 className="text-xs font-semibold text-text-secondary mb-4">Boards</h2>
+            <div className="space-y-2">
               {displayWorkspace.boards.map((board) => (
-                <div key={board.id} className="flex items-center justify-between p-4 bg-bg rounded-lg border border-border-light">
-                  <div className="flex items-center gap-3">
+                <div key={board.id} className="flex items-center justify-between px-4 py-3 bg-bg-secondary rounded-lg hover:bg-bg-tertiary/50 transition-colors">
+                  <div className="flex items-center gap-3 min-w-0">
                     <span
-                      className="w-3 h-3 rounded-full shrink-0"
+                      className="w-2.5 h-2.5 rounded-full shrink-0"
                       style={{ backgroundColor: board.color || 'var(--color-text-tertiary)' }}
                     />
-                    <div>
-                      <h4 className="text-sm font-bold text-text">{board.name}</h4>
-                      <p className="text-xs text-text-secondary">{board.description || 'No description'}</p>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-text truncate">{board.name}</p>
+                      {board.description && (
+                        <p className="text-xs text-text-secondary truncate">{board.description}</p>
+                      )}
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-1 shrink-0">
                     <button
                       onClick={() => startEditBoard(board)}
-                      className="p-2 text-text-secondary hover:text-text-accent hover:bg-bg-tertiary rounded transition-colors"
+                      className="p-1.5 text-text-secondary hover:text-text-accent hover:bg-bg-tertiary rounded transition-colors"
                       title="Edit board"
                     >
-                      <Edit3 size={16} />
+                      <Edit3 size={14} />
                     </button>
                     <button
                       onClick={() => {
                         setDeletingBoardId(board.id);
                         setShowDeleteBoard(true);
                       }}
-                      className="p-2 text-red-500 hover:bg-red-50 rounded transition-colors"
+                      className="p-1.5 text-text-secondary hover:text-red-500 hover:bg-red-50 rounded transition-colors"
                       title="Delete board"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={14} />
                     </button>
                   </div>
                 </div>
@@ -519,15 +503,15 @@ const WorkspaceOverview = () => {
         />
 
         {/* Team Members Section */}
-        <div className="bg-bg-secondary rounded-2xl border border-border p-8 shadow-sm">
+        <div className="rounded-xl border border-border bg-bg p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-bold text-text-secondary uppercase tracking-wider">
+            <h2 className="text-xs font-semibold text-text-secondary">
               Members{displayWorkspace.memberships ? ` (${displayWorkspace.memberships.length})` : ''}
-            </h3>
+            </h2>
             {isOwner && (
               <button
                 onClick={() => setShowInviteModal(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-button hover:bg-button-hover text-white text-xs font-bold transition-colors shadow-sm"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-button hover:bg-button-hover text-white text-xs font-semibold transition-colors"
               >
                 <UserPlus size={14} /> Invite
               </button>
@@ -536,26 +520,26 @@ const WorkspaceOverview = () => {
           {isLoadingDetails ? (
             <p className="text-sm text-text-secondary">Loading members...</p>
           ) : displayWorkspace.memberships && displayWorkspace.memberships.length > 0 && displayWorkspace.memberships.some(m => m.user) ? (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {displayWorkspace.memberships.filter(m => m.user).map((membership) => (
-                <div key={membership.user.id} className="flex items-center justify-between p-3 bg-bg rounded-lg border border-border-light">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-button flex items-center justify-center text-white text-xs font-bold shadow-sm overflow-hidden shrink-0">
+                <div key={membership.user.id} className="flex items-center justify-between p-3 bg-bg-secondary rounded-lg hover:bg-bg-tertiary/50 transition-colors">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-full bg-button flex items-center justify-center text-white text-xs font-bold overflow-hidden shrink-0">
                       {membership.user?.avatarUrl ? (
                         <img src={supabaseStorageService.getAvatarUrl(membership.user.avatarUrl)} alt="" className="w-full h-full object-cover" />
                       ) : (
                         (membership.user?.fullName || membership.user?.email || 'U').split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)
                       )}
                     </div>
-                    <div>
-                      <p className="text-sm font-bold text-text">{membership.user?.fullName || 'Unknown User'}</p>
-                      <p className="text-xs text-text-secondary">{membership.user?.email || ''}</p>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-text truncate">{membership.user?.fullName || 'Unknown User'}</p>
+                      <p className="text-xs text-text-secondary truncate">{membership.user?.email || ''}</p>
                     </div>
                   </div>
-                  <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded-full ${
+                  <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-full shrink-0 ${
                     membership.role === 'OWNER' ? 'bg-label-team-bg text-label-team-text' : 'bg-bg-tertiary text-text-secondary'
                   }`}>
-                    {membership.role}
+                    {membership.role === 'OWNER' ? 'Owner' : 'Member'}
                   </span>
                 </div>
               ))}
@@ -566,8 +550,8 @@ const WorkspaceOverview = () => {
 
           {/* Pending Invitations (owner only) */}
           {isOwner && (
-            <div className="mt-6 pt-6 border-t border-border">
-              <h4 className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-3">
+            <div className="mt-5 pt-5 border-t border-border-light">
+              <h4 className="text-xs font-semibold text-text-secondary mb-3">
                 Pending Invitations
                 {invitations.length > 0 && (
                   <span className="ml-2 px-1.5 py-0.5 bg-label-feature-bg text-label-feature-text rounded-full text-[10px]">
@@ -580,13 +564,13 @@ const WorkspaceOverview = () => {
               ) : invitations.length > 0 ? (
                 <div className="space-y-2">
                   {invitations.map((inv) => (
-                    <div key={inv.id} className="flex items-center justify-between p-3 bg-bg rounded-lg border border-border-light">
-                      <div className="flex items-center gap-3">
+                    <div key={inv.id} className="flex items-center justify-between p-3 bg-bg-secondary rounded-lg hover:bg-bg-tertiary/50 transition-colors">
+                      <div className="flex items-center gap-3 min-w-0">
                         <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-700 text-xs font-bold">
                           {(inv.email || '?').slice(0, 2).toUpperCase()}
                         </div>
-                        <div>
-                          <p className="text-sm font-bold text-text">{inv.email}</p>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-text truncate">{inv.email}</p>
                           <p className="text-xs text-text-secondary">
                             Invited {new Date(inv.createdAt).toLocaleDateString()} &middot; expires {new Date(inv.expiresAt).toLocaleDateString()}
                           </p>
@@ -594,7 +578,7 @@ const WorkspaceOverview = () => {
                       </div>
                       <button
                         onClick={() => revokeInvitation(inv.id, displayWorkspace.id)}
-                        className="p-1.5 text-red-500 hover:bg-red-50 rounded transition-colors"
+                        className="p-1.5 text-text-secondary hover:text-red-500 hover:bg-red-50 rounded transition-colors shrink-0"
                         title="Revoke invitation"
                       >
                         <XCircle size={16} />

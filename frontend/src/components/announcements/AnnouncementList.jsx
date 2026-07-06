@@ -167,40 +167,30 @@ const AnnouncementList = () => {
   }
 
   return (
-    <div ref={scrollContainerRef} className="flex-1 overflow-y-auto bg-bg p-8 sm:p-12">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto bg-bg-secondary p-8 sm:p-12">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <header className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-extrabold text-text mb-2 flex items-center gap-3">
-              <Megaphone className="text-text-secondary" />
-              Announcements
-            </h1>
-            <p className="text-text-secondary">
-              {activeWorkspace?.type === 'personal'
-                ? 'Your personal announcements.'
-                : 'Team announcements and updates.'}
-            </p>
-          </div>
+        <header className="mb-10 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-text">Announcements</h1>
           {isOwner && (
             <button
               onClick={openCreateForm}
-              className="flex items-center gap-2 px-4 py-2.5 bg-button hover:bg-button-hover text-white rounded-lg text-sm font-bold transition-colors shadow-sm"
+              className="flex items-center gap-2 px-4 py-2 bg-button hover:bg-button-hover text-white rounded-lg text-sm font-semibold transition-colors"
             >
               <Plus size={18} />
-              New Announcement
+              New
             </button>
           )}
         </header>
 
         {/* Error banner */}
         {error && (
-          <div className="mb-6 p-4 bg-error-bg border border-error-border rounded-xl flex items-center gap-3 text-sm text-error-text">
-            <AlertCircle size={18} className="shrink-0" />
+          <div className="mb-6 p-3 bg-error-bg border border-error-border rounded-lg flex items-center gap-2 text-sm text-error-text">
+            <AlertCircle size={16} className="shrink-0" />
             <span>{error}</span>
             <button
               onClick={() => setError('')}
-              className="ml-auto text-error-text/70 hover:text-error-text"
+              className="ml-auto text-error-text/70 hover:text-error-text font-semibold"
             >
               Dismiss
             </button>
@@ -209,10 +199,12 @@ const AnnouncementList = () => {
 
         {/* Announcements list */}
         {announcements.length === 0 ? (
-          <div className="bg-bg-secondary rounded-2xl border border-border p-12 text-center">
-            <div className="text-5xl mb-4">📢</div>
-            <h3 className="text-xl font-bold text-text mb-2">No announcements yet</h3>
-            <p className="text-text-secondary text-sm mb-6 max-w-md mx-auto">
+          <div className="rounded-xl border border-border bg-bg p-12 text-center">
+            <div className="w-12 h-12 rounded-xl bg-bg-secondary flex items-center justify-center mx-auto mb-4">
+              <Megaphone size={24} className="text-text-secondary" />
+            </div>
+            <h3 className="text-base font-semibold text-text mb-1">No announcements yet</h3>
+            <p className="text-text-secondary text-sm max-w-md mx-auto">
               {isOwner
                 ? 'Create your first announcement to keep your team informed.'
                 : 'Announcements will appear here when they are created.'}
@@ -220,9 +212,9 @@ const AnnouncementList = () => {
             {isOwner && (
               <button
                 onClick={openCreateForm}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-button hover:bg-button-hover text-white rounded-lg text-sm font-bold transition-colors shadow-sm"
+                className="mt-5 inline-flex items-center gap-2 px-4 py-2 bg-button hover:bg-button-hover text-white rounded-lg text-sm font-semibold transition-colors"
               >
-                <Plus size={18} />
+                <Plus size={16} />
                 Create Announcement
               </button>
             )}

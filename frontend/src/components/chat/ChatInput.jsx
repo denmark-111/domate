@@ -27,34 +27,34 @@ const ChatInput = ({ onSend, isLoading }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="border-t border-border bg-bg p-4">
+    <form onSubmit={handleSubmit} className="border-t border-border bg-bg-secondary px-8 py-4">
       <div className="max-w-4xl mx-auto flex gap-3 items-end">
-        <div className="flex-1 relative">
-          <textarea
-            ref={inputRef}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Type a message..."
-            rows={1}
-            className="w-full px-4 py-2.5 bg-input-bg border border-border rounded-xl text-sm text-text placeholder-text-tertiary resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
-            style={{ minHeight: '42px', maxHeight: '120px' }}
+        <textarea
+          ref={inputRef}
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Type a message..."
+          rows={1}
+          className="flex-1 px-4 py-2.5 bg-input-bg border border-border rounded-xl text-sm text-text placeholder-text-tertiary resize-none outline-none focus:border-input-border-focus transition-colors"
+          style={{ minHeight: '42px', maxHeight: '120px' }}
             onInput={(e) => {
               e.target.style.height = 'auto';
-              e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+              const border = e.target.offsetHeight - e.target.clientHeight;
+              e.target.style.height = Math.min(e.target.scrollHeight + border, 120) + 'px';
             }}
-            disabled={isLoading}
-          />
-        </div>
+          disabled={isLoading}
+        />
         <button
           type="submit"
           disabled={!content.trim() || isLoading}
-          className="shrink-0 px-4 py-2.5 bg-button hover:bg-button-hover disabled:bg-button/50 disabled:cursor-not-allowed text-white rounded-xl transition-colors flex items-center gap-2 text-sm font-bold"
+          className="shrink-0 px-4 py-2.5 bg-button hover:bg-button-hover disabled:bg-button/50 disabled:cursor-not-allowed text-white rounded-xl transition-colors flex items-center gap-2 text-sm font-semibold"
+          style={{ minHeight: '42px' }}
         >
           {isLoading ? (
-            <Loader size={18} className="animate-spin" />
+            <Loader size={16} className="animate-spin" />
           ) : (
-            <Send size={18} />
+            <Send size={16} />
           )}
           Send
         </button>

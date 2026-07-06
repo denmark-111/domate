@@ -179,23 +179,21 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
 
   return (
     <div
-      className={`bg-bg-secondary rounded-2xl border shadow-sm transition-all ${
-        announcement.pinned ? 'border-accent/40 ring-1 ring-accent/20' : 'border-border'
+      className={`rounded-xl border transition-all ${
+        announcement.pinned ? 'border-accent/40' : 'border-border'
       }`}
     >
       {/* Header */}
       <div className="p-5 pb-3">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              {announcement.pinned && (
-                <span className="flex items-center gap-1 px-2 py-0.5 bg-accent/10 text-accent text-[10px] font-bold uppercase rounded-full tracking-wider">
-                  <Pin size={12} /> Pinned
-                </span>
-              )}
-            </div>
+            {announcement.pinned && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-bg-secondary text-text-secondary text-[10px] font-semibold rounded-full mb-1.5">
+                <Pin size={11} /> Pinned
+              </span>
+            )}
             <h3
-              className="text-lg font-bold text-text cursor-pointer hover:text-accent transition-colors"
+              className="text-base font-semibold text-text cursor-pointer hover:text-accent transition-colors"
               onClick={() => setExpanded(!expanded)}
             >
               {announcement.title}
@@ -204,29 +202,29 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
 
           {/* Owner actions */}
           {isOwner && (
-            <div className="flex items-center gap-1 shrink-0">
+            <div className="flex items-center gap-0.5 shrink-0">
               <button
                 onClick={() => onEdit(announcement)}
-                className="p-2 text-text-secondary hover:text-accent hover:bg-bg-tertiary rounded-lg transition-colors"
+                className="p-1.5 text-text-secondary hover:text-accent hover:bg-bg-tertiary rounded-lg transition-colors"
                 title="Edit announcement"
               >
-                <Edit3 size={16} />
+                <Edit3 size={14} />
               </button>
               <button
                 onClick={() => onDelete(announcement)}
-                className="p-2 text-text-secondary hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                className="p-1.5 text-text-secondary hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                 title="Delete announcement"
               >
-                <Trash2 size={16} />
+                <Trash2 size={14} />
               </button>
             </div>
           )}
         </div>
 
         {/* Author & date */}
-        <div className="flex items-center gap-4 mt-2 text-xs text-text-secondary">
+        <div className="flex items-center gap-3 mt-2 text-xs text-text-secondary">
           <span className="flex items-center gap-1.5">
-            <div className="w-6 h-6 rounded-full bg-button flex items-center justify-center text-white text-[10px] font-bold overflow-hidden shrink-0">
+            <div className="w-5 h-5 rounded-full bg-button flex items-center justify-center text-white text-[9px] font-bold overflow-hidden shrink-0">
               {announcement.author?.avatarUrl ? (
                 <img src={supabaseStorageService.getAvatarUrl(announcement.author.avatarUrl)} alt="" className="w-full h-full object-cover" />
               ) : (
@@ -235,8 +233,8 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
             </div>
             {announcement.author?.fullName || announcement.author?.email || 'Unknown'}
           </span>
-          <span className="flex items-center gap-1.5">
-            <Calendar size={14} />
+          <span className="flex items-center gap-1">
+            <Calendar size={12} />
             {formatDate(announcement.createdAt)}
           </span>
         </div>
@@ -250,7 +248,7 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
         {announcement.content?.length > 300 && (
           <button
             onClick={() => setExpanded(!expanded)}
-            className="mt-1 text-xs font-bold text-accent hover:text-accent/80 transition-colors"
+            className="mt-1 text-xs font-semibold text-accent hover:text-accent/80 transition-colors"
           >
             {expanded ? 'Show less' : 'Read more'}
           </button>
@@ -260,8 +258,8 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
       {/* Image Attachments - displayed inline */}
       {imageAttachments.length > 0 && (
         <div className="px-5 pb-3">
-          <div className="flex items-center gap-1.5 mb-2 text-xs font-bold text-text-secondary uppercase tracking-wider">
-            <Image size={14} />
+          <div className="flex items-center gap-1.5 mb-2 text-xs font-semibold text-text-secondary">
+            <Image size={13} />
             Images ({imageAttachments.length})
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -270,7 +268,7 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
               return (
                 <div key={attachment.id} className="relative group aspect-square">
                   {loadingImages && !imageUrls[attachment.id] ? (
-                    <div className="w-full h-full flex items-center justify-center bg-bg rounded-lg border border-border-light">
+                    <div className="w-full h-full flex items-center justify-center bg-bg-secondary rounded-lg border border-border-light">
                       <svg className="animate-spin text-text-secondary" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <circle cx="12" cy="12" r="10" strokeDasharray="40" strokeDashoffset="10" />
                       </svg>
@@ -280,27 +278,27 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
                       <img
                         src={imageUrls[attachment.id]}
                         alt={attachment.fileName}
-                        className="w-full h-full object-cover rounded-lg border border-border-light cursor-pointer bg-bg transition-transform hover:scale-[1.02]"
+                        className="w-full h-full object-cover rounded-lg border border-border-light cursor-pointer bg-bg-secondary"
                         onClick={() => handleImageClick(index)}
                         loading="lazy"
                       />
                       {isThirdWithMore && (
                         <div className="absolute inset-0 bg-black/60 rounded-lg flex items-center justify-center cursor-pointer" onClick={() => handleImageClick(index)}>
-                          <span className="text-white font-bold text-lg">+{imageAttachments.length - 2}</span>
+                          <span className="text-white font-semibold text-lg">+{imageAttachments.length - 2}</span>
                         </div>
                       )}
                       <button
                         onClick={() => handleImageClick(index)}
-                        className="absolute top-1.5 right-1.5 p-1.5 bg-black/50 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70 z-10"
+                        className="absolute top-1.5 right-1.5 p-1 bg-black/50 text-white rounded-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70 z-10"
                         title="View full size"
                       >
-                        <Maximize2 size={12} />
+                        <Maximize2 size={11} />
                       </button>
                     </>
                   ) : (
                     <button
                       onClick={() => handleOpen(attachment)}
-                      className="w-full h-full flex items-center justify-center bg-bg rounded-lg border border-border-light hover:border-accent/30 transition-colors"
+                      className="w-full h-full flex items-center justify-center bg-bg-secondary rounded-lg border border-border-light hover:border-accent/30 transition-colors"
                     >
                       <div className="text-center">
                         <ExternalLink size={16} className="mx-auto mb-1 text-text-secondary" />
@@ -320,16 +318,16 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
       {/* Non-image Attachments */}
       {fileAttachments.length > 0 && (
         <div className="px-5 pb-5">
-          <div className="flex items-center gap-1.5 mb-2 text-xs font-bold text-text-secondary uppercase tracking-wider">
-            <Paperclip size={14} />
+          <div className="flex items-center gap-1.5 mb-2 text-xs font-semibold text-text-secondary">
+            <Paperclip size={13} />
             Attachments ({fileAttachments.length})
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             {fileAttachments.map((attachment) => (
               <button
                 key={attachment.id}
                 onClick={() => handleOpen(attachment)}
-                className="w-full flex items-center justify-between p-2.5 bg-bg rounded-lg border border-border-light hover:border-accent/30 hover:bg-bg-hover transition-colors text-left"
+                className="w-full flex items-center justify-between p-2.5 bg-bg-secondary rounded-lg hover:bg-bg-tertiary transition-colors text-left"
               >
                 <div className="flex items-center gap-2 min-w-0">
                   {opening === attachment.id ? (
@@ -337,13 +335,13 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
                       <circle cx="12" cy="12" r="10" strokeDasharray="40" strokeDashoffset="10" />
                     </svg>
                   ) : (
-                    <ExternalLink size={14} className="text-text-secondary shrink-0" />
+                    <ExternalLink size={13} className="text-text-secondary shrink-0" />
                   )}
                   <span className="text-sm font-medium text-text truncate">
                     {attachment.fileName}
                   </span>
                 </div>
-                <span className="text-[10px] text-text-secondary font-semibold shrink-0 ml-2">
+                <span className="text-[10px] text-text-secondary font-medium shrink-0 ml-2">
                   {formatFileSize(attachment.fileSize)}
                 </span>
               </button>
@@ -361,7 +359,7 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
           {/* Close Button */}
           <button
             onClick={() => setFullscreenImage(null)}
-            className="absolute top-4 right-4 p-2 bg-bg-secondary rounded-full shadow-lg border border-border hover:bg-bg-hover transition-colors z-50"
+            className="absolute top-4 right-4 p-2 bg-bg-secondary rounded-full border border-border hover:bg-bg-tertiary transition-colors z-50"
             title="Close"
           >
             <X size={16} />
@@ -371,7 +369,7 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
           {imageAttachments.length > 1 && (
             <button
               onClick={handlePrev}
-              className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-bg-secondary/90 rounded-full shadow-lg border border-border hover:bg-bg-hover transition-colors z-50"
+              className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-bg-secondary/90 rounded-full border border-border hover:bg-bg-tertiary transition-colors z-50"
               title="Previous image"
             >
               <ChevronLeft size={24} />
@@ -382,7 +380,7 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
           {imageAttachments.length > 1 && (
             <button
               onClick={handleNext}
-              className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-bg-secondary/90 rounded-full shadow-lg border border-border hover:bg-bg-hover transition-colors z-50"
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-bg-secondary/90 rounded-full border border-border hover:bg-bg-tertiary transition-colors z-50"
               title="Next image"
             >
               <ChevronRight size={24} />
@@ -394,7 +392,7 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
             <img
               src={imageUrls[fullscreenImage]}
               alt="Full size"
-              className="max-w-[90vw] max-h-[70vh] rounded-xl shadow-2xl object-contain block mx-auto"
+              className="max-w-[90vw] max-h-[70vh] rounded-xl object-contain block mx-auto"
             />
           </div>
 
@@ -408,7 +406,7 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
                   onClick={(e) => handleThumbnailClick(e, index)}
                   className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${
                     index === selectedImageIndex
-                      ? 'border-accent shadow-lg'
+                      ? 'border-accent'
                       : 'border-border-light hover:border-text-secondary'
                   }`}
                 >

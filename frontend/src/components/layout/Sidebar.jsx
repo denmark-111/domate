@@ -199,7 +199,7 @@ const Sidebar = () => {
   );
 
   return (
-    <aside className="w-64 bg-bg-secondary border-r border-border flex flex-col h-screen shrink-0">
+    <aside className="w-64 bg-bg-secondary border-r border-border flex flex-col h-full shrink-0">
       <div className="flex-1 overflow-y-auto py-4">
         {activeWorkspace ? renderWorkspaceSidebar() : renderHomeSidebar()}
       </div>
