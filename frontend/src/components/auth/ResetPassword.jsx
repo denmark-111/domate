@@ -2,31 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import { useAuth } from '../../context/AuthContext';
-
-const LockIcon = () => (
-  <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-  </svg>
-);
-
-const ArrowLeftIcon = () => (
-  <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-  </svg>
-);
-
-const SpinnerIcon = () => (
-  <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-  </svg>
-);
-
-const CheckIcon = () => (
-  <svg className="w-12 h-12 mx-auto text-label-done-text mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
+import { Lock, ArrowLeft, Loader, CheckCircle } from 'lucide-react';
+import AppLogo from '../common/AppLogo';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -113,9 +90,7 @@ const ResetPassword = () => {
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center p-4">
         <div className="w-full max-w-md text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-button text-white font-bold mb-4">
-            B
-          </div>
+          <AppLogo className="mb-4" />
           <h1 className="text-2xl font-bold text-text mb-2">Link Expired</h1>
           <p className="text-text-secondary mb-6">
             This password reset link has expired or is invalid. Please request a new one.
@@ -131,7 +106,7 @@ const ResetPassword = () => {
               to="/auth"
               className="inline-flex items-center gap-2 text-text-secondary hover:text-text font-medium transition-colors"
             >
-              <ArrowLeftIcon />
+              <ArrowLeft size={18} />
               Back to Login
             </Link>
           </div>
@@ -144,10 +119,8 @@ const ResetPassword = () => {
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center p-4">
         <div className="w-full max-w-md text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-button text-white font-bold mb-4">
-            B
-          </div>
-          <SpinnerIcon />
+          <AppLogo className="mb-4" />
+          <Loader size={24} className="animate-spin mx-auto text-text-secondary" />
           <p className="text-text-secondary mt-4">Verifying your reset link...</p>
         </div>
       </div>
@@ -158,10 +131,8 @@ const ResetPassword = () => {
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center p-4">
         <div className="w-full max-w-md text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-button text-white font-bold mb-4">
-            B
-          </div>
-          <CheckIcon />
+          <AppLogo className="mb-4" />
+          <CheckCircle size={48} className="mx-auto text-label-done-text mb-4" />
           <h1 className="text-2xl font-bold text-text mb-2">Password Reset</h1>
           <p className="text-text-secondary mb-2">
             Your password has been successfully reset.
@@ -178,9 +149,7 @@ const ResetPassword = () => {
     <div className="min-h-screen bg-bg flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-button text-white font-bold mb-4">
-            B
-          </div>
+          <AppLogo className="mb-4" />
           <h1 className="text-3xl font-bold text-text mb-2">Set New Password</h1>
           <p className="text-text-secondary">
             Enter your new password below.
@@ -189,12 +158,12 @@ const ResetPassword = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="newPassword" className="block text-sm font-semibold text-text mb-2">
+            <label htmlFor="newPassword" className="block text-sm font-semibold text-text-secondary mb-1.5">
               New Password *
             </label>
             <div className="relative">
               <div className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary">
-                <LockIcon />
+                <Lock size={18} />
               </div>
               <input
                 type="password"
@@ -202,7 +171,7 @@ const ResetPassword = () => {
                 value={newPassword}
                 onChange={(e) => { setNewPassword(e.target.value); setError(''); }}
                 placeholder="••••••••"
-                className={`w-full pl-10 pr-4 py-2 rounded-lg border-2 outline-none transition-colors ${
+                className={`w-full pl-10 pr-4 py-2.5 rounded-lg border outline-none transition-colors ${
                   error
                     ? 'border-error-border bg-error-bg focus:border-error-border'
                     : 'border-border bg-bg focus:border-input-border-focus'
@@ -212,12 +181,12 @@ const ResetPassword = () => {
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-semibold text-text mb-2">
+            <label htmlFor="confirmPassword" className="block text-sm font-semibold text-text-secondary mb-1.5">
               Confirm New Password *
             </label>
             <div className="relative">
               <div className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary">
-                <LockIcon />
+                <Lock size={18} />
               </div>
               <input
                 type="password"
@@ -225,7 +194,7 @@ const ResetPassword = () => {
                 value={confirmPassword}
                 onChange={(e) => { setConfirmPassword(e.target.value); setError(''); }}
                 placeholder="••••••••"
-                className={`w-full pl-10 pr-4 py-2 rounded-lg border-2 outline-none transition-colors ${
+                className={`w-full pl-10 pr-4 py-2.5 rounded-lg border outline-none transition-colors ${
                   error
                     ? 'border-error-border bg-error-bg focus:border-error-border'
                     : 'border-border bg-bg focus:border-input-border-focus'
@@ -243,11 +212,11 @@ const ResetPassword = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-button hover:bg-button-hover disabled:bg-text-secondary text-white font-semibold rounded-lg transition-colors disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-button hover:bg-button-hover disabled:opacity-50 text-white font-semibold rounded-lg transition-colors disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               <>
-                <SpinnerIcon />
+                <Loader size={20} className="animate-spin" />
                 Resetting...
               </>
             ) : (
@@ -261,7 +230,7 @@ const ResetPassword = () => {
             to="/auth"
             className="inline-flex items-center gap-2 text-text-secondary hover:text-text font-medium transition-colors"
           >
-            <ArrowLeftIcon />
+            <ArrowLeft size={18} />
             Back to Login
           </Link>
         </div>

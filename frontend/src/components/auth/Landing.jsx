@@ -1,31 +1,7 @@
 import React from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-
-// Icons
-const CheckIcon = () => (
-  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-  </svg>
-);
-
-const TaskIcon = () => (
-  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-  </svg>
-);
-
-const TeamIcon = () => (
-  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-2a6 6 0 0112 0v2zm6-11a2 2 0 100-4 2 2 0 000 4zm3 5a3 3 0 10-6 0v2a3 3 0 006 0v-2z" />
-  </svg>
-);
-
-const SparkIcon = () => (
-  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-  </svg>
-);
+import { Check, ClipboardList, Users, Zap } from 'lucide-react';
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -37,17 +13,17 @@ const Landing = () => {
 
   const features = [
     {
-      icon: <TaskIcon />,
+      icon: <ClipboardList size={32} />,
       title: 'Smart Task Management',
       description: 'Organize tasks with boards, lists, and cards. Track progress in real-time with visual status indicators.'
     },
     {
-      icon: <TeamIcon />,
+      icon: <Users size={32} />,
       title: 'Team Collaboration',
       description: 'Work together seamlessly. Assign tasks, leave comments, and keep everyone on the same page.'
     },
     {
-      icon: <SparkIcon />,
+      icon: <Zap size={32} />,
       title: 'Productivity Features',
       description: 'Labels, due dates, priorities, and custom workflows to match your team\'s unique process.'
     }
@@ -106,7 +82,7 @@ const Landing = () => {
           >
             Get Started Free
           </button>
-          <button className="px-8 py-3 border-2 border-border text-text font-semibold rounded-lg hover:bg-bg-secondary transition-colors">
+          <button className="px-8 py-3 border border-border text-text font-semibold rounded-lg hover:bg-bg-secondary transition-colors">
             Watch Demo
           </button>
         </div>
@@ -171,7 +147,7 @@ const Landing = () => {
             ].map((benefit, index) => (
               <div key={index} className="flex items-start gap-4 p-4 rounded-lg bg-bg-secondary">
                 <div className="mt-1 text-text-accent flex-shrink-0">
-                  <CheckIcon />
+                  <Check size={24} />
                 </div>
                 <p className="text-lg text-text">{benefit}</p>
               </div>

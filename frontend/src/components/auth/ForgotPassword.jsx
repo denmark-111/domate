@@ -1,25 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-
-const MailIcon = () => (
-  <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-  </svg>
-);
-
-const ArrowLeftIcon = () => (
-  <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-  </svg>
-);
-
-const SpinnerIcon = () => (
-  <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-  </svg>
-);
+import { Mail, ArrowLeft, Loader } from 'lucide-react';
+import AppLogo from '../common/AppLogo';
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -60,9 +43,7 @@ const ForgotPassword = () => {
     <div className="min-h-screen bg-bg flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-button text-white font-bold mb-4">
-            B
-          </div>
+          <AppLogo className="mb-4" />
           <h1 className="text-3xl font-bold text-text mb-2">Board-Done</h1>
           <p className="text-text-secondary">
             {isSent ? 'Check your email' : 'Reset your password'}
@@ -94,12 +75,12 @@ const ForgotPassword = () => {
             </p>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-text mb-2">
+              <label htmlFor="email" className="block text-sm font-semibold text-text-secondary mb-1.5">
                 Email *
               </label>
               <div className="relative">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary">
-                  <MailIcon />
+                  <Mail size={18} />
                 </div>
                 <input
                   type="email"
@@ -107,7 +88,7 @@ const ForgotPassword = () => {
                   value={email}
                   onChange={(e) => { setEmail(e.target.value); setError(''); }}
                   placeholder="you@example.com"
-                  className={`w-full pl-10 pr-4 py-2 rounded-lg border-2 outline-none transition-colors ${
+                  className={`w-full pl-10 pr-4 py-2.5 rounded-lg border outline-none transition-colors ${
                     error
                       ? 'border-error-border bg-error-bg focus:border-error-border'
                       : 'border-border bg-bg focus:border-input-border-focus'
@@ -122,11 +103,11 @@ const ForgotPassword = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-button hover:bg-button-hover disabled:bg-text-secondary text-white font-semibold rounded-lg transition-colors disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-button hover:bg-button-hover disabled:opacity-50 text-white font-semibold rounded-lg transition-colors disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <>
-                  <SpinnerIcon />
+                  <Loader size={20} className="animate-spin" />
                   Sending...
                 </>
               ) : (
@@ -141,7 +122,7 @@ const ForgotPassword = () => {
             to="/auth"
             className="inline-flex items-center gap-2 text-text-secondary hover:text-text font-medium transition-colors"
           >
-            <ArrowLeftIcon />
+            <ArrowLeft size={18} />
             Back to Login
           </Link>
         </div>

@@ -5,6 +5,7 @@ import { useWorkspace } from '../../context/WorkspaceContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { supabaseStorageService, searchService } from '../../services/index.js';
+import AppLogo from '../common/AppLogo';
 
 const Topbar = () => {
   const navigate = useNavigate();
@@ -75,9 +76,7 @@ const Topbar = () => {
           onClick={() => navigate('/dashboard')}
           className="group shrink-0"
         >
-          <div className="w-9 h-9 rounded-xl bg-button flex items-center justify-center text-white font-bold shadow-sm group-hover:scale-105 transition-transform">
-            B
-          </div>
+          <AppLogo size="sm" className="shadow-sm group-hover:scale-105 transition-transform" />
         </button>
 
         <div className="relative group hidden md:block" ref={searchRef}>
