@@ -5,13 +5,15 @@ import { Info, Save, Edit3, X, Trash2, UserPlus, XCircle } from 'lucide-react';
 import { workspaceService, invitationService, supabaseStorageService } from '../../services/index.js';
 import ConfirmModal from '../common/ConfirmModal';
 import InviteMembersForm from './InviteMembersForm';
+import ColorPicker from '../common/ColorPicker';
+import { WORKSPACE_COLORS, BOARD_COLORS } from '../../data/colorPalette';
 
 const WorkspaceOverview = () => {
   const { activeWorkspace, updateWorkspace, deleteWorkspace, updateBoard, deleteBoard, invitations, isLoadingInvitations, createInvitation, revokeInvitation } = useWorkspace();
   const { user } = useAuth();
   
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({ name: '', description: '' });
+  const [formData, setFormData] = useState({ name: '', description: '', color: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -45,7 +47,8 @@ const WorkspaceOverview = () => {
     if (displayWorkspace) {
       setFormData({
         name: displayWorkspace.name || '',
-        description: displayWorkspace.description || ''
+        description: displayWorkspace.description || '',
+        color: displayWorkspace.color || ''
       });
     }
   }, [displayWorkspace, isEditing]);
@@ -65,7 +68,9 @@ const WorkspaceOverview = () => {
 
     setIsSubmitting(true);
     try {
-      const result = await updateWorkspace(displayWorkspace.id, formData);
+      const payload = { name: formData.name, description: formData.description };
+      if (formData.color) payload.color = formData.color;
+      const result = await updateWorkspace(displayWorkspace.id, payload);
       if (result.success) {
         setIsEditing(false);
         setFullWorkspace(result.data); // Update local details
@@ -97,7 +102,7 @@ const WorkspaceOverview = () => {
   };
 
   const [editingBoardId, setEditingBoardId] = useState(null);
-  const [boardForm, setBoardForm] = useState({ name: '', description: '' });
+  const [boardForm, setBoardForm] = useState({ name: '', description: '', color: '' });
   const [boardError, setBoardError] = useState('');
   const [isSavingBoard, setIsSavingBoard] = useState(false);
   const [deletingBoardId, setDeletingBoardId] = useState(null);
@@ -105,7 +110,7 @@ const WorkspaceOverview = () => {
 
   const startEditBoard = (board) => {
     setEditingBoardId(board.id);
-    setBoardForm({ name: board.name || '', description: board.description || '' });
+    setBoardForm({ name: board.name || '', description: board.description || '', color: board.color || '' });
     setBoardError('');
   };
 
@@ -116,7 +121,9 @@ const WorkspaceOverview = () => {
       return;
     }
     setIsSavingBoard(true);
-    const res = await updateBoard(editingBoardId, boardForm);
+    const payload = { name: boardForm.name, description: boardForm.description };
+    if (boardForm.color) payload.color = boardForm.color;
+    const res = await updateBoard(editingBoardId, payload);
     if (res.success) {
       setFullWorkspace(prev => prev ? ({
         ...prev,
@@ -178,9 +185,17 @@ const WorkspaceOverview = () => {
         <div className="bg-bg-secondary rounded-2xl border border-border p-8 shadow-sm mb-8">
           {!isEditing ? (
             <div className="space-y-6">
-              <div>
-                <h3 className="text-sm font-bold text-text-secondary uppercase tracking-wider mb-2">Workspace Name</h3>
-                <p className="text-xl font-bold text-text">{displayWorkspace.name}</p>
+              <div className="flex items-center gap-4">
+                <div
+                  className="w-14 h-14 rounded-xl flex items-center justify-center text-white text-2xl font-bold shadow-sm"
+                  style={{ backgroundColor: displayWorkspace.color || 'var(--color-button)' }}
+                >
+                  {displayWorkspace.name[0]}
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-text-secondary uppercase tracking-wider mb-1">Workspace Name</h3>
+                  <p className="text-xl font-bold text-text">{displayWorkspace.name}</p>
+                </div>
               </div>
               <div>
                 <h3 className="text-sm font-bold text-text-secondary uppercase tracking-wider mb-2">Description</h3>
@@ -215,6 +230,17 @@ const WorkspaceOverview = () => {
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 rounded-lg border-2 border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors"
                   placeholder="Enter workspace name"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-text-secondary uppercase tracking-wider mb-2">
+                  Color
+                </label>
+                <ColorPicker
+                  colors={WORKSPACE_COLORS}
+                  selectedColor={formData.color}
+                  onChange={(color) => setFormData(prev => ({ ...prev, color }))}
                 />
               </div>
 
@@ -281,6 +307,16 @@ const WorkspaceOverview = () => {
                 />
               </div>
               <div>
+                <label className="block text-sm font-bold text-text-secondary uppercase tracking-wider mb-2">
+                  Color
+                </label>
+                <ColorPicker
+                  colors={BOARD_COLORS}
+                  selectedColor={boardForm.color || BOARD_COLORS[0]}
+                  onChange={(color) => setBoardForm(prev => ({ ...prev, color }))}
+                />
+              </div>
+              <div>
                 <label htmlFor="boardDesc" className="block text-sm font-bold text-text-secondary uppercase tracking-wider mb-2">
                   Description
                 </label>
@@ -329,9 +365,15 @@ const WorkspaceOverview = () => {
             <div className="space-y-3">
               {displayWorkspace.boards.map((board) => (
                 <div key={board.id} className="flex items-center justify-between p-4 bg-bg rounded-lg border border-border-light">
-                  <div>
-                    <h4 className="text-sm font-bold text-text">{board.name}</h4>
-                    <p className="text-xs text-text-secondary">{board.description || 'No description'}</p>
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="w-3 h-3 rounded-full shrink-0"
+                      style={{ backgroundColor: board.color || 'var(--color-text-tertiary)' }}
+                    />
+                    <div>
+                      <h4 className="text-sm font-bold text-text">{board.name}</h4>
+                      <p className="text-xs text-text-secondary">{board.description || 'No description'}</p>
+                    </div>
                   </div>
                   <div className="flex gap-2">
                     <button

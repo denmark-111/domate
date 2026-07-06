@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import ColorPicker from '../common/ColorPicker';
+import { BOARD_COLORS, autoAssignColor } from '../../data/colorPalette';
 
 const CreateBoardForm = ({ workspaceName, onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
     name: '',
-    description: ''
+    description: '',
+    color: autoAssignColor(0, BOARD_COLORS)
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,7 +46,8 @@ const CreateBoardForm = ({ workspaceName, onClose, onSubmit }) => {
     try {
       const success = await onSubmit?.({
         name: formData.name,
-        description: formData.description
+        description: formData.description,
+        color: formData.color
       });
       
       if (success !== false) {
@@ -87,6 +91,18 @@ const CreateBoardForm = ({ workspaceName, onClose, onSubmit }) => {
             {errors.name && (
               <p className="text-error-text text-sm mt-1">{errors.name}</p>
             )}
+          </div>
+
+          {/* Color */}
+          <div>
+            <label className="block text-sm font-semibold text-text mb-2">
+              Color
+            </label>
+            <ColorPicker
+              colors={BOARD_COLORS}
+              selectedColor={formData.color}
+              onChange={(color) => setFormData(prev => ({ ...prev, color }))}
+            />
           </div>
 
           {/* Description */}

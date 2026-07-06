@@ -108,7 +108,10 @@ const Topbar = () => {
                           onClick={() => { navigate(`/workspaces/${ws.id}`); setShowSearchDropdown(false); setSearchQuery(''); }}
                           className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text hover:bg-bg-tertiary transition-colors text-left"
                         >
-                          <div className="w-8 h-8 rounded-lg bg-button flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0">
+                          <div
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0"
+                            style={{ backgroundColor: ws.color || 'var(--color-button)' }}
+                          >
                             {ws.name[0]}
                           </div>
                           <div className="min-w-0">
@@ -128,7 +131,12 @@ const Topbar = () => {
                           onClick={() => { navigate(`/workspaces/${board.workspace.id}`, { state: { selectBoardId: board.id } }); setShowSearchDropdown(false); setSearchQuery(''); }}
                           className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text hover:bg-bg-tertiary transition-colors text-left"
                         >
-                          <div className="w-8 h-8 rounded-lg bg-bg-tertiary flex items-center justify-center text-xs text-text shrink-0">#</div>
+                          <div
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-xs text-white shrink-0"
+                            style={{ backgroundColor: board.color || 'var(--color-bg-tertiary)' }}
+                          >
+                            {board.name[0]}
+                          </div>
                           <div className="min-w-0">
                             <p className="font-bold truncate">{board.name}</p>
                             <p className="text-xs text-text-secondary truncate">{board.workspace?.name}</p>

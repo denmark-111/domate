@@ -21,6 +21,8 @@ import TaskCard from './TaskCard';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { boardService, listService, taskService, labelService } from '../../services/index.js';
 import { Info, Tag, Plus, X, Check, Pencil } from 'lucide-react';
+import ColorPicker from '../common/ColorPicker';
+import { BOARD_COLORS } from '../../data/colorPalette';
 
 const LABEL_COLORS = [
   '#61BD4F', '#F2D600', '#FF9F1A', '#EB5A46',
@@ -413,7 +415,7 @@ const Board = () => {
   };
 
   const openBoardDetail = () => {
-    setBoardForm({ name: activeBoard?.name || '', description: activeBoard?.description || '' });
+    setBoardForm({ name: activeBoard?.name || '', description: activeBoard?.description || '', color: activeBoard?.color || '' });
     setEditingBoard(false);
     setBoardError('');
     setIsBoardDetailOpen(true);
@@ -439,7 +441,9 @@ const Board = () => {
     }
     setIsSavingBoard(true);
     try {
-      const res = await updateBoard(activeBoard.id, boardForm);
+      const payload = { name: boardForm.name, description: boardForm.description };
+      if (boardForm.color) payload.color = boardForm.color;
+      const res = await updateBoard(activeBoard.id, payload);
       if (res.success) {
         setActiveBoard({ ...activeBoard, ...res.data });
         setIsBoardDetailOpen(false);
@@ -510,7 +514,15 @@ const Board = () => {
         ) : (
           <>
             <div className="flex items-center justify-between px-6 py-3 border-b border-border flex-shrink-0">
-              <h1 className="text-lg font-extrabold text-text">{activeBoard?.name}</h1>
+              <div className="flex items-center gap-3">
+                {activeBoard?.color && (
+                  <span
+                    className="w-3.5 h-3.5 rounded-full shrink-0"
+                    style={{ backgroundColor: activeBoard.color }}
+                  />
+                )}
+                <h1 className="text-lg font-extrabold text-text">{activeBoard?.name}</h1>
+              </div>
               <button
                 onClick={openBoardDetail}
                 className="p-2 bg-bg hover:bg-bg-tertiary border border-border rounded-lg text-text transition-colors shadow-sm"
@@ -634,8 +646,16 @@ const Board = () => {
                 <>
                   {!editingBoard ? (
                     <div className="space-y-4">
-                      <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        {activeBoard?.color && (
+                          <span
+                            className="w-4 h-4 rounded-full shrink-0"
+                            style={{ backgroundColor: activeBoard.color }}
+                          />
+                        )}
                         <h2 className="text-xl font-extrabold text-text">{activeBoard?.name}</h2>
+                      </div>
+                      <div>
                         {activeBoard?.description ? (
                           <p className="mt-2 text-sm text-text-secondary whitespace-pre-wrap">{activeBoard.description}</p>
                         ) : (
@@ -662,6 +682,14 @@ const Board = () => {
                           className="w-full text-lg font-extrabold text-text bg-bg-tertiary px-3 py-2 rounded border border-input-border outline-none focus:border-input-border-focus"
                           placeholder="Board name"
                           autoFocus
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-text-secondary mb-1">Color</label>
+                        <ColorPicker
+                          colors={BOARD_COLORS}
+                          selectedColor={boardForm.color || BOARD_COLORS[0]}
+                          onChange={(color) => setBoardForm((prev) => ({ ...prev, color }))}
                         />
                       </div>
                       <div>

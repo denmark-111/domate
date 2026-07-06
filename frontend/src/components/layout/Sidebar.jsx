@@ -4,6 +4,14 @@ import { useWorkspace } from '../../context/WorkspaceContext';
 import ConfirmModal from '../common/ConfirmModal';
 import { Home, ListTodo, MessageSquare, Megaphone, Plus, Info, Trash2 } from 'lucide-react';
 
+const wsIcon = (ws) => ({
+  backgroundColor: ws.color || 'var(--color-button)'
+});
+
+const boardIcon = (board) => ({
+  backgroundColor: board.color || 'var(--color-bg-tertiary)'
+});
+
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -61,7 +69,10 @@ const Sidebar = () => {
           }`}
         >
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-6 h-6 rounded bg-label-feature-bg text-label-feature-text flex items-center justify-center text-[10px] font-bold">
+            <div
+              className="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold text-white"
+              style={wsIcon(activeWorkspace)}
+            >
               {activeWorkspace.name[0]}
             </div>
             <div className="text-left min-w-0">
@@ -115,13 +126,17 @@ const Sidebar = () => {
                   setActiveView('Board');
                   setActiveBoard(board);
                 }}
-                className={`w-full text-left px-3 py-2 pr-8 rounded-lg text-sm truncate transition-colors font-medium ${
+                className={`w-full text-left px-3 py-2 pr-8 rounded-lg text-sm truncate transition-colors font-medium flex items-center gap-2 ${
                   activeView === 'Board' && activeBoard?.id === board.id 
                     ? 'text-text-accent bg-input-bg font-bold' 
                     : 'text-text-secondary hover:bg-bg-tertiary/50 hover:text-button-secondary-text'
                 }`}
               >
-                # {board.name}
+                <span
+                  className="w-2.5 h-2.5 rounded-full shrink-0"
+                  style={{ backgroundColor: board.color || 'var(--color-text-tertiary)' }}
+                />
+                {board.name}
               </button>
               <button
                 onClick={(e) => {
@@ -173,7 +188,10 @@ const Sidebar = () => {
               onClick={() => handleWorkspaceChange(ws.id)}
               className="w-full text-left px-3 py-3 rounded-xl border border-transparent bg-bg shadow-sm hover:border-input-border-light hover:shadow-md transition-all flex items-center gap-3"
             >
-              <div className="w-8 h-8 rounded-lg bg-input-bg text-text-accent flex items-center justify-center text-xs font-bold">
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white"
+                style={wsIcon(ws)}
+              >
                 {ws.name[0]}
               </div>
               <div className="min-w-0">

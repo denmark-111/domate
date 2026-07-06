@@ -65,7 +65,10 @@ const HomeDashboard = () => {
               className="group bg-bg-secondary p-6 rounded-2xl border border-border shadow-sm hover:shadow-xl hover:border-input-border-focus transition-all text-left flex flex-col h-48"
             >
               <div className="flex justify-between items-start mb-4">
-                <div className="w-12 h-12 rounded-xl bg-button flex items-center justify-center text-white text-xl font-bold shadow-sm group-hover:scale-110 transition-transform">
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-xl font-bold shadow-sm group-hover:scale-110 transition-transform"
+                  style={{ backgroundColor: ws.color || 'var(--color-button)' }}
+                >
                   {ws.name[0]}
                 </div>
                 <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
@@ -99,7 +102,10 @@ const HomeDashboard = () => {
                   onClick={() => navigate(`/workspaces/${ws.id}`)}
                   className="p-4 bg-bg rounded-xl border border-border-light shadow-sm flex items-center gap-4 hover:bg-bg-secondary cursor-pointer transition-colors text-left"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-button flex items-center justify-center text-white text-sm font-bold shadow-sm">
+                  <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow-sm"
+                    style={{ backgroundColor: ws.color || 'var(--color-button)' }}
+                  >
                     {ws.name[0]}
                   </div>
                   <div className="min-w-0">
@@ -116,7 +122,12 @@ const HomeDashboard = () => {
                   onClick={() => handleBoardClick(board)}
                   className="p-4 bg-bg rounded-xl border border-border-light shadow-sm flex items-center gap-4 hover:bg-bg-secondary cursor-pointer transition-colors text-left"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-bg-tertiary flex items-center justify-center text-xl text-text">#</div>
+                  <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center text-xl text-white"
+                    style={{ backgroundColor: board.color || 'var(--color-bg-tertiary)' }}
+                  >
+                    {board.name[0]}
+                  </div>
                   <div className="min-w-0">
                     <h4 className="text-sm font-bold text-text truncate">{board.name}</h4>
                     <p className="text-xs text-text-secondary truncate">{board.workspace?.name || 'Board'}</p>

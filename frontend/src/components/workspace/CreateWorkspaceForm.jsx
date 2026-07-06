@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWorkspace } from '../../context/WorkspaceContext';
+import ColorPicker from '../common/ColorPicker';
+import { WORKSPACE_COLORS, autoAssignColor } from '../../data/colorPalette';
 
 const CreateWorkspaceForm = ({ onClose }) => {
   const navigate = useNavigate();
   const { createWorkspace } = useWorkspace();
   const [formData, setFormData] = useState({
     name: '',
-    description: ''
+    description: '',
+    color: autoAssignColor(0, WORKSPACE_COLORS)
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,7 +50,8 @@ const CreateWorkspaceForm = ({ onClose }) => {
     try {
       const result = await createWorkspace({
         name: formData.name,
-        description: formData.description
+        description: formData.description,
+        color: formData.color
       });
 
       if (result.success) {
@@ -94,6 +98,18 @@ const CreateWorkspaceForm = ({ onClose }) => {
             {errors.name && (
               <p className="text-error-text text-sm mt-1">{errors.name}</p>
             )}
+          </div>
+
+          {/* Color */}
+          <div>
+            <label className="block text-sm font-semibold text-text mb-2">
+              Color
+            </label>
+            <ColorPicker
+              colors={WORKSPACE_COLORS}
+              selectedColor={formData.color}
+              onChange={(color) => setFormData(prev => ({ ...prev, color }))}
+            />
           </div>
 
           {/* Description */}
