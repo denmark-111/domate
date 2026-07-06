@@ -28,7 +28,7 @@ model Workspace {
   name        String
   description String?
   color       String?  @db.VarChar(7)
-  coverImage  String?  @db.Text
+  coverImageUrl  String?  @db.Text
 
   boards      Board[]
   announcements Announcement[]
