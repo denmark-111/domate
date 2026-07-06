@@ -19,10 +19,13 @@ import TaskModal from './TaskModal';
 import ListColumn from './ListColumn';
 import TaskCard from './TaskCard';
 import { useWorkspace } from '../../context/WorkspaceContext';
+import { useAuth } from '../../context/AuthContext';
 import { boardService, listService, taskService, labelService } from '../../services/index.js';
 import { Info, Tag, Plus, X, Check, Pencil } from 'lucide-react';
 import ColorPicker from '../common/ColorPicker';
+import ActiveUsersBar from '../common/ActiveUsersBar';
 import { BOARD_COLORS } from '../../data/colorPalette';
+import usePresenceRealtime from '../../hooks/usePresenceRealtime';
 
 const LABEL_COLORS = [
   '#61BD4F', '#F2D600', '#FF9F1A', '#EB5A46',
@@ -110,6 +113,8 @@ const moveTaskInLists = (lists, taskId, targetListId, targetPosition) => {
 
 const Board = () => {
   const { activeBoard, setActiveBoard, updateTask, deleteTask, moveTask, updateList, deleteList, updateBoard } = useWorkspace();
+  const { user } = useAuth();
+  const { activeUsers } = usePresenceRealtime(activeBoard?.id, user);
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const dragStartData = useRef(null);
@@ -513,24 +518,27 @@ const Board = () => {
           </div>
         ) : (
           <>
-            <div className="flex items-center justify-between px-6 py-2.5 border-b border-border flex-shrink-0">
-              <div className="flex items-center gap-3">
-                {activeBoard?.color && (
-                  <span
-                    className="w-3.5 h-3.5 rounded-full shrink-0"
-                    style={{ backgroundColor: activeBoard.color }}
-                  />
-                )}
-                <h1 className="text-lg font-extrabold text-text">{activeBoard?.name}</h1>
+              <div className="flex items-center justify-between px-6 py-2.5 border-b border-border flex-shrink-0">
+                <div className="flex items-center gap-3">
+                  {activeBoard?.color && (
+                    <span
+                      className="w-3.5 h-3.5 rounded-full shrink-0"
+                      style={{ backgroundColor: activeBoard.color }}
+                    />
+                  )}
+                  <h1 className="text-lg font-extrabold text-text">{activeBoard?.name}</h1>
+                </div>
+                <div className="flex items-center gap-2">
+                  <ActiveUsersBar users={activeUsers} />
+                  <button
+                    onClick={openBoardDetail}
+                    className="p-2 hover:bg-bg-tertiary rounded-lg text-text-secondary transition-colors"
+                    title="Board Details"
+                  >
+                    <Info size={20} />
+                  </button>
+                </div>
               </div>
-              <button
-                onClick={openBoardDetail}
-                className="p-2 hover:bg-bg-tertiary rounded-lg text-text-secondary transition-colors"
-                title="Board Details"
-              >
-                <Info size={20} />
-              </button>
-            </div>
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
