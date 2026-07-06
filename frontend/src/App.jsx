@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { WorkspaceProvider } from './context/WorkspaceContext';
 import { ThemeContextProvider } from './context/ThemeContext';
@@ -17,13 +17,25 @@ import AcceptInvitation from './components/invitation/AcceptInvitation';
 import Settings from './components/settings/Settings';
 
 const AppContent = ({ viewType }) => {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(
+    () => localStorage.getItem('sidebarCollapsed') === 'true'
+  );
+
+  const handleToggleSidebar = () => {
+    setSidebarCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem('sidebarCollapsed', next);
+      return next;
+    });
+  };
+
   return (
     <WorkspaceProvider>
       <div className="flex flex-col h-screen font-sans">
         <Topbar />
 
         <div className="flex flex-1 overflow-hidden">
-          {viewType !== 'settings' && <Sidebar />}
+          {viewType !== 'settings' && <Sidebar collapsed={sidebarCollapsed} onToggle={handleToggleSidebar} />}
           <main className="flex-1 flex flex-col overflow-hidden">
             {viewType === 'home' && <HomeDashboard />}
             {viewType === 'tasks' && <Tasks />}
