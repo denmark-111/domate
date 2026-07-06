@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { activityService } from '../../services/index.js';
 import CreateWorkspaceForm from '../workspace/CreateWorkspaceForm';
+import WorkspaceIcon from '../workspace/WorkspaceIcon';
 import { useAuth } from '../../context/AuthContext';
 import { Users, Plus } from 'lucide-react';
 
@@ -60,12 +61,11 @@ const HomeDashboard = () => {
                     className="flex flex-col items-start gap-4 p-5 rounded-xl border border-border bg-bg shadow-sm hover:shadow-md transition-shadow text-left h-32"
                   >
                     <div className="flex items-center gap-3 w-full">
-                      <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shrink-0"
-                        style={{ backgroundColor: ws.color || 'var(--color-button)' }}
-                      >
-                        {ws.name[0]}
-                      </div>
+                      <WorkspaceIcon
+                        workspace={ws}
+                        containerClassName="w-10 h-10 rounded-xl"
+                        className="rounded-xl"
+                      />
                       {ws.type === 'team' && <Users size={16} className="text-text-secondary ml-auto" />}
                     </div>
                     <div className="min-w-0 self-stretch">

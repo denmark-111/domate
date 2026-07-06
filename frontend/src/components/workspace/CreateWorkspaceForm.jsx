@@ -1,17 +1,21 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWorkspace } from '../../context/WorkspaceContext';
+import { supabaseStorageService } from '../../services/supabaseStorageService';
 import ColorPicker from '../common/ColorPicker';
 import { WORKSPACE_COLORS, autoAssignColor } from '../../data/colorPalette';
+import { Image } from 'lucide-react';
 
 const CreateWorkspaceForm = ({ onClose }) => {
   const navigate = useNavigate();
-  const { createWorkspace } = useWorkspace();
+  const { createWorkspace, updateWorkspace } = useWorkspace();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     color: autoAssignColor(0, WORKSPACE_COLORS)
   });
+  const [coverFile, setCoverFile] = useState(null);
+  const [coverPreview, setCoverPreview] = useState(null);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -38,6 +42,18 @@ const CreateWorkspaceForm = ({ onClose }) => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleCoverSelect = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setCoverFile(file);
+    setCoverPreview(URL.createObjectURL(file));
+  };
+
+  const handleRemoveCover = () => {
+    setCoverFile(null);
+    setCoverPreview(null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -55,7 +71,12 @@ const CreateWorkspaceForm = ({ onClose }) => {
       });
 
       if (result.success) {
-        console.log('Workspace created:', result.data);
+        // If a cover file was selected, upload it with the real workspace ID
+        if (coverFile) {
+          const coverImageUrl = await supabaseStorageService.uploadWorkspaceCoverUrl(result.data.id, coverFile);
+          await updateWorkspace(result.data.id, { coverImageUrl });
+        }
+
         navigate(`/workspaces/${result.data.id}`);
         onClose?.();
       } else {
@@ -110,6 +131,45 @@ const CreateWorkspaceForm = ({ onClose }) => {
               selectedColor={formData.color}
               onChange={(color) => setFormData(prev => ({ ...prev, color }))}
             />
+          </div>
+
+          {/* Cover Image */}
+          <div>
+            <label className="block text-sm font-semibold text-text mb-2">
+              Cover Image
+            </label>
+            <input
+              type="file"
+              id="coverImageUrl"
+              accept="image/*"
+              onChange={handleCoverSelect}
+              className="hidden"
+            />
+            {coverPreview ? (
+              <div className="relative w-full h-28 rounded-lg overflow-hidden border border-border mb-2">
+                <img
+                  src={coverPreview}
+                  alt="Cover preview"
+                  className="w-full h-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={handleRemoveCover}
+                  className="absolute top-2 right-2 w-6 h-6 bg-black/50 hover:bg-black/70 rounded-full text-white text-xs flex items-center justify-center transition-colors"
+                  title="Remove cover"
+                >
+                  ✕
+                </button>
+              </div>
+            ) : (
+              <label
+                htmlFor="coverImageUrl"
+                className="flex flex-col items-center justify-center w-full h-28 rounded-lg border-2 border-dashed border-border bg-bg hover:bg-bg-secondary cursor-pointer transition-colors"
+              >
+                <Image size={24} className="text-text-secondary mb-1" />
+                <span className="text-sm text-text-secondary">Click to upload cover image</span>
+              </label>
+            )}
           </div>
 
           {/* Description */}

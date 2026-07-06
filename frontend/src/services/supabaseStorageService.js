@@ -161,4 +161,60 @@ export const supabaseStorageService = {
     const { data } = supabase.storage.from('avatars').getPublicUrl(avatarUrlOrPath);
     return data?.publicUrl || '';
   },
+  
+  /**
+   * Upload a workspace cover image to the workspace-covers bucket (public bucket).
+   * The file is uploaded directly from the client to Supabase Storage,
+   * and the returned storage path is sent to the backend for persistence.
+   * @param {string} workspaceId - The workspace UUID
+   * @param {File} file - The cover image file
+   * @returns {Promise<string>} - The storage path of the uploaded cover
+   */
+  uploadWorkspaceCoverUrl: async (workspaceId, file) => {
+    const ext = file.name.split('.').pop() || 'png';
+    const storagePath = `${workspaceId}/${crypto.randomUUID()}.${ext}`;
+
+    const { data, error } = await supabase.storage
+      .from('workspace-covers')
+      .upload(storagePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: file.type,
+      });
+
+    if (error) {
+      throw new Error(`Failed to upload workspace cover: ${error.message}`);
+    }
+
+    if (!data?.path) {
+      throw new Error('Workspace cover image upload succeeded but no path was returned');
+    }
+
+    return data.path;
+  },
+
+  /**
+   * Delete a workspace cover image from the workspace-covers bucket.
+   * @param {string} storagePath - The storage path of the cover to delete
+   */
+  deleteWorkspaceCoverUrl: async (storagePath) => {
+    const { error } = await supabase.storage
+      .from('workspace-covers')
+      .remove([storagePath]);
+
+    if (error) {
+      console.error('Failed to delete workspace cover from storage:', error.message);
+    }
+  },
+
+  /**
+   * Get the public URL for a workspace cover image (public bucket, no signed URL needed).
+   * @param {string} storagePath - The storage path of the cover
+   * @returns {string}
+   */
+  getCoverImageUrl: (storagePath) => {
+    if (!storagePath) return '';
+    const { data } = supabase.storage.from('workspace-covers').getPublicUrl(storagePath);
+    return data?.publicUrl || '';
+  },
 };

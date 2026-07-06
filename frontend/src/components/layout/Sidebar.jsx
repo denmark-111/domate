@@ -2,11 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import ConfirmModal from '../common/ConfirmModal';
+import WorkspaceIcon from '../workspace/WorkspaceIcon';
 import { Home, ListTodo, MessageSquare, Megaphone, Plus, Info, Trash2, Users } from 'lucide-react';
-
-const wsIcon = (ws) => ({
-  backgroundColor: ws.color || 'var(--color-button)'
-});
 
 const boardIcon = (board) => ({
   backgroundColor: board.color || 'var(--color-bg-tertiary)'
@@ -69,12 +66,11 @@ const Sidebar = () => {
           }`}
         >
           <div className="flex items-center gap-3 min-w-0">
-            <div
-              className="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold text-white"
-              style={wsIcon(activeWorkspace)}
-            >
-              {activeWorkspace.name[0]}
-            </div>
+            <WorkspaceIcon
+              workspace={activeWorkspace}
+              containerClassName="w-6 h-6 rounded"
+              className="rounded"
+            />
             <div className="text-left min-w-0">
               <h1 className="text-xs font-bold text-text truncate">
                 {activeWorkspace.name}
@@ -188,12 +184,11 @@ const Sidebar = () => {
               onClick={() => handleWorkspaceChange(ws.id)}
               className="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-3 text-text-secondary hover:bg-bg-tertiary/50 hover:text-button-secondary-text"
             >
-              <div
-                className="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold text-white shrink-0"
-                style={wsIcon(ws)}
-              >
-                {ws.name[0]}
-              </div>
+              <WorkspaceIcon
+                workspace={ws}
+                containerClassName="w-6 h-6 rounded"
+                className="rounded"
+              />
               <span className="truncate">{ws.name}</span>
               {ws.type === 'team' && <Users size={12} className="text-text-secondary shrink-0 ml-auto" />}
             </button>

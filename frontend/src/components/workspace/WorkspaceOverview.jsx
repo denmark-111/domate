@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useAuth } from '../../context/AuthContext';
-import { Info, Save, Edit3, X, Trash2, UserPlus, XCircle, Users } from 'lucide-react';
+import { Info, Save, Edit3, X, Trash2, UserPlus, XCircle, Users, Image, Trash } from 'lucide-react';
 import { workspaceService, invitationService, supabaseStorageService } from '../../services/index.js';
 import ConfirmModal from '../common/ConfirmModal';
 import InviteMembersForm from './InviteMembersForm';
 import ColorPicker from '../common/ColorPicker';
+import WorkspaceIcon from './WorkspaceIcon';
 import { WORKSPACE_COLORS, BOARD_COLORS } from '../../data/colorPalette';
 
 const WorkspaceOverview = () => {
@@ -13,9 +14,13 @@ const WorkspaceOverview = () => {
   const { user } = useAuth();
   
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({ name: '', description: '', color: '' });
+  const [formData, setFormData] = useState({ name: '', description: '', color: '', coverImageUrl: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  const [coverFile, setCoverFile] = useState(null);
+  const [coverPreview, setCoverPreview] = useState(null);
+  const [removeCover, setRemoveCover] = useState(false);
 
   const [fullWorkspace, setFullWorkspace] = useState(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
@@ -48,8 +53,12 @@ const WorkspaceOverview = () => {
       setFormData({
         name: displayWorkspace.name || '',
         description: displayWorkspace.description || '',
-        color: displayWorkspace.color || ''
+        color: displayWorkspace.color || '',
+        coverImageUrl: displayWorkspace.coverImageUrl || ''
       });
+      setCoverFile(null);
+      setCoverPreview(null);
+      setRemoveCover(false);
     }
   }, [displayWorkspace, isEditing]);
 
@@ -68,12 +77,37 @@ const WorkspaceOverview = () => {
 
     setIsSubmitting(true);
     try {
+      let coverImageUrl = formData.coverImageUrl;
+
+      // Upload new cover if a file was selected
+      if (coverFile) {
+        // Delete old cover if it exists
+        if (formData.coverImageUrl) {
+          supabaseStorageService.deleteWorkspaceCoverUrl(formData.coverImageUrl);
+        }
+        coverImageUrl = await supabaseStorageService.uploadWorkspaceCoverUrl(displayWorkspace.id, coverFile);
+        setCoverFile(null);
+        setCoverPreview(null);
+      }
+
+      // Remove cover if requested
+      if (removeCover) {
+        if (formData.coverImageUrl) {
+          supabaseStorageService.deleteWorkspaceCoverUrl(formData.coverImageUrl);
+        }
+        coverImageUrl = null;
+        setRemoveCover(false);
+      }
+
       const payload = { name: formData.name, description: formData.description };
       if (formData.color) payload.color = formData.color;
+      if (coverImageUrl) payload.coverImageUrl = coverImageUrl;
+      else payload.coverImageUrl = null;
+
       const result = await updateWorkspace(displayWorkspace.id, payload);
       if (result.success) {
         setIsEditing(false);
-        setFullWorkspace(result.data); // Update local details
+        setFullWorkspace(result.data);
       } else {
         setError(result.error || 'Failed to update workspace');
       }
@@ -84,6 +118,20 @@ const WorkspaceOverview = () => {
     }
   };
 
+  const handleCoverSelect = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setCoverFile(file);
+    setCoverPreview(URL.createObjectURL(file));
+    setRemoveCover(false);
+  };
+
+  const handleRemoveCover = () => {
+    setCoverFile(null);
+    setCoverPreview(null);
+    setRemoveCover(true);
+  };
+
   const [showDeleteWorkspace, setShowDeleteWorkspace] = useState(false);
   const [showDeleteBoard, setShowDeleteBoard] = useState(false);
   const [isDeletingWorkspace, setIsDeletingWorkspace] = useState(false);
@@ -91,6 +139,10 @@ const WorkspaceOverview = () => {
 
   const handleDeleteWorkspace = async () => {
     setIsDeletingWorkspace(true);
+    // Clean up cover image from storage before deleting
+    if (displayWorkspace.coverImageUrl) {
+      supabaseStorageService.deleteWorkspaceCoverUrl(displayWorkspace.coverImageUrl);
+    }
     const result = await deleteWorkspace(displayWorkspace.id);
     if (result.success) {
       window.location.href = '/dashboard';
@@ -186,12 +238,11 @@ const WorkspaceOverview = () => {
           {!isEditing ? (
             <div className="space-y-6">
               <div className="flex items-center gap-4">
-                <div
-                  className="w-14 h-14 rounded-xl flex items-center justify-center text-white text-2xl font-bold shadow-sm"
-                  style={{ backgroundColor: displayWorkspace.color || 'var(--color-button)' }}
-                >
-                  {displayWorkspace.name[0]}
-                </div>
+                <WorkspaceIcon
+                  workspace={displayWorkspace}
+                  containerClassName="w-14 h-14 rounded-xl"
+                  className="rounded-xl"
+                />
                 <div>
                   <h3 className="text-sm font-bold text-text-secondary uppercase tracking-wider mb-1">Workspace Name</h3>
                   <p className="text-xl font-bold text-text">{displayWorkspace.name}</p>
@@ -248,6 +299,45 @@ const WorkspaceOverview = () => {
                   selectedColor={formData.color}
                   onChange={(color) => setFormData(prev => ({ ...prev, color }))}
                 />
+              </div>
+
+              {/* Cover Image */}
+              <div>
+                <label className="block text-sm font-bold text-text-secondary uppercase tracking-wider mb-2">
+                  Cover Image
+                </label>
+                <input
+                  type="file"
+                  id="coverImageUrl"
+                  accept="image/*"
+                  onChange={handleCoverSelect}
+                  className="hidden"
+                />
+                {(coverPreview || (formData.coverImageUrl && !removeCover)) ? (
+                  <div className="relative w-full h-32 rounded-lg overflow-hidden border border-border mb-2">
+                    <img
+                      src={coverPreview || supabaseStorageService.getCoverImageUrl(formData.coverImageUrl)}
+                      alt="Cover preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveCover}
+                      className="absolute top-2 right-2 p-1.5 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
+                      title="Remove cover"
+                    >
+                      <Trash size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <label
+                    htmlFor="coverImageUrl"
+                    className="flex flex-col items-center justify-center w-full h-32 rounded-lg border-2 border-dashed border-border bg-bg hover:bg-bg-secondary cursor-pointer transition-colors"
+                  >
+                    <Image size={24} className="text-text-secondary mb-1" />
+                    <span className="text-sm text-text-secondary">Click to upload cover image</span>
+                  </label>
+                )}
               </div>
 
               <div>
