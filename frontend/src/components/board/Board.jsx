@@ -513,7 +513,7 @@ const Board = () => {
           </div>
         ) : (
           <>
-            <div className="flex items-center justify-between px-6 py-3 border-b border-border flex-shrink-0">
+            <div className="flex items-center justify-between px-6 py-2.5 border-b border-border flex-shrink-0">
               <div className="flex items-center gap-3">
                 {activeBoard?.color && (
                   <span
@@ -525,7 +525,7 @@ const Board = () => {
               </div>
               <button
                 onClick={openBoardDetail}
-                className="p-2 bg-bg hover:bg-bg-tertiary border border-border rounded-lg text-text transition-colors shadow-sm"
+                className="p-2 hover:bg-bg-tertiary rounded-lg text-text-secondary transition-colors"
                 title="Board Details"
               >
                 <Info size={20} />
@@ -539,7 +539,7 @@ const Board = () => {
               onDragCancel={handleDragCancel}
               onDragEnd={handleDragEnd}
             >
-              <div className="flex gap-6 flex-1 min-h-0 p-4 pt-4">
+              <div className="flex gap-4 flex-1 min-h-0 p-3">
                 <SortableContext items={data.map((col) => listSortableId(col.id))} strategy={horizontalListSortingStrategy}>
                   {data.map((col) => (
                     <ListColumn
@@ -586,7 +586,7 @@ const Board = () => {
                   <div className="w-80 flex-shrink-0">
                     <button
                       onClick={() => setShowAddList(true)}
-                      className="w-full py-3 bg-bg-tertiary hover:bg-bg-tertiary rounded-lg border-2 border-dashed border-border text-text-secondary font-medium transition-colors"
+                      className="w-full py-2 rounded-xl border border-dashed border-border text-text-secondary hover:text-text hover:border-text-secondary text-xs font-medium transition-colors"
                     >
                       + Add List
                     </button>

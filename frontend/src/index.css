@@ -124,10 +124,29 @@ html *::-webkit-scrollbar-thumb:hover {
   background: var(--text-secondary);
 }
 
+/* Thin scrollbar for list columns */
+.thin-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--text-tertiary);
+  border-radius: 4px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
 /* Firefox scrollbar */
 * {
   scrollbar-width: auto;
   scrollbar-color: var(--text-tertiary) transparent;
+}
+
+.thin-scrollbar {
+  scrollbar-width: thin;
 }
 
 html,

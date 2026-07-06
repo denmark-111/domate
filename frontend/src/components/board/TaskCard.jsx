@@ -45,7 +45,7 @@ const TaskCard = ({ task, sortableId, onClick, onDelete, onToggleComplete }) => 
         transition
       }}
       onClick={onClick}
-      className={`bg-bg-secondary p-4 rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer group relative ${isDragging ? 'opacity-50 z-50' : ''} ${isCompleted ? 'opacity-60' : ''}`}
+      className={`bg-bg p-3 rounded-lg border border-border cursor-pointer group relative ${isDragging ? 'opacity-50 z-50' : ''} ${isCompleted ? 'opacity-60' : ''}`}
       {...attributes}
       {...listeners}
     >
@@ -54,12 +54,12 @@ const TaskCard = ({ task, sortableId, onClick, onDelete, onToggleComplete }) => 
           e.stopPropagation();
           setShowDeleteTask(true);
         }}
-        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 text-red-500 hover:bg-red-50 rounded transition-all"
+        className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 p-0.5 text-text-secondary hover:text-red-500 rounded transition-all"
         title="Delete task"
       >
-        <Trash2 size={14} />
+        <Trash2 size={12} />
       </button>
-      <div className="flex items-start gap-3 mb-3">
+      <div className="flex items-start gap-1.5">
         <label
           onClick={(e) => e.stopPropagation()}
           className="mt-0.5 shrink-0"
@@ -71,15 +71,18 @@ const TaskCard = ({ task, sortableId, onClick, onDelete, onToggleComplete }) => 
               e.stopPropagation();
               onToggleComplete?.(task.id, isCompleted ? null : new Date().toISOString());
             }}
-            className="w-4 h-4 rounded border-text-secondary accent-button cursor-pointer"
+            className="w-3.5 h-3.5 rounded border-text-secondary accent-button cursor-pointer"
           />
         </label>
         <div className="flex-1 min-w-0">
-          <div className="flex gap-2 flex-wrap">
+          <p className={`text-xs font-medium transition-colors ${isCompleted ? 'text-text-secondary line-through' : 'text-text group-hover:text-text-accent'}`}>
+            {task.name || task.title}
+          </p>
+          <div className="flex gap-1.5 flex-wrap mt-1 min-h-[16px]">
             {task.labels?.map((label) => (
               <span
                 key={label.id}
-                className="px-2 py-0.5 text-[10px] font-bold rounded uppercase text-white"
+                className="px-1.5 py-0.5 text-[9px] font-bold rounded uppercase text-white"
                 style={{ backgroundColor: label.color }}
               >
                 {label.name}
@@ -88,55 +91,50 @@ const TaskCard = ({ task, sortableId, onClick, onDelete, onToggleComplete }) => 
           </div>
         </div>
       </div>
-      <p className={`text-sm font-medium mb-4 transition-colors ${isCompleted ? 'text-text-secondary line-through' : 'text-text group-hover:text-text-accent'}`}>
-        {task.name || task.title}
-      </p>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-text-secondary">
+      <div className="flex items-center justify-between mt-2">
+        <div className="flex items-center gap-1.5 text-text-secondary">
           {task.dueDate && (
-            <span className={`flex items-center gap-1 text-xs ${new Date(task.dueDate) < new Date() ? 'text-red-500' : ''}`}>
-              <Calendar size={12} />
+            <span className={`flex items-center gap-0.5 text-[10px] ${new Date(task.dueDate) < new Date() ? 'text-red-500' : ''}`}>
+              <Calendar size={10} />
               {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </span>
           )}
           {task.attachments?.length > 0 && (
-            <span className="flex items-center gap-1 text-xs">
-              <Paperclip size={12} />
+            <span className="flex items-center gap-0.5 text-[10px]">
+              <Paperclip size={10} />
               {task.attachments.length}
             </span>
           )}
           {commentCount > 0 && (
-            <span className="flex items-center gap-1 text-xs">
-              <MessageSquare size={12} />
+            <span className="flex items-center gap-0.5 text-[10px]">
+              <MessageSquare size={10} />
               {commentCount}
             </span>
           )}
         </div>
-        {task.assignments?.length > 0 && (
-          <div className="flex items-center" title={task.assignments.map(a => a.user?.fullName || a.user?.email || '?').join(', ')}>
-            {task.assignments.slice(0, 3).map((a, i) => {
-              const avatarUrl = a.user?.avatarUrl ? supabaseStorageService.getAvatarUrl(a.user.avatarUrl) : null;
-              return (
-                <div
-                  key={a.userId}
-                  className="w-6 h-6 rounded-full bg-button border-2 border-bg flex items-center justify-center text-[8px] text-white font-bold -ml-[6px] first:ml-0 overflow-hidden"
-                  style={{ zIndex: 3 - i }}
-                >
-                  {avatarUrl ? (
-                    <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    getInitials(a.user?.fullName || a.user?.email)
-                  )}
-                </div>
-              );
-            })}
-            {task.assignments.length > 3 && (
-              <div className="w-6 h-6 rounded-full bg-bg-tertiary border-2 border-bg flex items-center justify-center text-[8px] text-text-secondary font-bold -ml-[6px]">
-                +{task.assignments.length - 3}
+        <div className="flex items-center min-h-[20px]">
+          {task.assignments?.slice(0, 3).map((a, i) => {
+            const avatarUrl = a.user?.avatarUrl ? supabaseStorageService.getAvatarUrl(a.user.avatarUrl) : null;
+            return (
+              <div
+                key={a.userId}
+                className="w-5 h-5 rounded-full bg-button border-2 border-bg flex items-center justify-center text-[7px] text-white font-bold -ml-[5px] first:ml-0 overflow-hidden"
+                style={{ zIndex: 3 - i }}
+              >
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  getInitials(a.user?.fullName || a.user?.email)
+                )}
               </div>
-            )}
-          </div>
-        )}
+            );
+          })}
+          {task.assignments && task.assignments.length > 3 && (
+            <div className="w-5 h-5 rounded-full bg-bg-tertiary border-2 border-bg flex items-center justify-center text-[7px] text-text-secondary font-bold -ml-[5px]">
+              +{task.assignments.length - 3}
+            </div>
+          )}
+        </div>
       </div>
 
       <ConfirmModal

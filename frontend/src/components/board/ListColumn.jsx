@@ -95,10 +95,10 @@ const ListColumn = ({
         transform: CSS.Transform.toString(transform),
         transition
       }}
-      className={`w-80 flex-shrink-0 flex flex-col gap-4 max-h-full ${isDragging ? 'opacity-50' : ''}`}
+      className={`w-80 flex-shrink-0 flex flex-col gap-2 max-h-full bg-bg border border-border rounded-xl p-3 ${isDragging ? 'opacity-50' : ''}`}
     >
-      <div className="flex items-center justify-between px-2 group/list">
-        <div className="flex items-center gap-2 min-w-0">
+      <div className="flex items-center justify-between group/list">
+        <div className="flex items-center gap-1.5 min-w-0">
           <button
             type="button"
             className="cursor-grab active:cursor-grabbing text-text-secondary hover:text-text transition-colors flex-shrink-0"
@@ -106,7 +106,7 @@ const ListColumn = ({
             {...attributes}
             {...listeners}
           >
-            <GripVertical size={14} />
+            <GripVertical size={12} />
           </button>
           {isEditing ? (
             <input
@@ -119,11 +119,11 @@ const ListColumn = ({
                 if (e.key === 'Enter') handleSaveEdit();
                 if (e.key === 'Escape') handleCancelEdit();
               }}
-              className="text-sm font-bold text-text-tertiary uppercase tracking-wider bg-transparent border-none outline-none p-0 m-0 flex-1 min-w-0 break-words"
+              className="text-xs font-bold text-text-tertiary uppercase tracking-wider bg-transparent border-none outline-none p-0 m-0 flex-1 min-w-0 break-words"
             />
           ) : (
             <h3
-              className="text-sm font-bold text-text-tertiary uppercase tracking-wider cursor-pointer flex-1 min-w-0 break-words"
+              className="text-xs font-bold text-text-tertiary uppercase tracking-wider cursor-pointer flex-1 min-w-0 break-words"
               onClick={() => {
                 setEditValue(title);
                 setIsEditing(true);
@@ -132,22 +132,22 @@ const ListColumn = ({
               {title}
             </h3>
           )}
-          <span className="text-xs font-medium text-text-secondary bg-bg-tertiary px-2 py-1 rounded-full flex-shrink-0">{tasks.length}</span>
+          <span className="text-[10px] font-medium text-text-secondary bg-bg-tertiary px-1.5 py-0.5 rounded-full flex-shrink-0">{tasks.length}</span>
         </div>
         <div className="flex gap-1">
           <button
             onClick={() => setShowDeleteList(true)}
-            className="opacity-0 group-hover/list:opacity-100 p-1 text-red-500 hover:bg-red-50 rounded transition-all"
+            className="opacity-0 group-hover/list:opacity-100 p-0.5 text-red-500 hover:bg-red-50 rounded transition-all"
             title="Delete list"
           >
-            <Trash2 size={14} />
+            <Trash2 size={12} />
           </button>
         </div>
       </div>
 
       <div
         ref={setCombinedRef}
-        className={`flex-1 flex flex-col gap-3 rounded-md transition-colors overflow-y-auto overflow-x-hidden min-h-0 ${isOver ? 'bg-bg-tertiary/70' : ''}`}
+        className={`flex-1 flex flex-col gap-2 rounded-md transition-colors overflow-y-auto overflow-x-hidden min-h-0 thin-scrollbar ${isOver ? 'bg-bg-tertiary/70' : ''}`}
       >
         <SortableContext items={tasks.map((task) => taskSortableId(task.id))} strategy={verticalListSortingStrategy}>
           {tasks.map((task) => (
@@ -161,17 +161,16 @@ const ListColumn = ({
             />
           ))}
         </SortableContext>
-        <div className="sticky bottom-0 bg-bg-secondary rounded-b-md">
+        <div className="sticky bottom-0">
           {!isAddingTask ? (
             <button
               onClick={() => onAddTask(id)}
-              className="w-full py-2 text-sm text-text-secondary hover:bg-bg-tertiary rounded-md border-2 border-dashed border-border transition-colors"
+              className="w-full py-1.5 text-xs text-text-secondary hover:text-text bg-bg hover:bg-bg-tertiary rounded-lg transition-colors"
             >
               + Add Task
             </button>
           ) : (
             <AddTaskForm
-              columnTitle={title}
               onSubmit={(data) => {
                 onSubmitTask(id, data);
                 onCancelAddTask();

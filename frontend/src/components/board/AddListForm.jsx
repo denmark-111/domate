@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 const AddListForm = ({ onSubmit, onCancel }) => {
   const [title, setTitle] = useState('');
@@ -12,37 +12,37 @@ const AddListForm = ({ onSubmit, onCancel }) => {
   };
 
   return (
-    <div className="w-80 flex-shrink-0 flex flex-col gap-4">
-      <div className="px-2">
-        <h3 className="text-sm font-bold text-text-tertiary uppercase tracking-wider">New List</h3>
+    <div className="w-80 flex-shrink-0">
+      <div className="bg-bg border border-border rounded-xl p-3 space-y-3">
+        <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">New List</h3>
+
+        <form onSubmit={handleSubmit} className="space-y-2">
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="List title..."
+            className="w-full px-2.5 py-1.5 rounded-lg border border-border bg-bg outline-none focus:border-input-border-focus text-xs font-medium text-text transition-colors"
+            autoFocus
+          />
+
+          <div className="flex gap-1.5">
+            <button
+              type="submit"
+              className="flex-1 px-3 py-1.5 bg-button hover:bg-button-hover text-white text-xs font-semibold rounded-lg transition-colors"
+            >
+              Create
+            </button>
+            <button
+              type="button"
+              onClick={onCancel}
+              className="flex-1 px-3 py-1.5 bg-button-secondary hover:bg-button-secondary-hover text-button-secondary-text text-xs font-semibold rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
       </div>
-      
-      <form onSubmit={handleSubmit} className="bg-input-bg p-3 rounded-lg border-2 border-input-border space-y-3">
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="List title..."
-          className="w-full px-3 py-2 rounded border border-input-border-light bg-bg outline-none focus:border-input-border-focus text-sm font-medium text-text"
-          autoFocus
-        />
-        
-        <div className="flex gap-2">
-          <button
-            type="submit"
-            className="flex-1 px-4 py-2 bg-button hover:bg-button-hover text-white text-sm font-medium rounded transition-colors"
-          >
-            Create
-          </button>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="flex-1 px-4 py-2 bg-button-secondary hover:bg-button-secondary-hover text-button-secondary-text text-sm font-medium rounded transition-colors"
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
     </div>
   );
 };
