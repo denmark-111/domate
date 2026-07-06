@@ -102,7 +102,7 @@ html[data-theme='dark'] {
   --color-label-team-text: var(--label-team-text);
   --color-label-personal-bg: var(--label-personal-bg);
   --color-label-personal-text: var(--label-personal-text);
-  --font-sans: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
 }
 
 /* Custom scrollbar styles */

@@ -181,23 +181,21 @@ const Sidebar = () => {
         <div className="text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-4 px-3 flex justify-between items-center">
           <span>My Workspaces</span>
         </div>
-        <div className="space-y-2">
+        <div className="space-y-1">
           {workspaces.map(ws => (
             <button
               key={ws.id}
               onClick={() => handleWorkspaceChange(ws.id)}
-              className="w-full text-left px-3 py-3 rounded-xl border border-transparent bg-bg shadow-sm hover:border-input-border-light hover:shadow-md transition-all flex items-center gap-3"
+              className="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-3 text-text-secondary hover:bg-bg-tertiary/50 hover:text-button-secondary-text"
             >
               <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white"
+                className="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold text-white shrink-0"
                 style={wsIcon(ws)}
               >
                 {ws.name[0]}
               </div>
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-text truncate">{ws.name}</p>
-                {ws.type === 'team' && <Users size={12} className="text-text-secondary" />}
-              </div>
+              <span className="truncate">{ws.name}</span>
+              {ws.type === 'team' && <Users size={12} className="text-text-secondary shrink-0 ml-auto" />}
             </button>
           ))}
         </div>

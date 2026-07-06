@@ -78,11 +78,11 @@ const HomeDashboard = () => {
                     {ws.type === 'team' && <Users size={18} className="text-text-secondary" />}
                   </div>
 
-                  <div className="mt-auto">
-                    <h3 className="text-lg font-bold text-text group-hover:text-text-accent transition-colors">
+                  <div className="mt-auto min-w-0">
+                    <h3 className="text-lg font-bold text-text group-hover:text-text-accent transition-colors truncate">
                       {ws.name}
                     </h3>
-                    <p className="text-sm text-text-secondary mt-1">
+                    <p className="text-sm text-text-secondary mt-1 truncate">
                       {ws.type === 'team' ? 'Collaborate with your team' : 'Personal workspace'}
                     </p>
                   </div>
