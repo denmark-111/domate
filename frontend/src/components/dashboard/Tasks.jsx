@@ -278,7 +278,7 @@ const Tasks = () => {
     return (
       <div
         key={assignment.id}
-        className="bg-bg-secondary p-4 rounded-xl border border-border shadow-sm flex items-center justify-between group hover:border-input-border-focus transition-colors cursor-pointer"
+        className="bg-bg p-4 rounded-xl border border-border flex items-center justify-between group hover:bg-bg-tertiary/50 transition-colors cursor-pointer"
         onClick={() => openModal(assignment)}
       >
         <div className="flex items-center gap-4 min-w-0 flex-1">
@@ -303,23 +303,23 @@ const Tasks = () => {
               {task.name}
             </p>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
-              <span className="text-[10px] font-bold text-text-accent bg-input-bg px-2 py-0.5 rounded">
+              <span className="text-[10px] font-bold text-text-secondary">
                 {task.list?.board?.workspace?.name || 'Workspace'}
               </span>
               <span className="text-[10px] font-medium text-text-secondary">•</span>
               <span className="text-[10px] font-medium text-text-secondary">
                 {task.list?.board?.name || 'Board'}
               </span>
-              {commentCount > 0 && (
-                <span className="flex items-center gap-1 text-[10px] text-text-secondary">
-                  <MessageSquare size={10} />
-                  {commentCount}
-                </span>
-              )}
               {task.attachments?.length > 0 && (
                 <span className="flex items-center gap-1 text-[10px] text-text-secondary">
                   <Paperclip size={10} />
                   {task.attachments.length}
+                </span>
+              )}
+              {commentCount > 0 && (
+                <span className="flex items-center gap-1 text-[10px] text-text-secondary">
+                  <MessageSquare size={10} />
+                  {commentCount}
                 </span>
               )}
             </div>
@@ -368,11 +368,10 @@ const Tasks = () => {
   const isEmpty = listItems.length === 0;
 
   return (
-    <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-8 bg-bg-secondary">
+    <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-8 sm:p-12 bg-bg-secondary">
       <div className="max-w-4xl mx-auto w-full">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-text">Your Unified Task List</h1>
-          <p className="text-text-secondary">All tasks assigned to you across all workspaces.</p>
+          <h1 className="text-2xl font-bold text-text">Tasks</h1>
         </div>
 
         <div className="flex gap-6 border-b border-border">
@@ -381,7 +380,7 @@ const Tasks = () => {
             className={`pb-3 text-sm font-semibold transition-colors ${
               activeTab === 'active'
                 ? 'text-text border-b-2 border-button'
-                : 'text-text-secondary hover:text-text'
+                : 'text-text-secondary hover:text-text border-b-2 border-transparent'
             }`}
           >
             Active
@@ -391,7 +390,7 @@ const Tasks = () => {
             className={`pb-3 text-sm font-semibold transition-colors ${
               activeTab === 'completed'
                 ? 'text-text border-b-2 border-button'
-                : 'text-text-secondary hover:text-text'
+                : 'text-text-secondary hover:text-text border-b-2 border-transparent'
             }`}
           >
             Completed
@@ -455,7 +454,7 @@ const Tasks = () => {
         )}
 
         {!isEmpty && !error && (
-          <div className="space-y-4">
+          <div className="space-y-2">
             {listItems.map((assignment) => renderTaskRow(assignment, activeTab === 'completed'))}
           </div>
         )}
