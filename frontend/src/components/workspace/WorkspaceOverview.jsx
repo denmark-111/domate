@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useAuth } from '../../context/AuthContext';
-import { Info, Save, Edit3, X, Trash2, UserPlus, XCircle } from 'lucide-react';
+import { Info, Save, Edit3, X, Trash2, UserPlus, XCircle, Users } from 'lucide-react';
 import { workspaceService, invitationService, supabaseStorageService } from '../../services/index.js';
 import ConfirmModal from '../common/ConfirmModal';
 import InviteMembersForm from './InviteMembersForm';
@@ -206,7 +206,13 @@ const WorkspaceOverview = () => {
               <div className="flex gap-12 pt-4 border-t border-border">
                 <div>
                   <h3 className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-1">Type</h3>
-                  <p className="text-sm font-semibold capitalize text-text">{displayWorkspace.type}</p>
+                  <p className="text-sm font-semibold text-text flex items-center gap-1.5">
+                    {displayWorkspace.type === 'team' ? (
+                      <><Users size={14} /> Team</>
+                    ) : (
+                      'Personal'
+                    )}
+                  </p>
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-1">Created</h3>

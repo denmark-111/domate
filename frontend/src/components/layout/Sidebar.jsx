@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import ConfirmModal from '../common/ConfirmModal';
-import { Home, ListTodo, MessageSquare, Megaphone, Plus, Info, Trash2 } from 'lucide-react';
+import { Home, ListTodo, MessageSquare, Megaphone, Plus, Info, Trash2, Users } from 'lucide-react';
 
 const wsIcon = (ws) => ({
   backgroundColor: ws.color || 'var(--color-button)'
@@ -196,7 +196,7 @@ const Sidebar = () => {
               </div>
               <div className="min-w-0">
                 <p className="text-xs font-bold text-text truncate">{ws.name}</p>
-                <p className="text-[10px] text-text-secondary uppercase font-semibold">{ws.type}</p>
+                {ws.type === 'team' && <Users size={12} className="text-text-secondary" />}
               </div>
             </button>
           ))}

@@ -4,6 +4,7 @@ import { useWorkspace } from '../../context/WorkspaceContext';
 import { activityService } from '../../services/index.js';
 import CreateWorkspaceForm from '../workspace/CreateWorkspaceForm';
 import { useAuth } from '../../context/AuthContext';
+import { Users } from 'lucide-react';
 
 const HomeDashboard = () => {
   const { workspaces } = useWorkspace();
@@ -71,11 +72,7 @@ const HomeDashboard = () => {
                 >
                   {ws.name[0]}
                 </div>
-                <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                  ws.type === 'team' ? 'bg-label-team-bg text-label-team-text' : 'bg-label-personal-bg text-label-personal-text'
-                }`}>
-                  {ws.type}
-                </span>
+                {ws.type === 'team' && <Users size={18} className="text-text-secondary" />}
               </div>
 
               <div className="mt-auto">
@@ -83,7 +80,7 @@ const HomeDashboard = () => {
                   {ws.name}
                 </h3>
                 <p className="text-sm text-text-secondary mt-1">
-                  {ws.type === 'team' ? 'Collaborate with your team' : 'Manage your personal goals'}
+                  {ws.type === 'team' ? 'Collaborate with your team' : 'Personal workspace'}
                 </p>
               </div>
             </button>
@@ -110,7 +107,10 @@ const HomeDashboard = () => {
                   </div>
                   <div className="min-w-0">
                     <h4 className="text-sm font-bold text-text truncate">{ws.name}</h4>
-                    <p className="text-xs text-text-secondary">Workspace &middot; {ws.type}</p>
+                    <p className="text-xs text-text-secondary">
+                      Workspace
+                      {ws.type === 'team' && <Users size={11} className="inline ml-1 -mt-0.5" />}
+                    </p>
                   </div>
                 </button>
               ))}
