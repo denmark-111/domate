@@ -27,6 +27,7 @@ model Workspace {
   id          String   @id @default(uuid()) @db.Uuid
   name        String
   description String?
+  color       String?  @db.VarChar(7)
 
   boards      Board[]
   announcements Announcement[]
@@ -79,6 +80,7 @@ model Board {
   id          String    @id @default(uuid()) @db.Uuid
   name        String
   description String?
+  color       String?   @db.VarChar(7)
 
   workspaceId String    @db.Uuid
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)

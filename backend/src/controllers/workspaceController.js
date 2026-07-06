@@ -69,12 +69,13 @@ export const getWorkspaces = async (req, res, next) => {
 
 export const createWorkspace = async (req, res, next) => {
     const userId = req.supabase.user.id;
-    const { name, description } = req.validated.body;
+    const { name, description, color } = req.validated.body;
 
     const workspace = await prisma.workspace.create({
         data: {
             name,
             description,
+            color,
             memberships: {
                 create: {
                     userId,
@@ -110,13 +111,14 @@ export const getWorkspaceById = async (req, res, next) => {
 
 export const updateWorkspace = async (req, res, next) => {
     const { workspaceId } = req.validated.params;
-    const { name, description } = req.validated.body;
+    const { name, description, color } = req.validated.body;
 
     const workspace = await prisma.workspace.update({
         where: { id: workspaceId },
         data: {
             name,
-            description
+            description,
+            color
         },
         include: fullWorkspaceInclude
     });

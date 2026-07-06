@@ -60,12 +60,13 @@ export const getBoards = async (req, res, next) => {
 
 export const createBoard = async (req, res, next) => {
     const { workspaceId } = req.validated.params;
-    const { name, description } = req.validated.body;
+    const { name, description, color } = req.validated.body;
 
     const board = await prisma.board.create({
         data: {
             name,
             description,
+            color,
             workspaceId
         },
         include: fullBoardInclude
@@ -96,13 +97,14 @@ export const getBoardById = async (req, res, next) => {
 
 export const updateBoard = async (req, res, next) => {
     const { boardId } = req.validated.params;
-    const { name, description } = req.validated.body;
+    const { name, description, color } = req.validated.body;
 
     const board = await prisma.board.update({
         where: { id: boardId },
         data: {
             name,
-            description
+            description,
+            color
         },
         include: fullBoardInclude
     });
