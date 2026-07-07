@@ -124,7 +124,7 @@ const CommentsSection = ({ taskId, onCommentChange }) => {
         value={newComment}
         onChange={(e) => setNewComment(e.target.value)}
         placeholder="Add a comment..."
-        className="w-full p-3 bg-bg-tertiary border border-border rounded text-sm text-text placeholder-text-secondary resize-none focus:outline-none focus:border-input-border-focus transition-colors"
+        className="w-full px-3 py-2.5 rounded-lg border border-border bg-bg text-sm text-text placeholder-text-secondary outline-none focus:border-input-border-focus transition-colors resize-none"
         rows="3"
       />
       {(newComment.trim() || isAddingComment) && (

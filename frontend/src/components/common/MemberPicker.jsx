@@ -74,94 +74,87 @@ const MemberPicker = ({ workspaceId, selectedUserIds = [], selectedUsers = [], o
   const selectedMembers = selectedUsers.map(u => ({ userId: u.id, user: u }));
   const nonSelectedMembers = members.filter(m => !selectedUserIds.includes(m.userId));
 
+  const allMembersSorted = [...members].sort((a, b) => {
+    const aSelected = selectedUserIds.includes(a.userId);
+    const bSelected = selectedUserIds.includes(b.userId);
+    if (aSelected && !bSelected) return -1;
+    if (!aSelected && bSelected) return 1;
+    return 0;
+  });
+
   const filtered = search
-    ? nonSelectedMembers.filter(m => {
+    ? allMembersSorted.filter(m => {
         const name = (m.user?.fullName || '').toLowerCase();
         const email = (m.user?.email || '').toLowerCase();
         const q = search.toLowerCase();
         return name.includes(q) || email.includes(q);
       })
-    : nonSelectedMembers;
+    : allMembersSorted;
 
   return (
     <>
-      {/* Selected members chips — outside containerRef so clicking them closes the dropdown */}
-      <div className="flex gap-1.5 flex-wrap mb-2">
+      {/* Selected members chips + dropdown trigger inline */}
+      <div className="flex gap-2 flex-wrap items-center">
         {selectedMembers.map(m => {
           const avatarUrl = m.user?.avatarUrl ? supabaseStorageService.getAvatarUrl(m.user.avatarUrl) : null;
           return (
-            <div
-              key={m.userId}
-              className="flex items-center gap-1.5 bg-bg-tertiary px-2.5 py-1.5 rounded border border-border text-sm"
-            >
-              <div className="w-5 h-5 rounded-full bg-button text-white text-[8px] font-bold flex items-center justify-center shrink-0 overflow-hidden">
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  getInitials(m.user?.fullName)
-                )}
-              </div>
-              <span className="text-text-secondary text-xs max-w-[100px] truncate">
-                {m.user?.fullName || m.user?.email || 'Unknown'}
-              </span>
-              {!disabled && (
-                <button
-                  type="button"
-                  onClick={() => toggleMember(m.userId)}
-                  className="p-0.5 text-text-secondary hover:text-red-500 rounded transition-colors"
-                >
-                  <X size={12} />
-                </button>
+            <div key={m.userId}>
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
+              ) : (
+                <span className="w-8 h-8 inline-flex items-center justify-center text-xs font-bold text-text-secondary shrink-0">
+                  {getInitials(m.user?.fullName)}
+                </span>
               )}
             </div>
           );
         })}
-      </div>
 
-      {/* Dropdown trigger */}
-      {!disabled && (
-        <div ref={containerRef}>
-          <button
-            ref={triggerRef}
-            type="button"
-            onClick={handleOpen}
-            disabled={disabled}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg border-2 border-dashed border-border bg-bg cursor-pointer hover:border-accent/50 transition-colors text-sm text-text-secondary w-full disabled:opacity-50"
-          >
-            {isLoading ? (
-              <Loader size={14} className="animate-spin" />
-            ) : (
-              <span>+ Add assignee</span>
-            )}
-          </button>
+        {/* Dropdown trigger */}
+        {!disabled && (
+          <div ref={containerRef}>
+            <button
+              ref={triggerRef}
+              type="button"
+              onClick={handleOpen}
+              disabled={disabled}
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md border border-dashed border-border text-text-secondary hover:text-text hover:border-text-secondary transition-colors"
+            >
+              {isLoading ? (
+                <Loader size={12} className="animate-spin" />
+              ) : (
+                '+ Add assignee'
+              )}
+            </button>
 
-          {isOpen && triggerRef.current && createPortal(
+            {isOpen && triggerRef.current && createPortal(
             <div
               ref={dropdownRef}
-              className="fixed z-[100] bg-bg-secondary border border-border rounded-lg shadow-xl"
+              className="fixed z-[100] bg-bg border border-border rounded-xl shadow-xl p-2 space-y-1"
               style={{
-                top: triggerRef.current.getBoundingClientRect().bottom + 4,
+                top: triggerRef.current.getBoundingClientRect().bottom + 6,
                 left: triggerRef.current.getBoundingClientRect().left,
-                minWidth: Math.max(220, triggerRef.current.offsetWidth),
+                minWidth: Math.max(240, triggerRef.current.offsetWidth),
               }}
             >
-              <div className="p-2">
+              <div className="p-1">
                 <input
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search members..."
-                  className="w-full px-3 py-2 rounded-md border border-border bg-bg text-text text-sm outline-none focus:border-input-border-focus transition-colors"
+                  className="w-full px-3 py-2 rounded-lg border border-border bg-bg text-text text-sm outline-none focus:border-input-border-focus transition-colors"
                   autoFocus
                 />
               </div>
               <div className="max-h-48 overflow-y-auto">
                 {filtered.length === 0 ? (
                   <p className="px-3 py-4 text-xs text-text-secondary text-center">
-                    {search ? 'No members found' : 'All members assigned'}
+                    {search ? 'No members found' : 'No members available'}
                   </p>
                 ) : (
                   filtered.map(m => {
+                    const isSelected = selectedUserIds.includes(m.userId);
                     const avatarUrl = m.user?.avatarUrl ? supabaseStorageService.getAvatarUrl(m.user.avatarUrl) : null;
                     return (
                       <button
@@ -171,7 +164,7 @@ const MemberPicker = ({ workspaceId, selectedUserIds = [], selectedUsers = [], o
                           toggleMember(m.userId);
                           setSearch('');
                         }}
-                        className="flex items-center gap-2.5 w-full px-3 py-2.5 hover:bg-bg-tertiary transition-colors text-left"
+                        className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg hover:bg-bg-tertiary transition-colors text-left group"
                       >
                         <div className="w-6 h-6 rounded-full bg-button text-white text-[9px] font-bold flex items-center justify-center shrink-0 overflow-hidden">
                           {avatarUrl ? (
@@ -180,7 +173,7 @@ const MemberPicker = ({ workspaceId, selectedUserIds = [], selectedUsers = [], o
                             getInitials(m.user?.fullName)
                           )}
                         </div>
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1 text-left">
                           <p className="text-sm text-text truncate">
                             {m.user?.fullName || 'Unknown'}
                           </p>
@@ -190,6 +183,9 @@ const MemberPicker = ({ workspaceId, selectedUserIds = [], selectedUsers = [], o
                             </p>
                           )}
                         </div>
+                        {isSelected && (
+                          <X size={14} className="text-text-secondary hover:text-red-500 transition-colors" />
+                        )}
                       </button>
                     );
                   })
@@ -200,6 +196,7 @@ const MemberPicker = ({ workspaceId, selectedUserIds = [], selectedUsers = [], o
           )}
         </div>
       )}
+      </div>
     </>
   );
 };

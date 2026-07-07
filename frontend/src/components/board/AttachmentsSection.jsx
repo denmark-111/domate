@@ -95,7 +95,7 @@ const AttachmentsSection = ({
             </div>
           )}
 
-          <label className={`flex items-center gap-2 px-4 py-3 rounded-lg border-2 border-dashed border-border bg-bg cursor-pointer hover:border-accent/50 transition-colors ${isSavingAttachments ? 'opacity-50 pointer-events-none' : ''}`}>
+          <label className={`flex items-center gap-2 px-4 py-3 rounded-lg border border-dashed border-border bg-bg cursor-pointer hover:border-accent/50 transition-colors ${isSavingAttachments ? 'opacity-50 pointer-events-none' : ''}`}>
             <Upload size={18} className="text-text-secondary" />
             <span className="text-sm font-medium text-text-secondary">
               {loadingFiles.length > 0

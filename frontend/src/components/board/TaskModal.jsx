@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { Trash2, Loader, Plus, ExternalLink } from 'lucide-react';
+import { X, Loader, ExternalLink } from 'lucide-react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { taskService } from '../../services/taskService.js';
 import { labelService, supabaseStorageService } from '../../services/index.js';
@@ -40,12 +40,18 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
   const [assignments, setAssignments] = useState([]);
   const [isSavingAssignees, setIsSavingAssignees] = useState(false);
 
+  // Available colors for new labels (exclude colors already used by board labels)
+  const usedColors = new Set((boardLabels || []).map(l => l.color));
+  const availableLabelColors = LABEL_COLORS.filter(c => !usedColors.has(c)).length > 0
+    ? LABEL_COLORS.filter(c => !usedColors.has(c))
+    : LABEL_COLORS;
+
   // Label state
   const [taskLabels, setTaskLabels] = useState([]);
   const [showLabelPicker, setShowLabelPicker] = useState(false);
   const [isSavingLabels, setIsSavingLabels] = useState(false);
   const [newLabelName, setNewLabelName] = useState('');
-  const [newLabelColor, setNewLabelColor] = useState(LABEL_COLORS[0]);
+  const [newLabelColor, setNewLabelColor] = useState(availableLabelColors[0] || LABEL_COLORS[0]);
   const [isCreatingLabel, setIsCreatingLabel] = useState(false);
 
   // Attachment state
@@ -148,22 +154,6 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
     }
   };
 
-  const syncLabelsToBoard = async (newLabels) => {
-    const payload = {
-      name: editName.trim() || task.name,
-      description: editDescription.trim() || task.description || '',
-      dueDate: editDueDate || task.dueDate || null,
-      completedAt: editCompletedAt || null,
-      attachments: attachments.map(a => ({
-        fileName: a.fileName,
-        fileSize: a.fileSize,
-        mimeType: a.mimeType,
-        storagePath: a.storagePath,
-      })),
-    };
-    await onUpdate({ ...task, ...payload });
-  };
-
   const handleAddLabel = async (boardLabelId) => {
     if (!task?.id || isSavingLabels) return;
     const label = boardLabels.find(l => l.id === boardLabelId);
@@ -172,13 +162,19 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
     setIsSavingLabels(true);
     const newLabels = [...taskLabels, label];
     setTaskLabels(newLabels);
-    setShowLabelPicker(false);
 
     const res = await labelService.setTaskLabels(task.id, newLabels.map(l => l.id));
-    if (res.success) {
-      await syncLabelsToBoard(newLabels);
-    } else {
+    if (!res.success) {
       setTaskLabels(taskLabels);
+    } else {
+      onUpdate?.({
+        ...task,
+        name: editName || task.name,
+        description: editDescription || task.description || '',
+        dueDate: editDueDate || task.dueDate || null,
+        completedAt: editCompletedAt || task.completedAt || null,
+        labels: newLabels,
+      });
     }
     setIsSavingLabels(false);
   };
@@ -189,10 +185,17 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
     setTaskLabels(newLabels);
 
     const res = await labelService.setTaskLabels(task.id, newLabels.map(l => l.id));
-    if (res.success) {
-      await syncLabelsToBoard(newLabels);
-    } else {
+    if (!res.success) {
       setTaskLabels(taskLabels);
+    } else {
+      onUpdate?.({
+        ...task,
+        name: editName || task.name,
+        description: editDescription || task.description || '',
+        dueDate: editDueDate || task.dueDate || null,
+        completedAt: editCompletedAt || task.completedAt || null,
+        labels: newLabels,
+      });
     }
   };
 
@@ -208,7 +211,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
     if (res.success) {
       const newLabel = res.data;
       setNewLabelName('');
-      setNewLabelColor(LABEL_COLORS[0]);
+      setNewLabelColor(availableLabelColors[0] || LABEL_COLORS[0]);
       onBoardLabelCreated?.(newLabel);
       setIsCreatingLabel(false);
       setShowLabelPicker(false);
@@ -216,10 +219,17 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
       const newLabels = [...taskLabels, newLabel];
       setTaskLabels(newLabels);
       const linkRes = await labelService.setTaskLabels(task.id, newLabels.map(l => l.id));
-      if (linkRes.success) {
-        await syncLabelsToBoard(newLabels);
-      } else {
+      if (!linkRes.success) {
         setTaskLabels(taskLabels);
+      } else {
+        onUpdate?.({
+          ...task,
+          name: editName || task.name,
+          description: editDescription || task.description || '',
+          dueDate: editDueDate || task.dueDate || null,
+          completedAt: editCompletedAt || task.completedAt || null,
+          labels: newLabels,
+        });
       }
       return;
     }
@@ -330,12 +340,12 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/70 z-40 transition-opacity"
+        className="fixed inset-0 bg-black/50 z-40 transition-opacity"
         onClick={onClose}
       />
 
       {/* Modal */}
-      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-4xl max-h-[90vh] flex flex-col bg-bg rounded-lg shadow-2xl">
+      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-4xl max-h-[90vh] flex flex-col bg-bg rounded-xl shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border bg-bg rounded-t-lg">
           <div className="flex items-center gap-3 flex-1 pr-4">
@@ -428,7 +438,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
             <div>
               <label className="block text-sm font-semibold text-text mb-2">Description</label>
               {readOnly ? (
-                <p className="w-full px-4 py-3 rounded-lg border-2 border-input-border bg-bg text-text text-sm leading-relaxed min-h-[5rem]">
+                <p className="w-full px-4 py-3 rounded-lg border border-border bg-bg text-text text-sm leading-relaxed min-h-[5rem]">
                   {editDescription || 'No description'}
                 </p>
               ) : (
@@ -437,7 +447,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                   onChange={(e) => setEditDescription(e.target.value)}
                   onBlur={handleSaveDetails}
                   rows="4"
-                  className="w-full px-4 py-3 rounded-lg border-2 border-input-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none text-sm leading-relaxed"
+                  className="w-full px-4 py-3 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none text-sm leading-relaxed"
                   placeholder="Add a description..."
                 />
               )}
@@ -447,7 +457,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
             <div>
               <label className="block text-sm font-semibold text-text mb-2">Due Date</label>
               {readOnly ? (
-                <p className="w-full px-4 py-3 rounded-lg border-2 border-input-border bg-bg text-text text-sm">
+                <p className="w-full px-4 py-3 rounded-lg border border-border bg-bg text-text text-sm">
                   {editDueDate ? new Date(editDueDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'No due date'}
                 </p>
               ) : (
@@ -456,7 +466,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                   value={editDueDate}
                   onChange={(e) => setEditDueDate(e.target.value)}
                   onBlur={handleSaveDetails}
-                  className="w-full px-4 py-3 rounded-lg border-2 border-input-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors text-sm"
+                  className="w-full px-4 py-3 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors text-sm"
                 />
               )}
             </div>
@@ -465,81 +475,73 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
             <div>
               <h3 className="text-sm font-semibold text-text mb-2">Labels</h3>
               <div className="flex gap-2 flex-wrap items-center">
-                {taskLabels.length === 0 && (
-                  <span className="text-sm text-text-secondary">No labels</span>
-                )}
                 {taskLabels.map((label) => (
                   <span
                     key={label.id}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold rounded uppercase text-white group"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-bold rounded-md text-white group"
                     style={{ backgroundColor: label.color }}
                   >
                     {label.name}
-                    {!readOnly && (
-                      <button
-                        onClick={() => handleRemoveLabel(label.id)}
-                        className="opacity-0 group-hover:opacity-100 hover:bg-white/20 rounded-sm transition-opacity"
-                        title="Remove label"
-                      >
-                        <Trash2 size={12} />
-                      </button>
-                    )}
                   </span>
                 ))}
                 {!readOnly && (
                   <div ref={labelContainerRef}>
                     <button
                       onClick={() => setShowLabelPicker(!showLabelPicker)}
-                      className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded border border-dashed border-border text-text-secondary hover:text-text hover:border-text-secondary transition-colors"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md border border-dashed border-border text-text-secondary hover:text-text hover:border-text-secondary transition-colors"
                     >
-                      <Plus size={12} />
-                      Label
+                      + Add label
                     </button>
                     {showLabelPicker && labelContainerRef.current && createPortal(
                       <div
                         ref={labelDropdownRef}
-                        className="fixed z-[100] bg-bg border border-border rounded-lg shadow-xl p-2 space-y-1"
+                        className="fixed z-[100] bg-bg border border-border rounded-xl shadow-xl p-3 space-y-2"
                         style={{
-                          top: labelContainerRef.current.getBoundingClientRect().bottom + 4,
+                          top: labelContainerRef.current.getBoundingClientRect().bottom + 6,
                           left: labelContainerRef.current.getBoundingClientRect().left,
+                          minWidth: 240,
                         }}
                       >
-                        {boardLabels && boardLabels.filter((bl) => !taskLabels.some((tl) => tl.id === bl.id)).length > 0 && (
-                          <div className="space-y-1 pb-1 border-b border-border">
-                            {boardLabels
-                              .filter((bl) => !taskLabels.some((tl) => tl.id === bl.id))
-                              .map((label) => (
+                        {boardLabels && boardLabels.length > 0 && (
+                          <div className="space-y-0.5 pb-2 border-b border-border">
+                            {boardLabels.map((label) => {
+                              const isAttached = taskLabels.some((tl) => tl.id === label.id);
+                              return (
                                 <button
                                   key={label.id}
-                                  onClick={() => handleAddLabel(label.id)}
-                                  className="flex items-center gap-2 w-full px-2 py-1.5 rounded hover:bg-bg-tertiary transition-colors text-left"
+                                  type="button"
+                                  onClick={() => isAttached ? handleRemoveLabel(label.id) : handleAddLabel(label.id)}
+                                  className="flex items-center gap-2 w-full px-3 py-2 rounded-lg hover:bg-bg-tertiary transition-colors text-left group"
                                 >
                                   <span
-                                    className="w-3 h-3 rounded shrink-0"
+                                    className="w-4 h-4 rounded-md shrink-0"
                                     style={{ backgroundColor: label.color }}
                                   />
-                                  <span className="text-sm text-text">{label.name}</span>
+                                  <span className="text-sm text-text flex-1">{label.name}</span>
+                                  {isAttached && (
+                                    <X size={14} className="text-text-secondary hover:text-red-500 transition-colors" />
+                                  )}
                                 </button>
-                              ))
-                            }
+                              );
+                            })}
                           </div>
                         )}
-                        <form onSubmit={handleCreateAndAddLabel} className="space-y-1.5 pt-1">
+                        <form onSubmit={handleCreateAndAddLabel} className="space-y-2">
                           <input
                             type="text"
                             value={newLabelName}
                             onChange={(e) => setNewLabelName(e.target.value)}
                             placeholder="New label name..."
-                            className="w-full px-2 py-1 text-xs rounded border border-input-border bg-bg text-text outline-none focus:border-input-border-focus"
+                            className="w-full px-3 py-2 text-sm rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors"
                           />
-                          <div className="flex gap-1 flex-wrap">
-                            {LABEL_COLORS.map((color) => (
+                          <div className="flex gap-1.5 flex-wrap">
+                            {availableLabelColors.map((color) => (
                               <button
                                 key={color}
                                 type="button"
                                 onClick={() => setNewLabelColor(color)}
-                                className={`w-4 h-4 rounded-full border transition-all ${
-                                  newLabelColor === color ? 'border-white scale-110 ring-1 ring-accent' : 'border-transparent'
+                                className={`w-8 h-8 rounded-md border-2 transition-all ${
+                                  newLabelColor === color ? 'border-white scale-110 ring-2 ring-accent' : 'border-transparent hover:scale-110'
                                 }`}
                                 style={{ backgroundColor: color }}
                               />
@@ -548,7 +550,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                           <button
                             type="submit"
                             disabled={isCreatingLabel || !newLabelName.trim()}
-                            className="w-full px-2 py-1 bg-button hover:bg-button-hover text-white text-xs font-medium rounded transition-colors disabled:opacity-50"
+                            className="w-full px-3 py-2 bg-button hover:bg-button-hover text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
                           >
                             {isCreatingLabel ? 'Creating...' : 'Create'}
                           </button>
