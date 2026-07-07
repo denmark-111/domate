@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { taskService, listService, labelService, supabaseStorageService } from '../../services/index.js';
-import { useWorkspace } from '../../context/WorkspaceContext';
 import TaskModal from '../board/TaskModal.jsx';
 import { Calendar, MessageSquare, Paperclip, Loader } from 'lucide-react';
 
 const Tasks = () => {
-  const { updateTask, moveTask } = useWorkspace();
   const [activeTab, setActiveTab] = useState('active');
   const [tasks, setTasks] = useState([]);
   const [completedTasks, setCompletedTasks] = useState([]);
@@ -16,7 +14,6 @@ const Tasks = () => {
   const [error, setError] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [updatingIds, setUpdatingIds] = useState(new Set());
   const [boardLists, setBoardLists] = useState([]);
   const [boardLabels, setBoardLabels] = useState([]);
   const scrollContainerRef = useRef(null);
@@ -70,70 +67,6 @@ const Tasks = () => {
       setIsLoading(true);
       fetchTasks(1);
     }
-  };
-
-  const handleToggleComplete = async (assignment, completedAt) => {
-    const taskId = assignment.task.id;
-    setUpdatingIds((prev) => new Set(prev).add(taskId));
-    const res = await updateTask(taskId, { completed: !!completedAt });
-    if (res.success) {
-      setTasks((prev) =>
-        completedAt
-          ? prev.filter((a) => a.id !== assignment.id)
-          : prev.map((a) =>
-              a.task.id === taskId
-                ? { ...a, task: { ...a.task, completedAt: null } }
-                : a
-          )
-      );
-      setCompletedTasks((prev) =>
-        completedAt
-          ? [{ ...assignment, task: { ...assignment.task, completedAt } }, ...prev]
-          : prev.filter((a) => a.id !== assignment.id)
-      );
-      setActivePagination((prev) => {
-        if (!prev) return prev;
-        const total = prev.total - 1;
-        return { ...prev, total, hasMore: prev.page * prev.limit < total };
-      });
-      setCompletedPagination((prev) => {
-        if (!prev) return prev;
-        const total = prev.total + 1;
-        return { ...prev, total, hasMore: prev.page * prev.limit < total };
-      });
-    }
-    setUpdatingIds((prev) => {
-      const next = new Set(prev);
-      next.delete(taskId);
-      return next;
-    });
-  };
-
-  const handleToggleUncomplete = async (assignment, taskId) => {
-    setUpdatingIds((prev) => new Set(prev).add(taskId));
-    const res = await updateTask(taskId, { completed: false });
-    if (res.success) {
-      setCompletedTasks((prev) => prev.filter((a) => a.id !== assignment.id));
-      setTasks((prev) => [
-        { ...assignment, task: res.data },
-        ...prev,
-      ]);
-      setActivePagination((prev) => {
-        if (!prev) return prev;
-        const total = prev.total + 1;
-        return { ...prev, total, hasMore: prev.page * prev.limit < total };
-      });
-      setCompletedPagination((prev) => {
-        if (!prev) return prev;
-        const total = prev.total - 1;
-        return { ...prev, total, hasMore: prev.page * prev.limit < total };
-      });
-    }
-    setUpdatingIds((prev) => {
-      const next = new Set(prev);
-      next.delete(taskId);
-      return next;
-    });
   };
 
   useEffect(() => {
@@ -190,69 +123,6 @@ const Tasks = () => {
     setSelectedTask(null);
   };
 
-  const handleTaskUpdate = async (updatedTask) => {
-    const payload = {
-      name: updatedTask.name || updatedTask.title,
-      description: updatedTask.description || '',
-      dueDate: updatedTask.dueDate || null,
-      completed: !!updatedTask.completedAt,
-    };
-    if (updatedTask.attachments) {
-      payload.attachments = updatedTask.attachments;
-    }
-    const res = await updateTask(updatedTask.id, payload);
-    if (res.success) {
-      const normalized = normalizeTask(res.data);
-      setSelectedTask(normalized);
-
-      setTasks((prev) => {
-        const inActive = prev.some((a) => a.task.id === updatedTask.id);
-        if (!inActive) return prev;
-        if (normalized.completedAt) {
-          return prev.filter((a) => a.task.id !== updatedTask.id);
-        }
-        return prev.map((a) =>
-          a.task.id === updatedTask.id ? { ...a, task: normalized } : a
-        );
-      });
-
-      setCompletedTasks((prev) => {
-        const inCompleted = prev.some((a) => a.task.id === updatedTask.id);
-        if (!inCompleted) return prev;
-        if (!normalized.completedAt) {
-          return prev.filter((a) => a.task.id !== updatedTask.id);
-        }
-        return prev.map((a) =>
-          a.task.id === updatedTask.id ? { ...a, task: normalized } : a
-        );
-      });
-    }
-    return res;
-  };
-
-  const handleMoveTaskToList = async (taskId, targetListId) => {
-    const moveRes = await moveTask(taskId, { listId: targetListId });
-    if (moveRes.success) {
-      setTasks((prev) =>
-        prev.map((a) =>
-          a.task.id === taskId
-            ? { ...a, task: { ...a.task, listId: targetListId } }
-            : a
-        )
-      );
-      setCompletedTasks((prev) =>
-        prev.map((a) =>
-          a.task.id === taskId
-            ? { ...a, task: { ...a.task, listId: targetListId } }
-            : a
-        )
-      );
-      setSelectedTask((prev) =>
-        prev?.id === taskId ? { ...prev, listId: targetListId } : prev
-      );
-    }
-  };
-
   const dueLabel = (dueDate) => {
     if (!dueDate) return null;
     const due = new Date(dueDate);
@@ -274,7 +144,6 @@ const Tasks = () => {
     const task = assignment.task;
     const due = dueLabel(task.dueDate);
     const commentCount = task._count?.comments ?? 0;
-    const isUpdating = updatingIds.has(task.id);
     return (
       <div
         key={assignment.id}
@@ -282,24 +151,8 @@ const Tasks = () => {
         onClick={() => openModal(assignment)}
       >
         <div className="flex items-center gap-4 min-w-0 flex-1">
-          <label onClick={(e) => e.stopPropagation()} className="shrink-0">
-            <input
-              type="checkbox"
-              checked={isCompleted}
-              disabled={isUpdating}
-              onChange={(e) => {
-                e.stopPropagation();
-                if (isCompleted) {
-                  handleToggleUncomplete(assignment, task.id);
-                } else {
-                  handleToggleComplete(assignment, e.target.checked ? new Date().toISOString() : null);
-                }
-              }}
-              className="w-5 h-5 rounded-full border-text-secondary accent-button cursor-pointer disabled:opacity-50"
-            />
-          </label>
           <div className="min-w-0 flex-1">
-            <p className={`text-sm font-bold truncate ${isUpdating ? 'opacity-50' : ''} ${isCompleted ? 'line-through text-text-secondary' : 'text-text'}`}>
+            <p className={`text-sm font-bold truncate ${isCompleted ? 'line-through text-text-secondary' : 'text-text'}`}>
               {task.name}
             </p>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -475,11 +328,9 @@ const Tasks = () => {
         task={selectedTask}
         isOpen={isModalOpen}
         onClose={closeModal}
-        onUpdate={handleTaskUpdate}
-        onMoveTask={handleMoveTaskToList}
+        readOnly
         lists={boardLists}
         boardLabels={boardLabels}
-        onBoardLabelCreated={(label) => setBoardLabels(prev => [...prev, label])}
         workspaceId={selectedTask?.list?.board?.workspace?.id}
       />
     </div>
