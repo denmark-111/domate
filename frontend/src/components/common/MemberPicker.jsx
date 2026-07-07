@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { memberService, supabaseStorageService } from '../../services/index.js';
 import { X, Loader } from 'lucide-react';
 
@@ -13,6 +14,8 @@ const MemberPicker = ({ workspaceId, selectedUserIds = [], selectedUsers = [], o
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [hasFetched, setHasFetched] = useState(false);
+  const containerRef = useRef(null);
+  const triggerRef = useRef(null);
   const dropdownRef = useRef(null);
 
   const fetchMembers = useCallback(async () => {
@@ -34,15 +37,24 @@ const MemberPicker = ({ workspaceId, selectedUserIds = [], selectedUsers = [], o
   };
 
   useEffect(() => {
+    if (!isOpen) return;
+
     const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+      if (containerRef.current && !containerRef.current.contains(e.target) && !dropdownRef.current?.contains(e.target)) {
         setIsOpen(false);
         setSearch('');
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+
+    const id = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 0);
+
+    return () => {
+      clearTimeout(id);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
 
   // Reset fetch state when workspace changes
   useEffect(() => {
@@ -55,6 +67,8 @@ const MemberPicker = ({ workspaceId, selectedUserIds = [], selectedUsers = [], o
       ? selectedUserIds.filter(id => id !== userId)
       : [...selectedUserIds, userId];
     onChange?.(updated);
+    setIsOpen(false);
+    setSearch('');
   }, [selectedUserIds, onChange]);
 
   const selectedMembers = selectedUsers.map(u => ({ userId: u.id, user: u }));
@@ -70,8 +84,8 @@ const MemberPicker = ({ workspaceId, selectedUserIds = [], selectedUsers = [], o
     : nonSelectedMembers;
 
   return (
-    <div className="relative" ref={dropdownRef}>
-      {/* Selected members chips */}
+    <>
+      {/* Selected members chips — outside containerRef so clicking them closes the dropdown */}
       <div className="flex gap-1.5 flex-wrap mb-2">
         {selectedMembers.map(m => {
           const avatarUrl = m.user?.avatarUrl ? supabaseStorageService.getAvatarUrl(m.user.avatarUrl) : null;
@@ -106,8 +120,9 @@ const MemberPicker = ({ workspaceId, selectedUserIds = [], selectedUsers = [], o
 
       {/* Dropdown trigger */}
       {!disabled && (
-        <div className="relative">
+        <div ref={containerRef}>
           <button
+            ref={triggerRef}
             type="button"
             onClick={handleOpen}
             disabled={disabled}
@@ -120,8 +135,16 @@ const MemberPicker = ({ workspaceId, selectedUserIds = [], selectedUsers = [], o
             )}
           </button>
 
-          {isOpen && (
-            <div className="absolute top-full left-0 mt-1 w-full min-w-[220px] bg-bg-secondary border border-border rounded-lg shadow-xl z-50">
+          {isOpen && triggerRef.current && createPortal(
+            <div
+              ref={dropdownRef}
+              className="fixed z-[100] bg-bg-secondary border border-border rounded-lg shadow-xl"
+              style={{
+                top: triggerRef.current.getBoundingClientRect().bottom + 4,
+                left: triggerRef.current.getBoundingClientRect().left,
+                minWidth: Math.max(220, triggerRef.current.offsetWidth),
+              }}
+            >
               <div className="p-2">
                 <input
                   type="text"
@@ -172,11 +195,12 @@ const MemberPicker = ({ workspaceId, selectedUserIds = [], selectedUsers = [], o
                   })
                 )}
               </div>
-            </div>
+            </div>,
+            document.body
           )}
         </div>
       )}
-    </div>
+    </>
   );
 };
 
