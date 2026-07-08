@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Loader, Check, X } from 'lucide-react';
+import { Loader, Check, X, ExternalLink } from 'lucide-react';
 import { invitationService } from '../../services/index.js';
 
 const InvitationsTab = () => {
@@ -7,6 +7,7 @@ const InvitationsTab = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionLoading, setActionLoading] = useState(null);
+  const [statuses, setStatuses] = useState({});
 
   const fetchInvitations = useCallback(async () => {
     setIsLoading(true);
@@ -31,7 +32,10 @@ const InvitationsTab = () => {
 
     const result = await invitationService.acceptInvitation(id);
     if (result.success) {
-      setInvitations((prev) => prev.filter((inv) => inv.id !== id));
+      setStatuses((prev) => ({
+        ...prev,
+        [id]: { state: 'accepted', workspaceId: result.data?.workspace?.id },
+      }));
     } else {
       setError(result.error || 'Failed to accept invitation');
     }
@@ -42,9 +46,9 @@ const InvitationsTab = () => {
     setActionLoading(id);
     setError('');
 
-    const result = await invitationService.revokeInvitation(id);
+    const result = await invitationService.declineInvitation(id);
     if (result.success) {
-      setInvitations((prev) => prev.filter((inv) => inv.id !== id));
+      setStatuses((prev) => ({ ...prev, [id]: { state: 'declined' } }));
     } else {
       setError(result.error || 'Failed to decline invitation');
     }
@@ -90,45 +94,65 @@ const InvitationsTab = () => {
         </div>
       ) : (
         <div className="space-y-2">
-          {invitations.map((inv) => (
-            <div
-              key={inv.id}
-              className="flex items-center justify-between p-3.5 rounded-lg bg-bg-secondary"
-            >
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-text truncate">
-                  {inv.workspace?.name || 'Unknown Workspace'}
-                </p>
-                <p className="text-xs text-text-secondary">
-                  Invited by {inv.invitedBy?.fullName || inv.invitedBy?.email || 'someone'} on{' '}
-                  {formatDate(inv.createdAt)}
-                </p>
-              </div>
+          {invitations.map((inv) => {
+            const status = statuses[inv.id];
 
-              <div className="flex items-center gap-2 ml-4 shrink-0">
-                <button
-                  onClick={() => handleAccept(inv.id)}
-                  disabled={actionLoading === inv.id}
-                  className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-button hover:bg-button-hover text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
-                >
-                  {actionLoading === inv.id ? (
-                    <Loader size={13} className="animate-spin" />
+            return (
+              <div
+                key={inv.id}
+                className="flex items-center justify-between p-3.5 rounded-lg bg-bg-secondary"
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-text truncate">
+                    {inv.workspace?.name || 'Unknown Workspace'}
+                  </p>
+                  <p className="text-xs text-text-secondary">
+                    Invited by {inv.invitedBy?.fullName || inv.invitedBy?.email || 'someone'} on{' '}
+                    {formatDate(inv.createdAt)}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 ml-4 shrink-0">
+                  {status?.state === 'accepted' ? (
+                    <a
+                      href={`/workspaces/${status.workspaceId}`}
+                      className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-button hover:bg-button-hover text-white transition-colors flex items-center gap-1.5"
+                    >
+                      <ExternalLink size={13} />
+                      Visit
+                    </a>
+                  ) : status?.state === 'declined' ? (
+                    <span className="px-3 py-1.5 rounded-lg text-sm font-medium text-text-tertiary border border-border">
+                      Declined
+                    </span>
                   ) : (
-                    <Check size={13} />
+                    <>
+                      <button
+                        onClick={() => handleAccept(inv.id)}
+                        disabled={actionLoading === inv.id}
+                        className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-button hover:bg-button-hover text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                      >
+                        {actionLoading === inv.id ? (
+                          <Loader size={13} className="animate-spin" />
+                        ) : (
+                          <Check size={13} />
+                        )}
+                        Accept
+                      </button>
+                      <button
+                        onClick={() => handleDecline(inv.id)}
+                        disabled={actionLoading === inv.id}
+                        className="px-3 py-1.5 rounded-lg text-sm font-medium text-text-secondary hover:bg-bg-tertiary border border-border transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                      >
+                        <X size={13} />
+                        Decline
+                      </button>
+                    </>
                   )}
-                  Accept
-                </button>
-                <button
-                  onClick={() => handleDecline(inv.id)}
-                  disabled={actionLoading === inv.id}
-                  className="px-3 py-1.5 rounded-lg text-sm font-medium text-text-secondary hover:bg-bg-tertiary border border-border transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
-                >
-                  <X size={13} />
-                  Decline
-                </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

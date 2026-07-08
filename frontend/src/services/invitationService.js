@@ -67,4 +67,16 @@ export const invitationService = {
       return { success: false, error: error.message };
     }
   },
+
+  declineInvitation: async (invitationId) => {
+    try {
+      const data = await apiCall(`/invitations/${invitationId}/decline`, {
+        method: 'POST',
+      });
+      return { success: true, message: data.message };
+    } catch (error) {
+      console.error('Error in declineInvitation:', error);
+      return { success: false, error: error.message };
+    }
+  },
 };
