@@ -30,6 +30,8 @@ const Sidebar = ({ collapsed, onToggle }) => {
   const [deletingBoardId, setDeletingBoardId] = useState(null);
   const [isDeletingBoard, setIsDeletingBoard] = useState(false);
   const [deleteBoardError, setDeleteBoardError] = useState(null);
+  const [showAllWorkspaces, setShowAllWorkspaces] = useState(false);
+  const [showAllBoards, setShowAllBoards] = useState(false);
 
   const handleDeleteBoard = async () => {
     setIsDeletingBoard(true);
@@ -122,7 +124,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
           </div>
         )}
         <div className="space-y-1">
-          {boards.map((board) => (
+          {(showAllBoards ? boards : boards.slice(0, 10)).map((board) => (
             <div key={board.id} className="group relative">
               <button
                 onClick={() => {
@@ -157,6 +159,14 @@ const Sidebar = ({ collapsed, onToggle }) => {
               )}
             </div>
           ))}
+          {!collapsed && boards.length > 10 && (
+            <button
+              onClick={() => setShowAllBoards(!showAllBoards)}
+              className="w-full text-left px-3 py-1.5 text-xs text-text-secondary hover:text-text-accent transition-colors"
+            >
+              {showAllBoards ? 'Show less' : `Show more (${boards.length - 10})`}
+            </button>
+          )}
         </div>
       </div>
     </>
@@ -192,7 +202,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
           </div>
         )}
         <div className="space-y-1">
-          {workspaces.map(ws => (
+          {(showAllWorkspaces ? workspaces : workspaces.slice(0, 10)).map(ws => (
             <button
               key={ws.id}
               onClick={() => handleWorkspaceChange(ws.id)}
@@ -212,6 +222,14 @@ const Sidebar = ({ collapsed, onToggle }) => {
               {!collapsed && ws.type === 'team' && <Users size={12} className="text-text-secondary shrink-0 ml-auto" />}
             </button>
           ))}
+          {!collapsed && workspaces.length > 10 && (
+            <button
+              onClick={() => setShowAllWorkspaces(!showAllWorkspaces)}
+              className="w-full text-left px-3 py-1.5 text-xs text-text-secondary hover:text-text-accent transition-colors"
+            >
+              {showAllWorkspaces ? 'Show less' : `Show more (${workspaces.length - 10})`}
+            </button>
+          )}
         </div>
       </div>
     </div>
