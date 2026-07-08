@@ -1,6 +1,7 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, startTransition } from 'react';
 import {
   closestCenter,
+  pointerWithin,
   DndContext,
   DragOverlay,
   KeyboardSensor,
@@ -20,6 +21,7 @@ import BoardDetailModal from './BoardDetailModal';
 import BoardLabelsModal from './BoardLabelsModal';
 import ListColumn from './ListColumn';
 import TaskCard from './TaskCard';
+import DragOverlayCard from './DragOverlayCard';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useAuth } from '../../context/AuthContext';
 import { boardService, listService, taskService } from '../../services/index.js';
@@ -84,6 +86,14 @@ const getListTargetId = (lists, over) => {
   }
 
   return null;
+};
+
+const customCollisionDetection = (args) => {
+  const pointerCollisions = pointerWithin(args);
+  if (pointerCollisions.length > 0) {
+    return pointerCollisions;
+  }
+  return closestCenter(args);
 };
 
 const moveTaskInLists = (lists, taskId, targetListId, targetPosition) => {
@@ -331,10 +341,12 @@ const Board = () => {
   const handleDragOver = ({ active, over }) => {
     if (!over || active.data.current?.type !== 'task') return;
 
-    setData((currentData) => {
-      const target = getTaskTarget(currentData, over);
-      if (!target) return currentData;
-      return moveTaskInLists(currentData, active.data.current.taskId, target.listId, target.position);
+    startTransition(() => {
+      setData((currentData) => {
+        const target = getTaskTarget(currentData, over);
+        if (!target) return currentData;
+        return moveTaskInLists(currentData, active.data.current.taskId, target.listId, target.position);
+      });
     });
   };
 
@@ -462,7 +474,7 @@ const Board = () => {
               </div>
             <DndContext
               sensors={sensors}
-              collisionDetection={closestCenter}
+              collisionDetection={customCollisionDetection}
               onDragStart={handleDragStart}
               onDragOver={handleDragOver}
               onDragCancel={handleDragCancel}
@@ -528,13 +540,7 @@ const Board = () => {
               <DragOverlay dropAnimation={null}>
                 {activeTask ? (
                   <div className="opacity-85 rotate-3">
-                    <TaskCard
-                      task={activeTask}
-                      sortableId={`overlay-${activeTask.id}`}
-                      onClick={() => {}}
-                      onDelete={() => {}}
-                      onToggleComplete={() => {}}
-                    />
+                    <DragOverlayCard task={activeTask} />
                   </div>
                 ) : null}
               </DragOverlay>
