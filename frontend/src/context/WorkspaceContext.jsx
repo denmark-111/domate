@@ -106,7 +106,7 @@ export const WorkspaceProvider = ({ children }) => {
       setActiveBoard(null);
       setBoards([]);
     }
-  }, [workspaceId, isAuthenticated]);
+  }, [workspaceId, isAuthenticated, activeWorkspace?.role]);
 
   const createWorkspace = async (data) => {
     const res = await workspaceService.createWorkspace(data);
