@@ -82,7 +82,7 @@ const TaskCard = ({ task, sortableId, onClick, onDelete, onToggleComplete }) => 
             {task.labels?.map((label) => (
               <span
                 key={label.id}
-                className="px-1.5 py-0.5 text-[9px] font-bold rounded uppercase text-white"
+                className="px-1.5 py-0.5 text-[9px] font-bold rounded text-white"
                 style={{ backgroundColor: label.color }}
               >
                 {label.name}

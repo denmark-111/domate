@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { X, Loader, ExternalLink } from 'lucide-react';
+import { X, Loader, ExternalLink, ChevronDown, Check } from 'lucide-react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { taskService } from '../../services/taskService.js';
 import { labelService, supabaseStorageService } from '../../services/index.js';
@@ -63,6 +63,10 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
   const labelContainerRef = useRef(null);
   const labelDropdownRef = useRef(null);
 
+  const [showListPicker, setShowListPicker] = useState(false);
+  const listPickerRef = useRef(null);
+  const listDropdownRef = useRef(null);
+
   // Close label picker on outside click
   useEffect(() => {
     if (!showLabelPicker) return;
@@ -82,6 +86,26 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showLabelPicker]);
+
+  // Close list picker on outside click
+  useEffect(() => {
+    if (!showListPicker) return;
+
+    const handleClickOutside = (e) => {
+      if (listPickerRef.current && !listPickerRef.current.contains(e.target) && !listDropdownRef.current?.contains(e.target)) {
+        setShowListPicker(false);
+      }
+    };
+
+    const id = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 0);
+
+    return () => {
+      clearTimeout(id);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showListPicker]);
 
   const isImageAttachment = (attachment) => {
     return attachment.mimeType?.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(attachment.fileName);
@@ -349,78 +373,63 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border bg-bg rounded-t-lg">
           <div className="flex items-center gap-3 flex-1 pr-4">
-            {!readOnly && (
-              <label onClick={(e) => e.stopPropagation()} className="shrink-0">
-                <input
-                  type="checkbox"
-                  checked={!!editCompletedAt}
-                  onChange={async (e) => {
-                    const newCompletedAt = e.target.checked ? new Date().toISOString() : null;
-                    setEditCompletedAt(newCompletedAt);
-                    const updatedTask = {
-                      ...task,
-                      name: editName.trim() || task.name,
-                      description: editDescription.trim() || task.description || '',
-                      dueDate: editDueDate || task.dueDate || null,
-                      completedAt: newCompletedAt,
-                    };
-                    await onUpdate(updatedTask);
+            {readOnly ? (
+              task?.list?.board?.id && workspaceId ? (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/workspaces/${workspaceId}`, { state: { selectBoardId: task.list.board.id } });
                   }}
-                  className="w-5 h-5 rounded border-text-secondary accent-button cursor-pointer"
-                />
-              </label>
-            )}
-            <div className="flex-1">
-              {readOnly ? (
-                <p className="text-xl font-bold text-text py-2">
-                  {editName}
-                </p>
-              ) : (
-                <input
-                  type="text"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  onBlur={handleSaveDetails}
-                  className="w-full text-xl font-bold text-text bg-transparent -ml-3 -mt-2 px-3 py-2 border-none outline-none focus:bg-bg-tertiary rounded transition-colors"
-                  placeholder="Task name"
-                />
-              )}
-              {readOnly ? (
-                task?.list?.board?.id && workspaceId ? (
+                  className="flex items-center gap-1.5 text-sm font-medium text-button hover:text-button-hover transition-colors"
+                >
+                  <ExternalLink size={14} />
+                  {task.list.board.workspace?.name || 'Workspace'} / {task.list.board.name || 'Board'}
+                </button>
+              ) : null
+            ) : (
+              onMoveTask && lists?.length > 0 && (
+                <div ref={listPickerRef}>
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/workspaces/${workspaceId}`, { state: { selectBoardId: task.list.board.id } });
-                    }}
-                    className="flex items-center gap-1.5 text-sm font-medium text-button hover:text-button-hover transition-colors mt-1"
+                    onClick={() => setShowListPicker(!showListPicker)}
+                    className="flex items-center gap-2 text-sm text-text bg-input-bg border border-border rounded-lg px-3 py-1.5 hover:border-input-border-focus transition-colors cursor-pointer"
                   >
-                    <ExternalLink size={14} />
-                    {task.list.board.workspace?.name || 'Workspace'} / {task.list.board.name || 'Board'}
+                    {lists.find(l => l.id === task.listId)?.title || lists.find(l => l.id === task.listId)?.name || 'Select list'}
+                    <ChevronDown size={14} className={`text-text-secondary transition-transform ${showListPicker ? 'rotate-180' : ''}`} />
                   </button>
-                ) : null
-              ) : (
-                onMoveTask && lists?.length > 0 && (
-                  <div className="flex items-center gap-2 mt-1">
-                    <select
-                      value={task.listId}
-                      onChange={(e) => {
-                        const targetListId = e.target.value;
-                        if (targetListId !== task.listId) {
-                          onMoveTask?.(task.id, targetListId);
-                        }
+                  {showListPicker && listPickerRef.current && createPortal(
+                    <div
+                      ref={listDropdownRef}
+                      className="fixed z-[100] bg-bg border border-border rounded-xl shadow-xl p-1.5 space-y-0.5"
+                      style={{
+                        top: listPickerRef.current.getBoundingClientRect().bottom + 4,
+                        left: listPickerRef.current.getBoundingClientRect().left,
+                        minWidth: Math.max(180, listPickerRef.current.offsetWidth),
                       }}
-                      className="text-sm text-text-secondary bg-transparent border border-border rounded px-2 py-0.5 outline-none focus:border-input-border-focus cursor-pointer"
                     >
-                      {lists?.map((list) => (
-                        <option key={list.id} value={list.id}>
-                          {list.title || list.name}
-                        </option>
+                      {lists.map((list) => (
+                        <button
+                          key={list.id}
+                          type="button"
+                          onClick={() => {
+                            if (list.id !== task.listId) {
+                              onMoveTask?.(task.id, list.id);
+                            }
+                            setShowListPicker(false);
+                          }}
+                          className="flex items-center gap-2 w-full px-3 py-2 rounded-lg hover:bg-bg-tertiary transition-colors text-left"
+                        >
+                          <span className="flex-1 text-sm text-text">{list.title || list.name}</span>
+                          {list.id === task.listId && (
+                            <Check size={14} className="text-button shrink-0" />
+                          )}
+                        </button>
                       ))}
-                    </select>
-                  </div>
-                )
-              )}
-            </div>
+                    </div>,
+                    document.body
+                  )}
+                </div>
+              )
+            )}
           </div>
           <button
             onClick={onClose}
@@ -434,6 +443,47 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
         <div className="flex flex-1 min-h-0">
           {/* Left Column: Task Details */}
           <div className="w-1/2 overflow-y-auto p-6 space-y-6 border-r border-border thin-scrollbar">
+            {/* Task Title */}
+            <div className="flex items-start gap-3">
+              {!readOnly && (
+                <label onClick={(e) => e.stopPropagation()} className="shrink-0 mt-1">
+                  <input
+                    type="checkbox"
+                    checked={!!editCompletedAt}
+                    onChange={async (e) => {
+                      const newCompletedAt = e.target.checked ? new Date().toISOString() : null;
+                      setEditCompletedAt(newCompletedAt);
+                      const updatedTask = {
+                        ...task,
+                        name: editName.trim() || task.name,
+                        description: editDescription.trim() || task.description || '',
+                        dueDate: editDueDate || task.dueDate || null,
+                        completedAt: newCompletedAt,
+                      };
+                      await onUpdate(updatedTask);
+                    }}
+                    className="w-5 h-5 rounded border-text-secondary accent-button cursor-pointer"
+                  />
+                </label>
+              )}
+              <div className="flex-1 min-w-0">
+                {readOnly ? (
+                  <p className="text-xl font-bold text-text py-1">
+                    {editName}
+                  </p>
+                ) : (
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    onBlur={handleSaveDetails}
+                    className="w-full text-xl font-bold text-text bg-transparent -ml-3 -mt-2 px-3 py-2 border-none outline-none focus:bg-bg-tertiary rounded transition-colors"
+                    placeholder="Task name"
+                  />
+                )}
+              </div>
+            </div>
+
             {/* Description */}
             <div>
               <label className="block text-sm font-semibold text-text mb-2">Description</label>
@@ -642,6 +692,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
             taskId={task?.id}
             readOnly={readOnly}
             onCommentChange={onCommentChange}
+            commentCount={task?._count?.comments ?? 0}
           />
         </div>
       </div>
