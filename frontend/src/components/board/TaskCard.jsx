@@ -62,7 +62,7 @@ const TaskCard = ({ task, sortableId, onClick, onDelete, onToggleComplete }) => 
       <div className="flex items-start gap-1.5">
         <label
           onClick={(e) => e.stopPropagation()}
-          className="mt-0.5 shrink-0"
+          className="shrink-0"
         >
           <input
             type="checkbox"
@@ -89,51 +89,51 @@ const TaskCard = ({ task, sortableId, onClick, onDelete, onToggleComplete }) => 
               </span>
             ))}
           </div>
-        </div>
-      </div>
-      <div className="flex items-center justify-between mt-2">
-        <div className="flex items-center gap-1.5 text-text-secondary">
-          {task.dueDate && (
-            <span className={`flex items-center gap-0.5 text-[10px] ${new Date(task.dueDate) < new Date() ? 'text-red-500' : ''}`}>
-              <Calendar size={10} />
-              {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-            </span>
-          )}
-          {task.attachments?.length > 0 && (
-            <span className="flex items-center gap-0.5 text-[10px]">
-              <Paperclip size={10} />
-              {task.attachments.length}
-            </span>
-          )}
-          {commentCount > 0 && (
-            <span className="flex items-center gap-0.5 text-[10px]">
-              <MessageSquare size={10} />
-              {commentCount}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center min-h-[20px]">
-          {task.assignments?.slice(0, 3).map((a, i) => {
-            const avatarUrl = a.user?.avatarUrl ? supabaseStorageService.getAvatarUrl(a.user.avatarUrl) : null;
-            return (
-              <div
-                key={a.userId}
-                className="w-5 h-5 rounded-full bg-button border-2 border-bg flex items-center justify-center text-[7px] text-white font-bold -ml-[5px] first:ml-0 overflow-hidden"
-                style={{ zIndex: 3 - i }}
-              >
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  getInitials(a.user?.fullName || a.user?.email)
-                )}
-              </div>
-            );
-          })}
-          {task.assignments && task.assignments.length > 3 && (
-            <div className="w-5 h-5 rounded-full bg-bg-tertiary border-2 border-bg flex items-center justify-center text-[7px] text-text-secondary font-bold -ml-[5px]">
-              +{task.assignments.length - 3}
+          <div className="flex items-center justify-between mt-2">
+            <div className="flex items-center gap-1.5 text-text-secondary">
+              {task.dueDate && (
+                <span className={`flex items-center gap-0.5 text-[10px] ${new Date(task.dueDate) < new Date() ? 'text-red-500' : ''}`}>
+                  <Calendar size={10} />
+                  {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </span>
+              )}
+              {task.attachments?.length > 0 && (
+                <span className="flex items-center gap-0.5 text-[10px]">
+                  <Paperclip size={10} />
+                  {task.attachments.length}
+                </span>
+              )}
+              {commentCount > 0 && (
+                <span className="flex items-center gap-0.5 text-[10px]">
+                  <MessageSquare size={10} />
+                  {commentCount}
+                </span>
+              )}
             </div>
-          )}
+            <div className="flex items-center min-h-[20px]">
+              {task.assignments?.slice(0, 3).map((a, i) => {
+                const avatarUrl = a.user?.avatarUrl ? supabaseStorageService.getAvatarUrl(a.user.avatarUrl) : null;
+                return (
+                  <div
+                    key={a.userId}
+                    className="w-5 h-5 rounded-full bg-button border-2 border-bg flex items-center justify-center text-[7px] text-white font-bold -ml-[5px] first:ml-0 overflow-hidden"
+                    style={{ zIndex: 3 - i }}
+                  >
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      getInitials(a.user?.fullName || a.user?.email)
+                    )}
+                  </div>
+                );
+              })}
+              {task.assignments && task.assignments.length > 3 && (
+                <div className="w-5 h-5 rounded-full bg-bg-tertiary border-2 border-bg flex items-center justify-center text-[7px] text-text-secondary font-bold -ml-[5px]">
+                  +{task.assignments.length - 3}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 

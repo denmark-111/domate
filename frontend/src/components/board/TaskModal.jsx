@@ -66,6 +66,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
   const [showListPicker, setShowListPicker] = useState(false);
   const listPickerRef = useRef(null);
   const listDropdownRef = useRef(null);
+  const titleRef = useRef(null);
 
   // Close label picker on outside click
   useEffect(() => {
@@ -369,7 +370,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
       />
 
       {/* Modal */}
-      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-4xl max-h-[90vh] flex flex-col bg-bg rounded-xl shadow-xl">
+      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-5xl max-h-[90vh] flex flex-col bg-bg rounded-xl shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border bg-bg rounded-t-lg">
           <div className="flex items-center gap-3 flex-1 pr-4">
@@ -468,224 +469,242 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
               )}
               <div className="flex-1 min-w-0">
                 {readOnly ? (
-                  <p className="text-xl font-bold text-text py-1">
+                  <p className="text-xl font-bold text-text py-1 break-words">
                     {editName}
                   </p>
                 ) : (
-                  <input
-                    type="text"
+                  <textarea
+                    ref={(el) => {
+                      titleRef.current = el;
+                      if (el) {
+                        el.style.height = 'auto';
+                        el.style.height = el.scrollHeight + 'px';
+                      }
+                    }}
                     value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
+                    onChange={(e) => {
+                      setEditName(e.target.value);
+                      e.target.style.height = 'auto';
+                      e.target.style.height = e.target.scrollHeight + 'px';
+                    }}
                     onBlur={handleSaveDetails}
-                    className="w-full text-xl font-bold text-text bg-transparent -ml-3 -mt-2 px-3 py-2 border-none outline-none focus:bg-bg-tertiary rounded transition-colors"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        e.currentTarget.blur();
+                      }
+                    }}
+                    className="w-full text-xl font-bold text-text bg-transparent -ml-3 -mt-2 px-3 py-2 border-none outline-none focus:bg-bg-tertiary rounded transition-colors resize-none overflow-hidden"
                     placeholder="Task name"
                   />
                 )}
-              </div>
-            </div>
 
-            {/* Description */}
-            <div>
-              <label className="block text-sm font-semibold text-text mb-2">Description</label>
-              {readOnly ? (
-                <p className="w-full px-4 py-3 rounded-lg border border-border bg-bg text-text text-sm leading-relaxed min-h-[5rem]">
-                  {editDescription || 'No description'}
-                </p>
-              ) : (
-                <textarea
-                  value={editDescription}
-                  onChange={(e) => setEditDescription(e.target.value)}
-                  onBlur={handleSaveDetails}
-                  rows="4"
-                  className="w-full px-4 py-3 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none text-sm leading-relaxed"
-                  placeholder="Add a description..."
-                />
-              )}
-            </div>
-
-            {/* Due Date */}
-            <div>
-              <label className="block text-sm font-semibold text-text mb-2">Due Date</label>
-              {readOnly ? (
-                <p className="w-full px-4 py-3 rounded-lg border border-border bg-bg text-text text-sm">
-                  {editDueDate ? new Date(editDueDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'No due date'}
-                </p>
-              ) : (
-                <input
-                  type="date"
-                  value={editDueDate}
-                  onChange={(e) => setEditDueDate(e.target.value)}
-                  onBlur={handleSaveDetails}
-                  className="w-full px-4 py-3 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors text-sm"
-                />
-              )}
-            </div>
-
-            {/* Labels */}
-            <div>
-              <h3 className="text-sm font-semibold text-text mb-2">Labels</h3>
-              <div className="flex gap-2 flex-wrap items-center">
-                {taskLabels.map((label) => (
-                  <span
-                    key={label.id}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-bold rounded-md text-white group"
-                    style={{ backgroundColor: label.color }}
-                  >
-                    {label.name}
-                  </span>
-                ))}
-                {!readOnly && (
-                  <div ref={labelContainerRef}>
-                    <button
-                      onClick={() => setShowLabelPicker(!showLabelPicker)}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md border border-dashed border-border text-text-secondary hover:text-text hover:border-text-secondary transition-colors"
-                    >
-                      + Add label
-                    </button>
-                    {showLabelPicker && labelContainerRef.current && createPortal(
-                      <div
-                        ref={labelDropdownRef}
-                        className="fixed z-[100] bg-bg border border-border rounded-xl shadow-xl p-3 space-y-2"
-                        style={{
-                          top: labelContainerRef.current.getBoundingClientRect().bottom + 6,
-                          left: labelContainerRef.current.getBoundingClientRect().left,
-                          minWidth: 240,
-                        }}
-                      >
-                        {boardLabels && boardLabels.length > 0 && (
-                          <div className="space-y-0.5 pb-2 border-b border-border">
-                            {boardLabels.map((label) => {
-                              const isAttached = taskLabels.some((tl) => tl.id === label.id);
-                              return (
-                                <button
-                                  key={label.id}
-                                  type="button"
-                                  onClick={() => isAttached ? handleRemoveLabel(label.id) : handleAddLabel(label.id)}
-                                  className="flex items-center gap-2 w-full px-3 py-2 rounded-lg hover:bg-bg-tertiary transition-colors text-left group"
-                                >
-                                  <span
-                                    className="w-4 h-4 rounded-md shrink-0"
-                                    style={{ backgroundColor: label.color }}
-                                  />
-                                  <span className="text-sm text-text flex-1">{label.name}</span>
-                                  {isAttached && (
-                                    <X size={14} className="text-text-secondary hover:text-red-500 transition-colors" />
-                                  )}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        )}
-                        <form onSubmit={handleCreateAndAddLabel} className="space-y-2">
-                          <input
-                            type="text"
-                            value={newLabelName}
-                            onChange={(e) => setNewLabelName(e.target.value)}
-                            placeholder="New label name..."
-                            className="w-full px-3 py-2 text-sm rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors"
-                          />
-                          <div className="flex gap-1.5 flex-wrap">
-                            {availableLabelColors.map((color) => (
-                              <button
-                                key={color}
-                                type="button"
-                                onClick={() => setNewLabelColor(color)}
-                                className={`w-8 h-8 rounded-md border-2 transition-all ${
-                                  newLabelColor === color ? 'border-white scale-110 ring-2 ring-accent' : 'border-transparent hover:scale-110'
-                                }`}
-                                style={{ backgroundColor: color }}
-                              />
-                            ))}
-                          </div>
-                          <button
-                            type="submit"
-                            disabled={isCreatingLabel || !newLabelName.trim()}
-                            className="w-full px-3 py-2 bg-button hover:bg-button-hover text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
-                          >
-                            {isCreatingLabel ? 'Creating...' : 'Create'}
-                          </button>
-                        </form>
-                      </div>,
-                      document.body
-                    )}
-                  </div>
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-semibold text-text mb-2">Description</label>
+                {readOnly ? (
+                  <p className="w-full px-4 py-3 rounded-lg border border-border bg-bg text-text text-sm leading-relaxed min-h-[5rem]">
+                    {editDescription || 'No description'}
+                  </p>
+                ) : (
+                  <textarea
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
+                    onBlur={handleSaveDetails}
+                    rows="4"
+                    className="w-full px-4 py-3 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none text-sm leading-relaxed"
+                    placeholder="Add a description..."
+                  />
                 )}
               </div>
-            </div>
 
-            {/* Assigned Members */}
-            <div>
-              <h3 className="text-sm font-semibold text-text mb-2">Assigned To</h3>
-              {readOnly ? (
-                <div className="flex items-center gap-2 flex-wrap">
-                  {assignments.length === 0 && (
-                    <span className="text-sm text-text-secondary">No one assigned</span>
-                  )}
-                  {assignments.map((a) => {
-                    const avatarUrl = a.user?.avatarUrl ? supabaseStorageService.getAvatarUrl(a.user.avatarUrl) : null;
-                    const name = a.user?.fullName || a.user?.email || 'Unknown';
-                    return (
-                      <div
-                        key={a.userId}
-                        className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-bg-tertiary border border-border"
-                      >
-                        {avatarUrl ? (
-                          <img src={avatarUrl} alt="" className="w-5 h-5 rounded-full object-cover" />
-                        ) : (
-                          <div className="w-5 h-5 rounded-full bg-button text-white text-[8px] font-bold flex items-center justify-center">
-                            {(a.user?.fullName || a.user?.email || '?').split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-                          </div>
-                        )}
-                        <span className="text-sm text-text">{name}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <>
-                  {isSavingAssignees && <Loader size={12} className="inline ml-1 text-accent animate-spin" />}
-                  <MemberPicker
-                    workspaceId={workspaceId}
-                    selectedUserIds={assignments.map(a => a.userId)}
-                    selectedUsers={assignments.map(a => a.user)}
-                    onChange={async (userIds) => {
-                      setIsSavingAssignees(true);
-                      try {
-                        const res = await taskService.setTaskAssignees(task.id, userIds);
-                        if (res.success) {
-                          setAssignments(res.data);
-                        }
-                        const updatedData = {
-                          name: editName.trim() || task.name,
-                          description: editDescription.trim() || task.description || '',
-                          dueDate: editDueDate || task.dueDate || null,
-                          completedAt: editCompletedAt || null,
-                          attachments: attachments.map(a => ({
-                            fileName: a.fileName,
-                            fileSize: a.fileSize,
-                            mimeType: a.mimeType,
-                            storagePath: a.storagePath,
-                          })),
-                        };
-                        await onUpdate({ ...task, ...updatedData });
-                      } finally {
-                        setIsSavingAssignees(false);
-                      }
-                    }}
+              {/* Due Date */}
+              <div>
+                <label className="block text-sm font-semibold text-text mb-2">Due Date</label>
+                {readOnly ? (
+                  <p className="w-full px-4 py-3 rounded-lg border border-border bg-bg text-text text-sm">
+                    {editDueDate ? new Date(editDueDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'No due date'}
+                  </p>
+                ) : (
+                  <input
+                    type="date"
+                    value={editDueDate}
+                    onChange={(e) => setEditDueDate(e.target.value)}
+                    onBlur={handleSaveDetails}
+                    className="w-full px-4 py-3 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors text-sm"
                   />
-                </>
-              )}
-            </div>
+                )}
+              </div>
 
-            <AttachmentsSection
-              attachments={attachments}
-              loadingFiles={loadingFiles}
-              previewUrls={previewUrls}
-              isSavingAttachments={isSavingAttachments}
-              readOnly={readOnly}
-              onFileSelect={handleFileSelect}
-              onRemoveAttachment={removeAttachment}
-            />
+              {/* Labels */}
+              <div className="mt-3">
+                <h3 className="text-sm font-semibold text-text mb-2">Labels</h3>
+                <div className="flex gap-2 flex-wrap items-center">
+                  {taskLabels.map((label) => (
+                    <span
+                      key={label.id}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-bold rounded-md text-white group"
+                      style={{ backgroundColor: label.color }}
+                    >
+                      {label.name}
+                    </span>
+                  ))}
+                  {!readOnly && (
+                    <div ref={labelContainerRef}>
+                      <button
+                        onClick={() => setShowLabelPicker(!showLabelPicker)}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md border border-dashed border-border text-text-secondary hover:text-text hover:border-text-secondary transition-colors"
+                      >
+                        + Add label
+                      </button>
+                      {showLabelPicker && labelContainerRef.current && createPortal(
+                        <div
+                          ref={labelDropdownRef}
+                          className="fixed z-[100] bg-bg border border-border rounded-xl shadow-xl p-3 space-y-2"
+                          style={{
+                            top: labelContainerRef.current.getBoundingClientRect().bottom + 6,
+                            left: labelContainerRef.current.getBoundingClientRect().left,
+                            minWidth: 240,
+                          }}
+                        >
+                          {boardLabels && boardLabels.length > 0 && (
+                            <div className="space-y-0.5 pb-2 border-b border-border">
+                              {boardLabels.map((label) => {
+                                const isAttached = taskLabels.some((tl) => tl.id === label.id);
+                                return (
+                                  <button
+                                    key={label.id}
+                                    type="button"
+                                    onClick={() => isAttached ? handleRemoveLabel(label.id) : handleAddLabel(label.id)}
+                                    className="flex items-center gap-2 w-full px-3 py-2 rounded-lg hover:bg-bg-tertiary transition-colors text-left group"
+                                  >
+                                    <span
+                                      className="w-4 h-4 rounded-md shrink-0"
+                                      style={{ backgroundColor: label.color }}
+                                    />
+                                    <span className="text-sm text-text flex-1">{label.name}</span>
+                                    {isAttached && (
+                                      <X size={14} className="text-text-secondary hover:text-red-500 transition-colors" />
+                                    )}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                          <form onSubmit={handleCreateAndAddLabel} className="space-y-2">
+                            <input
+                              type="text"
+                              value={newLabelName}
+                              onChange={(e) => setNewLabelName(e.target.value)}
+                              placeholder="New label name..."
+                              className="w-full px-3 py-2 text-sm rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors"
+                            />
+                            <div className="flex gap-1.5 flex-wrap">
+                              {availableLabelColors.map((color) => (
+                                <button
+                                  key={color}
+                                  type="button"
+                                  onClick={() => setNewLabelColor(color)}
+                                  className={`w-8 h-8 rounded-md border-2 transition-all ${
+                                    newLabelColor === color ? 'border-white scale-110 ring-2 ring-accent' : 'border-transparent hover:scale-110'
+                                  }`}
+                                  style={{ backgroundColor: color }}
+                                />
+                              ))}
+                            </div>
+                            <button
+                              type="submit"
+                              disabled={isCreatingLabel || !newLabelName.trim()}
+                              className="w-full px-3 py-2 bg-button hover:bg-button-hover text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+                            >
+                              {isCreatingLabel ? 'Creating...' : 'Create'}
+                            </button>
+                          </form>
+                        </div>,
+                        document.body
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Assigned Members */}
+              <div className="mt-3">
+                <h3 className="text-sm font-semibold text-text mb-2">Assigned To</h3>
+                {readOnly ? (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {assignments.length === 0 && (
+                      <span className="text-sm text-text-secondary">No one assigned</span>
+                    )}
+                    {assignments.map((a) => {
+                      const avatarUrl = a.user?.avatarUrl ? supabaseStorageService.getAvatarUrl(a.user.avatarUrl) : null;
+                      const name = a.user?.fullName || a.user?.email || 'Unknown';
+                      return (
+                        <div
+                          key={a.userId}
+                          className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-bg-tertiary border border-border"
+                        >
+                          {avatarUrl ? (
+                            <img src={avatarUrl} alt="" className="w-5 h-5 rounded-full object-cover" />
+                          ) : (
+                            <div className="w-5 h-5 rounded-full bg-button text-white text-[8px] font-bold flex items-center justify-center">
+                              {(a.user?.fullName || a.user?.email || '?').split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                            </div>
+                          )}
+                          <span className="text-sm text-text">{name}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <>
+                    {isSavingAssignees && <Loader size={12} className="inline ml-1 text-accent animate-spin" />}
+                    <MemberPicker
+                      workspaceId={workspaceId}
+                      selectedUserIds={assignments.map(a => a.userId)}
+                      selectedUsers={assignments.map(a => a.user)}
+                      onChange={async (userIds) => {
+                        setIsSavingAssignees(true);
+                        try {
+                          const res = await taskService.setTaskAssignees(task.id, userIds);
+                          if (res.success) {
+                            setAssignments(res.data);
+                          }
+                          const updatedData = {
+                            name: editName.trim() || task.name,
+                            description: editDescription.trim() || task.description || '',
+                            dueDate: editDueDate || task.dueDate || null,
+                            completedAt: editCompletedAt || null,
+                            attachments: attachments.map(a => ({
+                              fileName: a.fileName,
+                              fileSize: a.fileSize,
+                              mimeType: a.mimeType,
+                              storagePath: a.storagePath,
+                            })),
+                          };
+                          await onUpdate({ ...task, ...updatedData });
+                        } finally {
+                          setIsSavingAssignees(false);
+                        }
+                      }}
+                    />
+                  </>
+                )}
+              </div>
+
+              <div className="mt-3">
+                <AttachmentsSection
+                  attachments={attachments}
+                  loadingFiles={loadingFiles}
+                  previewUrls={previewUrls}
+                  isSavingAttachments={isSavingAttachments}
+                  readOnly={readOnly}
+                  onFileSelect={handleFileSelect}
+                  onRemoveAttachment={removeAttachment}
+                />
+              </div>
+              </div>
+            </div>
           </div>
 
           <CommentsSection
