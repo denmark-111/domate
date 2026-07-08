@@ -161,13 +161,57 @@ export const invitationService = {
   },
 
   /**
-   * Revoke a pending invitation.
+   * Revoke a pending invitation (owner action).
    */
   async revokeInvitation(invitationId) {
     await prisma.invitation.update({
       where: { id: invitationId },
       data: { status: "EXPIRED" }
     });
+  },
+
+  /**
+   * Decline a pending invitation (invited user action).
+   * Verifies the user's email matches the invitation.
+   */
+  async declineInvitation({ id, userId }) {
+    const invitation = await prisma.invitation.findUnique({
+      where: { id }
+    });
+
+    if (!invitation) {
+      throw new ApiError(404, "Invitation not found");
+    }
+
+    if (invitation.status !== "PENDING") {
+      throw new ApiError(410, "This invitation is no longer valid");
+    }
+
+    if (invitation.expiresAt < new Date()) {
+      await prisma.invitation.update({
+        where: { id: invitation.id },
+        data: { status: "EXPIRED" }
+      });
+      throw new ApiError(410, "This invitation is no longer valid");
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true }
+    });
+
+    if (!user || user.email !== invitation.email) {
+      throw new ApiError(403, "This invitation was sent to a different email address");
+    }
+
+    const result = await prisma.invitation.updateMany({
+      where: { id: invitation.id, status: "PENDING" },
+      data: { status: "DECLINED" }
+    });
+
+    if (result.count === 0) {
+      throw new ApiError(410, "This invitation is no longer valid");
+    }
   },
 
   /**

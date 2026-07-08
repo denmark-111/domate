@@ -73,6 +73,17 @@ export const acceptInvitation = async (req, res, next) => {
   });
 };
 
+export const declineInvitation = async (req, res, next) => {
+  const userId = req.supabase.user.id;
+  const { invitationId } = req.validated.params;
+
+  await invitationService.declineInvitation({ id: invitationId, userId });
+
+  res.status(200).json({
+    message: "Invitation declined"
+  });
+};
+
 export const getMyInvitations = async (req, res, next) => {
   const userId = req.supabase.user.id;
 
