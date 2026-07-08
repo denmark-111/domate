@@ -32,7 +32,7 @@ const AppContent = ({ viewType }) => {
   return (
     <WorkspaceProvider>
       <div className="flex flex-col h-screen font-sans">
-        <Topbar />
+        <Topbar collapsed={sidebarCollapsed} onToggle={handleToggleSidebar} />
 
         <div className="flex flex-1 overflow-hidden">
           {viewType !== 'settings' && <Sidebar collapsed={sidebarCollapsed} onToggle={handleToggleSidebar} />}

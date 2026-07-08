@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, Settings, Search, Sun, Moon, LogOut, User, ChevronDown } from 'lucide-react';
+import { Bell, Settings, Search, Sun, Moon, LogOut, User, ChevronDown, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -7,7 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import { supabaseStorageService, searchService } from '../../services/index.js';
 import AppLogo from '../common/AppLogo';
 
-const Topbar = () => {
+const Topbar = ({ collapsed, onToggle }) => {
   const navigate = useNavigate();
   const { activeWorkspace, activeView, activeBoard } = useWorkspace();
   const { theme, toggleTheme } = useTheme();
@@ -71,7 +71,15 @@ const Topbar = () => {
 
   return (
     <header className="h-16 border-b border-border bg-bg flex items-center justify-between px-4 z-10">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
+        <button
+          onClick={onToggle}
+          className="p-2 text-text-secondary hover:bg-bg-tertiary rounded-lg transition-colors"
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {collapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
+        </button>
+
         <button
           onClick={() => navigate('/dashboard')}
           className="group shrink-0"

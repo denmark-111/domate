@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import ConfirmModal from '../common/ConfirmModal';
 import WorkspaceIcon from '../workspace/WorkspaceIcon';
-import { Home, ListTodo, MessageSquare, Megaphone, Plus, Trash2, Users, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Home, ListTodo, MessageSquare, Megaphone, Plus, Trash2, Users } from 'lucide-react';
 
 const boardIcon = (board) => ({
   backgroundColor: board.color || 'var(--color-bg-tertiary)'
@@ -58,28 +58,28 @@ const Sidebar = ({ collapsed, onToggle }) => {
 
   const renderWorkspaceSidebar = () => (
     <>
-      <div className={`${collapsed ? 'px-2 py-4' : 'px-4 py-4'} border-b border-border-light mb-4`}>
+      <div className={`${collapsed ? 'px-2 pt-2 pb-4' : 'px-3 pt-2 pb-4'} border-b border-border-light mb-4`}>
         <button 
           onClick={() => setActiveView('Overview')}
-          className={`w-full flex items-center ${collapsed ? 'justify-center p-2' : 'justify-between p-2'} rounded-lg shadow-sm border transition-colors group ${
-            activeView === 'Overview' ? 'bg-input-bg border-border text-text-accent' : 'bg-bg border-border'
+          className={`w-full flex items-center gap-3 rounded-lg transition-colors ${
+            collapsed ? 'justify-center p-2' : 'px-3 py-2'
+          } ${
+            activeView === 'Overview' 
+              ? 'bg-input-bg text-text-accent' 
+              : 'text-text-secondary hover:bg-bg-tertiary/50'
           }`}
           title={collapsed ? activeWorkspace.name : undefined}
         >
-          <div className={`flex items-center ${collapsed ? '' : 'gap-3 min-w-0'}`}>
             <WorkspaceIcon
               workspace={activeWorkspace}
-              containerClassName="w-6 h-6 rounded"
+              containerClassName="w-8 h-8 rounded"
               className="rounded"
             />
-            {!collapsed && (
-              <div className="text-left min-w-0">
-                <h1 className="text-xs font-bold text-text truncate">
-                  {activeWorkspace.name}
-                </h1>
-              </div>
-            )}
-          </div>
+          {!collapsed && (
+            <span className="text-sm font-semibold truncate">
+              {activeWorkspace.name}
+            </span>
+          )}
         </button>
       </div>
 
@@ -111,13 +111,13 @@ const Sidebar = ({ collapsed, onToggle }) => {
 
       <div className={`${collapsed ? 'mt-8 px-2' : 'mt-8 px-4'}`}>
         {!collapsed && (
-          <div className="text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-2 px-2 flex justify-between items-center">
+          <div className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2 px-2 flex justify-between items-center">
             <span>Boards</span>
             <button 
               onClick={() => setShowCreateBoard(true)}
-              className="text-text-secondary hover:text-text-accent hover:bg-input-bg w-5 h-5 flex items-center justify-center rounded transition-colors"
+              className="text-text-secondary hover:text-text-accent hover:bg-input-bg w-6 h-6 flex items-center justify-center rounded transition-colors"
             >
-              <Plus size={20} />
+              <Plus size={16} />
             </button>
           </div>
         )}
@@ -187,7 +187,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
 
       <div>
         {!collapsed && (
-          <div className="text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-4 px-3 flex justify-between items-center">
+          <div className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-4 px-3 flex justify-between items-center">
             <span>My Workspaces</span>
           </div>
         )}
@@ -221,16 +221,6 @@ const Sidebar = ({ collapsed, onToggle }) => {
     <aside className={`${collapsed ? 'w-16' : 'w-64'} bg-bg-secondary border-r border-border flex flex-col h-full shrink-0 transition-all duration-200`}>
       <div className="flex-1 overflow-y-auto py-4">
         {activeWorkspace ? renderWorkspaceSidebar() : renderHomeSidebar()}
-      </div>
-
-      <div className="border-t border-border p-3">
-        <button
-          onClick={onToggle}
-          className="w-full flex items-center justify-center p-2 rounded-lg hover:bg-bg-tertiary/50 text-text-secondary hover:text-text-accent transition-colors"
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
-        </button>
       </div>
 
       <ConfirmModal
