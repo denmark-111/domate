@@ -60,7 +60,7 @@ const Settings = () => {
 
   return (
     <div className="flex-1 overflow-hidden bg-bg-secondary">
-      <div ref={scrollContainerRef} className="h-full overflow-y-auto p-8 sm:p-12">
+      <div ref={scrollContainerRef} className="h-full overflow-y-auto p-4 sm:p-8 lg:p-12">
         <div className="max-w-4xl mx-auto flex gap-12">
           <aside className="hidden lg:block w-48 shrink-0">
             <div className="sticky top-0">
@@ -94,39 +94,24 @@ const Settings = () => {
           <div className="flex-1 min-w-0 space-y-4">
             <div className="lg:hidden mb-6">
               <h1 className="text-2xl font-bold text-text mb-1">Settings</h1>
-              <p className="text-sm text-text-secondary mb-4">
+              <p className="text-sm text-text-secondary">
                 Manage your account settings and preferences
               </p>
-              <div className="flex gap-2 overflow-x-auto pb-2 -mx-2 px-2">
-                {SECTIONS.map(({ key, label }) => (
-                  <button
-                    key={key}
-                    onClick={() => handleScrollToSection(key)}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                      activeSection === key
-                        ? 'bg-button text-white'
-                        : 'bg-bg text-text-secondary hover:text-text border border-border'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
             </div>
 
-            <section id="settings-profile" className="scroll-mt-8 rounded-xl border border-border bg-bg p-6">
+            <section id="settings-profile" className="scroll-mt-8 rounded-xl border border-border bg-bg p-4 sm:p-6">
               <ProfileTab />
             </section>
 
-            <section id="settings-invitations" className="scroll-mt-8 rounded-xl border border-border bg-bg p-6">
+            <section id="settings-invitations" className="scroll-mt-8 rounded-xl border border-border bg-bg p-4 sm:p-6">
               <InvitationsTab />
             </section>
 
-            <section id="settings-security" className="scroll-mt-8 rounded-xl border border-border bg-bg p-6">
+            <section id="settings-security" className="scroll-mt-8 rounded-xl border border-border bg-bg p-4 sm:p-6">
               <SecurityTab />
             </section>
 
-            <section id="settings-appearance" className="scroll-mt-8 rounded-xl border border-border bg-bg p-6">
+            <section id="settings-appearance" className="scroll-mt-8 rounded-xl border border-border bg-bg p-4 sm:p-6">
               <AppearanceTab />
             </section>
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { X, Loader, ExternalLink, ChevronDown, Check } from 'lucide-react';
+import { X, Loader, ExternalLink, ChevronDown, Check, ArrowLeft } from 'lucide-react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { taskService } from '../../services/taskService.js';
 import { labelService, supabaseStorageService } from '../../services/index.js';
@@ -361,90 +361,108 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
     }
   };
 
+  const renderHeader = () => (
+    <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border bg-bg rounded-t-lg shrink-0">
+      <div className="flex items-center gap-3 flex-1 pr-4 min-w-0">
+        {readOnly ? (
+          task?.list?.board?.id && workspaceId ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/workspaces/${workspaceId}`, { state: { selectBoardId: task.list.board.id } });
+              }}
+              className="flex items-center gap-1.5 text-sm font-medium text-button hover:text-button-hover transition-colors"
+            >
+              <ExternalLink size={14} />
+              <span className="truncate">{task.list.board.workspace?.name || 'Workspace'} / {task.list.board.name || 'Board'}</span>
+            </button>
+          ) : null
+        ) : (
+          onMoveTask && lists?.length > 0 && (
+            <div ref={listPickerRef}>
+              <button
+                onClick={() => setShowListPicker(!showListPicker)}
+                className="flex items-center gap-2 text-sm text-text bg-bg border border-border rounded-lg px-3 py-1.5 hover:border-input-border-focus transition-colors cursor-pointer"
+              >
+                <span className="truncate max-w-[120px] sm:max-w-none">{lists.find(l => l.id === task.listId)?.title || lists.find(l => l.id === task.listId)?.name || 'Select list'}</span>
+                <ChevronDown size={14} className={`text-text-secondary transition-transform shrink-0 ${showListPicker ? 'rotate-180' : ''}`} />
+              </button>
+              {showListPicker && listPickerRef.current && createPortal(
+                <div
+                  ref={listDropdownRef}
+                  className="fixed z-[100] bg-bg border border-border rounded-lg shadow-xl p-1.5 space-y-0.5"
+                  style={{
+                    top: listPickerRef.current.getBoundingClientRect().bottom + 4,
+                    left: Math.min(listPickerRef.current.getBoundingClientRect().left, window.innerWidth - 200),
+                    minWidth: Math.max(180, Math.min(listPickerRef.current.offsetWidth, window.innerWidth - 24)),
+                  }}
+                >
+                  {lists.map((list) => (
+                    <button
+                      key={list.id}
+                      type="button"
+                      onClick={() => {
+                        if (list.id !== task.listId) {
+                          onMoveTask?.(task.id, list.id);
+                        }
+                        setShowListPicker(false);
+                      }}
+                      className="flex items-center gap-2 w-full px-3 py-2 rounded-lg hover:bg-bg-tertiary transition-colors text-left"
+                    >
+                      <span className="flex-1 text-sm text-text truncate">{list.title || list.name}</span>
+                      {list.id === task.listId && (
+                        <Check size={14} className="text-button shrink-0" />
+                      )}
+                    </button>
+                  ))}
+                </div>,
+                document.body
+              )}
+            </div>
+          )
+        )}
+      </div>
+      {/* Desktop close */}
+      <button
+        onClick={onClose}
+        className="hidden sm:block text-text-secondary hover:text-text text-2xl font-light transition-colors shrink-0"
+      >
+        ✕
+      </button>
+    </div>
+  );
+
   return (
     <>
-      {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black/50 z-40 transition-opacity"
+      {/* Backdrop - hidden on mobile since we use full-screen */}
+      <div
+        className="fixed inset-0 bg-black/50 z-40 transition-opacity hidden sm:block"
         onClick={onClose}
       />
 
       {/* Modal */}
-      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-5xl max-h-[90vh] flex flex-col bg-bg rounded-xl shadow-xl">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border bg-bg rounded-t-lg">
-          <div className="flex items-center gap-3 flex-1 pr-4">
-            {readOnly ? (
-              task?.list?.board?.id && workspaceId ? (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/workspaces/${workspaceId}`, { state: { selectBoardId: task.list.board.id } });
-                  }}
-                  className="flex items-center gap-1.5 text-sm font-medium text-button hover:text-button-hover transition-colors"
-                >
-                  <ExternalLink size={14} />
-                  {task.list.board.workspace?.name || 'Workspace'} / {task.list.board.name || 'Board'}
-                </button>
-              ) : null
-            ) : (
-              onMoveTask && lists?.length > 0 && (
-                <div ref={listPickerRef}>
-                  <button
-                    onClick={() => setShowListPicker(!showListPicker)}
-                    className="flex items-center gap-2 text-sm text-text bg-bg border border-border rounded-lg px-3 py-1.5 hover:border-input-border-focus transition-colors cursor-pointer"
-                  >
-                    {lists.find(l => l.id === task.listId)?.title || lists.find(l => l.id === task.listId)?.name || 'Select list'}
-                    <ChevronDown size={14} className={`text-text-secondary transition-transform ${showListPicker ? 'rotate-180' : ''}`} />
-                  </button>
-                  {showListPicker && listPickerRef.current && createPortal(
-                    <div
-                      ref={listDropdownRef}
-                      className="fixed z-[100] bg-bg border border-border rounded-lg shadow-xl p-1.5 space-y-0.5"
-                      style={{
-                        top: listPickerRef.current.getBoundingClientRect().bottom + 4,
-                        left: listPickerRef.current.getBoundingClientRect().left,
-                        minWidth: Math.max(180, listPickerRef.current.offsetWidth),
-                      }}
-                    >
-                      {lists.map((list) => (
-                        <button
-                          key={list.id}
-                          type="button"
-                          onClick={() => {
-                            if (list.id !== task.listId) {
-                              onMoveTask?.(task.id, list.id);
-                            }
-                            setShowListPicker(false);
-                          }}
-                          className="flex items-center gap-2 w-full px-3 py-2 rounded-lg hover:bg-bg-tertiary transition-colors text-left"
-                        >
-                          <span className="flex-1 text-sm text-text">{list.title || list.name}</span>
-                          {list.id === task.listId && (
-                            <Check size={14} className="text-button shrink-0" />
-                          )}
-                        </button>
-                      ))}
-                    </div>,
-                    document.body
-                  )}
-                </div>
-              )
-            )}
-          </div>
+      <div className="fixed inset-0 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:transform sm:-translate-x-1/2 sm:-translate-y-1/2 z-50 sm:max-w-4xl lg:max-w-5xl sm:max-h-[90vh] flex flex-col bg-bg sm:rounded-xl sm:shadow-xl w-full">
+        {/* Mobile header with back button */}
+        <div className="sm:hidden flex items-center gap-2 p-3 border-b border-border shrink-0 bg-bg">
           <button
             onClick={onClose}
-            className="text-text-secondary hover:text-text text-2xl font-light transition-colors"
+            className="p-1 text-text-secondary hover:text-text transition-colors"
+            aria-label="Back"
           >
-            ✕
+            <ArrowLeft size={22} />
           </button>
+          <h2 className="text-sm font-bold text-text truncate">
+            {editName || 'Task'}
+          </h2>
         </div>
 
-        {/* Body: two-column layout */}
-        <div className="flex flex-1 min-h-0">
+        {renderHeader()}
+
+        {/* Body: responsive layout */}
+        <div className="flex flex-1 min-h-0 flex-col sm:flex-row overflow-y-auto sm:overflow-hidden">
           {/* Left Column: Task Details */}
-          <div className="w-1/2 overflow-y-auto p-6 space-y-6 border-r border-border thin-scrollbar">
-            {/* Task Title */}
+          <div className="sm:w-1/2 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6 sm:border-r border-border thin-scrollbar">
+            {/* Task Title + checkbox */}
             <div className="flex items-start gap-3">
               {!readOnly && (
                 <label onClick={(e) => e.stopPropagation()} className="shrink-0 mt-1">
@@ -463,13 +481,13 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                       };
                       await onUpdate(updatedTask);
                     }}
-                    className="w-5 h-5 rounded border-text-secondary accent-button cursor-pointer"
+                    className="w-5 h-5 rounded border-text-secondary accent-button cursor-pointer shrink-0"
                   />
                 </label>
               )}
               <div className="flex-1 min-w-0">
                 {readOnly ? (
-                  <p className="text-xl font-bold text-text py-1 break-words">
+                  <p className="text-lg sm:text-xl font-bold text-text py-1 break-words">
                     {editName}
                   </p>
                 ) : (
@@ -494,13 +512,13 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                         e.currentTarget.blur();
                       }
                     }}
-                    className="w-full text-xl font-bold text-text bg-transparent -ml-3 -mt-2 px-3 py-2 border-none outline-none focus:bg-bg-tertiary rounded transition-colors resize-none overflow-hidden"
+                    className="w-full text-lg sm:text-xl font-bold text-text bg-transparent -ml-3 -mt-2 px-3 py-2 border-none outline-none focus:bg-bg-tertiary rounded transition-colors resize-none overflow-hidden"
                     placeholder="Task name"
                   />
                 )}
 
               {/* Description */}
-              <div>
+              <div className="mt-3 sm:mt-4">
                 <label className="block text-sm font-semibold text-text mb-2">Description</label>
                 {readOnly ? (
                   <p className="w-full px-4 py-3 rounded-lg border border-border bg-bg text-text text-sm leading-relaxed min-h-[5rem]">
@@ -511,7 +529,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                     value={editDescription}
                     onChange={(e) => setEditDescription(e.target.value)}
                     onBlur={handleSaveDetails}
-                    rows="4"
+                    rows="3"
                     className="w-full px-4 py-3 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none text-sm leading-relaxed"
                     placeholder="Add a description..."
                   />
@@ -519,7 +537,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
               </div>
 
               {/* Due Date */}
-              <div>
+              <div className="mt-3 sm:mt-4">
                 <label className="block text-sm font-semibold text-text mb-2">Due Date</label>
                 {readOnly ? (
                   <p className="w-full px-4 py-3 rounded-lg border border-border bg-bg text-text text-sm">
@@ -537,7 +555,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
               </div>
 
               {/* Labels */}
-              <div className="mt-3">
+              <div className="mt-3 sm:mt-4">
                 <h3 className="text-sm font-semibold text-text mb-2">Labels</h3>
                 <div className="flex gap-2 flex-wrap items-center">
                   {taskLabels.map((label) => (
@@ -563,12 +581,13 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                           className="fixed z-[100] bg-bg border border-border rounded-lg shadow-xl p-3 space-y-2"
                           style={{
                             top: labelContainerRef.current.getBoundingClientRect().bottom + 6,
-                            left: labelContainerRef.current.getBoundingClientRect().left,
+                            left: Math.min(labelContainerRef.current.getBoundingClientRect().left, window.innerWidth - 260),
                             minWidth: 240,
+                            maxWidth: Math.min(320, window.innerWidth - 24),
                           }}
                         >
                           {boardLabels && boardLabels.length > 0 && (
-                            <div className="space-y-0.5 pb-2 border-b border-border">
+                            <div className="space-y-0.5 pb-2 border-b border-border max-h-40 overflow-y-auto">
                               {boardLabels.map((label) => {
                                 const isAttached = taskLabels.some((tl) => tl.id === label.id);
                                 return (
@@ -582,9 +601,9 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                                       className="w-4 h-4 rounded-md shrink-0"
                                       style={{ backgroundColor: label.color }}
                                     />
-                                    <span className="text-sm text-text flex-1">{label.name}</span>
+                                    <span className="text-sm text-text flex-1 truncate">{label.name}</span>
                                     {isAttached && (
-                                      <X size={14} className="text-text-secondary hover:text-red-500 transition-colors" />
+                                      <X size={14} className="text-text-secondary hover:text-red-500 transition-colors shrink-0" />
                                     )}
                                   </button>
                                 );
@@ -605,7 +624,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                                   key={color}
                                   type="button"
                                   onClick={() => setNewLabelColor(color)}
-                                  className={`w-8 h-8 rounded-md border-2 transition-all ${
+                                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-md border-2 transition-all ${
                                     newLabelColor === color ? 'border-white scale-110 ring-2 ring-accent' : 'border-transparent hover:scale-110'
                                   }`}
                                   style={{ backgroundColor: color }}
@@ -629,7 +648,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
               </div>
 
               {/* Assigned Members */}
-              <div className="mt-3">
+              <div className="mt-3 sm:mt-4">
                 <h3 className="text-sm font-semibold text-text mb-2">Assigned To</h3>
                 {readOnly ? (
                   <div className="flex items-center gap-2 flex-wrap">
@@ -692,7 +711,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                 )}
               </div>
 
-              <div className="mt-3">
+              <div className="mt-3 sm:mt-4">
                 <AttachmentsSection
                   attachments={attachments}
                   loadingFiles={loadingFiles}

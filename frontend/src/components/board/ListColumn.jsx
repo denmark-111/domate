@@ -95,7 +95,7 @@ const ListColumn = ({
         transform: CSS.Transform.toString(transform),
         transition
       }}
-      className={`w-80 flex-shrink-0 flex flex-col gap-2 max-h-full bg-bg border border-border rounded-lg p-3 ${isDragging ? 'opacity-50' : ''}`}
+      className={`w-72 sm:w-80 flex-shrink-0 flex flex-col gap-2 max-h-full bg-bg border border-border rounded-lg p-3 ${isDragging ? 'opacity-50' : ''}`}
     >
       <div className="flex items-center justify-between group/list">
         <div className="flex items-center gap-1.5 min-w-0">

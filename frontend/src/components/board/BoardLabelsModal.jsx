@@ -83,11 +83,11 @@ const BoardLabelsModal = ({ isOpen, onClose, boardId, boardLabels, onLabelCreate
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-bg rounded-xl border border-border shadow-xl w-full max-w-md mx-4 flex flex-col max-h-[80vh]" onClick={(e) => e.stopPropagation()}>
+      <div className="relative bg-bg rounded-t-xl sm:rounded-xl border border-border shadow-xl w-full sm:max-w-md sm:mx-4 flex flex-col max-h-[85vh] sm:max-h-[80vh]" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-border shrink-0 sticky top-0 bg-bg z-10">
           <h2 className="text-base font-semibold text-text">Board Labels</h2>
           <button
             onClick={onClose}
@@ -98,7 +98,7 @@ const BoardLabelsModal = ({ isOpen, onClose, boardId, boardLabels, onLabelCreate
         </div>
 
         {/* Body */}
-        <div className="overflow-y-auto px-6 py-5 space-y-4">
+        <div className="overflow-y-auto px-4 sm:px-6 py-5 space-y-4">
           {showNewLabelForm && (
             <form onSubmit={handleCreateLabel} className="space-y-2">
               <input
@@ -115,7 +115,7 @@ const BoardLabelsModal = ({ isOpen, onClose, boardId, boardLabels, onLabelCreate
                     key={color}
                     type="button"
                     onClick={() => setNewLabelColor(color)}
-                    className={`w-8 h-8 rounded-md border-2 transition-all ${
+                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-md border-2 transition-all ${
                       newLabelColor === color ? 'border-white scale-110 ring-2 ring-accent' : 'border-transparent hover:scale-110'
                     }`}
                     style={{ backgroundColor: color }}
@@ -163,7 +163,7 @@ const BoardLabelsModal = ({ isOpen, onClose, boardId, boardLabels, onLabelCreate
                           key={color}
                           type="button"
                           onClick={() => setEditLabelColor(color)}
-                          className={`w-8 h-8 rounded-md border-2 transition-all ${
+                          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-md border-2 transition-all ${
                             editLabelColor === color ? 'border-white scale-110 ring-2 ring-accent' : 'border-transparent hover:scale-110'
                           }`}
                           style={{ backgroundColor: color }}
@@ -193,17 +193,17 @@ const BoardLabelsModal = ({ isOpen, onClose, boardId, boardLabels, onLabelCreate
                       className="w-4 h-4 rounded shrink-0"
                       style={{ backgroundColor: label.color }}
                     />
-                    <span className="flex-1 text-sm text-text">{label.name}</span>
+                    <span className="flex-1 text-sm text-text truncate">{label.name}</span>
                     <button
                       onClick={() => handleStartEditLabel(label)}
-                      className="p-1.5 text-text-secondary hover:text-text rounded-lg hover:bg-bg-tertiary transition-colors"
+                      className="p-1.5 text-text-secondary hover:text-text rounded-lg hover:bg-bg-tertiary transition-colors shrink-0"
                       title="Edit label"
                     >
                       <Pencil size={14} />
                     </button>
                     <button
                       onClick={() => handleDeleteLabel(label.id)}
-                      className="p-1.5 text-text-secondary hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                      className="p-1.5 text-text-secondary hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors shrink-0"
                       title="Delete label"
                     >
                       <X size={16} />

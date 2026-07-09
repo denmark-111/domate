@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { WorkspaceProvider } from './context/WorkspaceContext';
 import { ThemeContextProvider } from './context/ThemeContext';
@@ -20,23 +20,69 @@ const AppContent = ({ viewType }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     () => localStorage.getItem('sidebarCollapsed') === 'true'
   );
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  // Close mobile sidebar on route/view change
+  useEffect(() => {
+    setMobileSidebarOpen(false);
+  }, [viewType]);
 
   const handleToggleSidebar = () => {
-    setSidebarCollapsed(prev => {
-      const next = !prev;
-      localStorage.setItem('sidebarCollapsed', next);
-      return next;
-    });
+    // Mobile: toggle drawer open/close
+    // Desktop: toggle collapsed state
+    if (window.innerWidth < 1024) {
+      setMobileSidebarOpen(prev => !prev);
+    } else {
+      setSidebarCollapsed(prev => {
+        const next = !prev;
+        localStorage.setItem('sidebarCollapsed', next);
+        return next;
+      });
+    }
+  };
+
+  const handleCloseMobileSidebar = () => {
+    setMobileSidebarOpen(false);
   };
 
   return (
     <WorkspaceProvider>
       <div className="flex flex-col h-screen font-sans">
-        <Topbar collapsed={sidebarCollapsed} onToggle={handleToggleSidebar} />
+        <Topbar
+          collapsed={sidebarCollapsed}
+          mobileSidebarOpen={mobileSidebarOpen}
+          onToggle={handleToggleSidebar}
+        />
 
-        <div className="flex flex-1 overflow-hidden">
-          {viewType !== 'settings' && <Sidebar collapsed={sidebarCollapsed} onToggle={handleToggleSidebar} />}
-          <main className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex flex-1 overflow-hidden relative">
+          {/* Mobile backdrop */}
+          {mobileSidebarOpen && (
+            <div
+              className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+              onClick={handleCloseMobileSidebar}
+            />
+          )}
+
+          {/* Desktop sidebar */}
+          <div className={`hidden lg:flex ${sidebarCollapsed ? 'w-16' : 'w-64'} shrink-0 transition-all duration-200`}>
+            {viewType !== 'settings' && <Sidebar collapsed={sidebarCollapsed} onToggle={handleToggleSidebar} />}
+          </div>
+
+          {/* Mobile sidebar drawer */}
+          <div className={`lg:hidden fixed inset-y-0 left-0 z-40 transform transition-transform duration-200 ease-in-out ${
+            mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}>
+            {viewType !== 'settings' && (
+              <Sidebar
+                collapsed={false}
+                onToggle={handleToggleSidebar}
+                mobile={true}
+                onCloseMobile={handleCloseMobileSidebar}
+              />
+            )}
+          </div>
+
+          <main className="flex-1 flex flex-col overflow-hidden min-w-0">
             {viewType === 'home' && <HomeDashboard />}
             {viewType === 'tasks' && <Tasks />}
             {viewType === 'workspace' && <Workspace />}

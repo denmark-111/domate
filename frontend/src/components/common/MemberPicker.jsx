@@ -133,8 +133,9 @@ const MemberPicker = ({ workspaceId, selectedUserIds = [], selectedUsers = [], o
               className="fixed z-[100] bg-bg border border-border rounded-lg shadow-xl p-2 space-y-1"
               style={{
                 top: triggerRef.current.getBoundingClientRect().bottom + 6,
-                left: triggerRef.current.getBoundingClientRect().left,
-                minWidth: Math.max(240, triggerRef.current.offsetWidth),
+                left: Math.min(triggerRef.current.getBoundingClientRect().left, window.innerWidth - 260),
+                minWidth: Math.max(240, Math.min(triggerRef.current.offsetWidth, window.innerWidth - 24)),
+                maxWidth: Math.min(320, window.innerWidth - 24),
               }}
             >
               <div className="p-1">

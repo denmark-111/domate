@@ -156,10 +156,10 @@ const WorkspaceOverview = () => {
   if (!displayWorkspace) return null;
 
   return (
-    <div className="flex-1 overflow-y-auto bg-bg-secondary p-8 sm:p-12">
+    <div className="flex-1 overflow-y-auto bg-bg-secondary p-4 sm:p-8 lg:p-12">
       <div className="max-w-4xl mx-auto">
-        <header className="mb-10 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-text">Overview</h1>
+        <header className="mb-6 sm:mb-10 flex items-center justify-between">
+          <h1 className="text-xl sm:text-2xl font-bold text-text">Overview</h1>
           {isOwner && !isEditing && (
             <div className="relative">
               <button
@@ -193,17 +193,17 @@ const WorkspaceOverview = () => {
           )}
         </header>
 
-        <div className="rounded-xl border border-border bg-bg p-6 mb-6">
+        <div className="rounded-xl border border-border bg-bg p-4 sm:p-6 mb-6">
           {!isEditing ? (
             <div className="space-y-5">
-              <div className="flex items-center gap-5">
+              <div className="flex items-center gap-4 sm:gap-5">
                 <WorkspaceIcon
                   workspace={displayWorkspace}
-                  containerClassName="w-24 h-24 rounded-2xl"
-                  className="rounded-2xl"
+                  containerClassName="w-16 h-16 sm:w-24 sm:h-24 rounded-xl sm:rounded-2xl"
+                  className="rounded-xl sm:rounded-2xl"
                 />
                 <div className="min-w-0">
-                  <p className="text-xl font-bold text-text">{displayWorkspace.name}</p>
+                  <p className="text-lg sm:text-xl font-bold text-text break-words">{displayWorkspace.name}</p>
                   <p className="text-xs text-text-secondary mt-0.5">
                     {displayWorkspace.type === 'team' ? (
                       <><Users size={12} className="inline mr-0.5" /> Team workspace</>
@@ -342,8 +342,8 @@ const WorkspaceOverview = () => {
         />
 
         {/* Team Members Section */}
-        <div className="rounded-xl border border-border bg-bg p-6">
-          <div className="flex items-center justify-between mb-4">
+        <div className="rounded-xl border border-border bg-bg p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-4 gap-2">
             <h2 className="text-sm font-semibold text-text-secondary">
               Members{displayWorkspace.memberships ? ` (${displayWorkspace.memberships.length})` : ''}
             </h2>

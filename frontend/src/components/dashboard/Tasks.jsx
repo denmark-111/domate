@@ -221,10 +221,10 @@ const Tasks = () => {
   const isEmpty = listItems.length === 0;
 
   return (
-    <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-8 sm:p-12 bg-bg-secondary">
+    <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 sm:p-8 lg:p-12 bg-bg-secondary">
       <div className="max-w-4xl mx-auto w-full">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-text">Tasks</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-text">Tasks</h1>
         </div>
 
         <div className="flex gap-6 border-b border-border">

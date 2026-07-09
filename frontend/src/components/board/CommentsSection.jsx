@@ -120,7 +120,7 @@ const CommentsSection = ({ taskId, onCommentChange, commentCount = 0 }) => {
   };
 
   return (
-    <div ref={scrollContainerRef} className="w-1/2 overflow-y-auto p-6 space-y-4 thin-scrollbar">
+    <div ref={scrollContainerRef} className="sm:w-1/2 overflow-y-auto p-4 sm:p-6 space-y-4 thin-scrollbar">
       <h3 className="text-sm font-semibold text-text">
         Comments <span className="text-text-secondary">({commentsPagination.total})</span>
       </h3>

@@ -444,7 +444,7 @@ const Board = () => {
           </div>
         ) : (
           <>
-              <div className="flex items-center justify-between px-6 py-2.5 border-b border-border flex-shrink-0">
+              <div className="flex items-center justify-between px-3 sm:px-6 py-2.5 border-b border-border flex-shrink-0">
                 <div className="flex items-center gap-3">
                   {activeBoard?.color && (
                     <span
@@ -452,7 +452,7 @@ const Board = () => {
                       style={{ backgroundColor: activeBoard.color }}
                     />
                   )}
-                  <h1 className="text-lg font-bold text-text">{activeBoard?.name}</h1>
+                  <h1 className="text-base sm:text-lg font-bold text-text truncate">{activeBoard?.name}</h1>
                 </div>
                 <div className="flex items-center gap-2">
                   <ActiveUsersBar users={activeUsers} />
@@ -480,7 +480,7 @@ const Board = () => {
               onDragCancel={handleDragCancel}
               onDragEnd={handleDragEnd}
             >
-              <div className="flex gap-4 flex-1 min-h-0 p-3 overflow-x-auto">
+              <div className="flex gap-3 sm:gap-4 flex-1 min-h-0 p-2 sm:p-3 overflow-x-auto">
                 <SortableContext items={data.map((col) => listSortableId(col.id))} strategy={horizontalListSortingStrategy}>
                   {data.map((col) => (
                     <ListColumn
@@ -524,7 +524,7 @@ const Board = () => {
                 </SortableContext>
 
                 {!showAddList ? (
-                  <div className="w-80 flex-shrink-0">
+                  <div className="w-72 sm:w-80 flex-shrink-0">
                     <button
                       onClick={() => setShowAddList(true)}
                       className="w-full py-2 rounded-lg border border-dashed border-border text-text-secondary hover:text-text hover:border-text-secondary text-xs font-medium transition-colors"

@@ -192,7 +192,7 @@ const ChatList = () => {
   return (
     <div className="flex-1 flex flex-col bg-bg-secondary min-h-0">
       {/* Header */}
-      <header className="shrink-0 px-8 py-4">
+      <header className="shrink-0 px-4 sm:px-8 py-4">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-2xl font-bold text-text">Chat</h1>
         </div>
@@ -200,7 +200,7 @@ const ChatList = () => {
 
       {/* Error banner */}
       {error && (
-        <div className="shrink-0 mx-8 mb-2 p-3 bg-error-bg border border-error-border rounded-lg flex items-center gap-2 text-sm text-error-text">
+        <div className="shrink-0 mx-4 sm:mx-8 mb-2 p-3 bg-error-bg border border-error-border rounded-lg flex items-center gap-2 text-sm text-error-text">
           <AlertCircle size={14} className="shrink-0" />
           <span>{error}</span>
           <button
@@ -215,7 +215,7 @@ const ChatList = () => {
       {/* Messages area */}
       <div
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto px-8 py-4 min-h-0"
+        className="flex-1 overflow-y-auto px-4 sm:px-8 py-4 min-h-0"
       >
         <div className="max-w-4xl mx-auto">
           {/* Loading more indicator */}
@@ -265,7 +265,9 @@ const ChatList = () => {
       </div>
 
       {/* Input */}
-      <ChatInput onSend={handleSend} isLoading={isSending} />
+      <div className="shrink-0">
+        <ChatInput onSend={handleSend} isLoading={isSending} />
+      </div>
 
       {/* Delete Confirmation */}
       <ConfirmModal

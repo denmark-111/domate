@@ -62,11 +62,14 @@ const BoardDetailModal = ({ isOpen, onClose, board, onUpdate }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-bg rounded-xl border border-border shadow-xl w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="relative bg-bg rounded-t-xl sm:rounded-xl border border-border shadow-xl w-full sm:max-w-md sm:mx-4 max-h-[85vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-border sticky top-0 bg-bg z-10">
           <h2 className="text-base font-semibold text-text">Board Details</h2>
           <button
             onClick={onClose}
@@ -79,7 +82,7 @@ const BoardDetailModal = ({ isOpen, onClose, board, onUpdate }) => {
         {!editing ? (
           <>
             {/* View mode */}
-            <div className="px-6 py-5 space-y-4">
+            <div className="px-4 sm:px-6 py-5 space-y-4">
               <div className="flex items-center gap-3">
                 {board.color && (
                   <span
@@ -87,12 +90,12 @@ const BoardDetailModal = ({ isOpen, onClose, board, onUpdate }) => {
                     style={{ backgroundColor: board.color }}
                   />
                 )}
-                <h3 className="text-xl font-bold text-text">{board.name}</h3>
+                <h3 className="text-xl font-bold text-text break-words">{board.name}</h3>
               </div>
 
               <div>
                 {board.description ? (
-                  <p className="text-sm text-text-secondary whitespace-pre-wrap leading-relaxed">{board.description}</p>
+                  <p className="text-sm text-text-secondary whitespace-pre-wrap leading-relaxed break-words">{board.description}</p>
                 ) : (
                   <p className="text-sm text-text-tertiary italic">No description provided</p>
                 )}
@@ -100,7 +103,7 @@ const BoardDetailModal = ({ isOpen, onClose, board, onUpdate }) => {
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border">
+            <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-4 border-t border-border">
               <button
                 onClick={startEditing}
                 className="px-5 py-2 rounded-lg font-semibold text-sm bg-button hover:bg-button-hover text-white transition-colors"
@@ -112,15 +115,15 @@ const BoardDetailModal = ({ isOpen, onClose, board, onUpdate }) => {
         ) : (
           <form onSubmit={handleSubmit}>
             {/* Edit mode */}
-            <div className="px-6 py-5 space-y-4">
+            <div className="px-4 sm:px-6 py-5 space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-text-secondary mb-1.5">Name</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors"
-              placeholder="Board name"
+                  className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors"
+                  placeholder="Board name"
                   autoFocus
                 />
               </div>
@@ -140,8 +143,8 @@ className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg text-text ou
                   value={formData.description}
                   onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
                   rows="4"
-className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none"
-              placeholder="Board description"
+                  className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none"
+                  placeholder="Board description"
                 />
               </div>
 
@@ -153,7 +156,7 @@ className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg text-text ou
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border">
+            <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-4 border-t border-border">
               <button
                 type="button"
                 onClick={cancelEditing}

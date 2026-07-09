@@ -35,9 +35,9 @@ const HomeDashboard = () => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-bg-secondary p-8 sm:p-12">
+    <div className="flex-1 overflow-y-auto bg-bg-secondary p-4 sm:p-8 lg:p-12">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-2xl font-bold text-text mb-10">
+        <h1 className="text-xl sm:text-2xl font-bold text-text mb-6 sm:mb-10">
           Welcome back, {user?.fullName || user?.email || 'Guest'}
         </h1>
 
@@ -45,10 +45,10 @@ const HomeDashboard = () => {
           <>
             <section>
               <h2 className="text-xs font-semibold text-text-secondary mb-3">Recent Workspaces</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 <button
                   onClick={() => setShowCreateForm(true)}
-                  className="flex flex-col items-center justify-center gap-3 p-6 rounded-xl border border-dashed border-border text-text-secondary hover:text-text hover:border-text-secondary transition-colors h-32"
+                  className="flex flex-col items-center justify-center gap-3 p-4 sm:p-6 rounded-xl border border-dashed border-border text-text-secondary hover:text-text hover:border-text-secondary transition-colors h-28 sm:h-32"
                 >
                   <Plus size={24} />
                   <span className="text-sm font-medium">New Workspace</span>
@@ -58,7 +58,7 @@ const HomeDashboard = () => {
                   <button
                     key={ws.id}
                     onClick={() => navigate(`/workspaces/${ws.id}`)}
-                    className="flex flex-col items-start gap-4 p-5 rounded-xl border border-border bg-bg shadow-sm hover:shadow-md transition-shadow text-left h-32"
+                    className="flex flex-col items-start gap-3 sm:gap-4 p-4 sm:p-5 rounded-xl border border-border bg-bg shadow-sm hover:shadow-md transition-shadow text-left h-28 sm:h-32"
                   >
                     <div className="flex items-center gap-3 w-full">
                       <WorkspaceIcon
@@ -80,7 +80,7 @@ const HomeDashboard = () => {
             </section>
 
             {recentBoards.length > 0 && (
-              <section className="mt-10">
+              <section className="mt-6 sm:mt-10">
                 <h2 className="text-xs font-semibold text-text-secondary mb-3">Recent Boards</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {recentBoards.map((board) => (
