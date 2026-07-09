@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { X } from 'lucide-react';
 
 const parseEmails = (input) => {
   return input
@@ -34,7 +35,7 @@ const InviteMembersForm = ({ workspaceName, onClose, onSubmit }) => {
       } else {
         setResult({ type: 'error', message: res.error || 'Failed to send invitations' });
       }
-    } catch (err) {
+    } catch {
       setResult({ type: 'error', message: 'An unexpected error occurred.' });
     } finally {
       setIsSubmitting(false);
@@ -42,18 +43,27 @@ const InviteMembersForm = ({ workspaceName, onClose, onSubmit }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-bg rounded-xl shadow-lg w-full max-w-lg">
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-bg rounded-xl border border-border shadow-xl w-full max-w-lg mx-4" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="p-6 border-b border-border">
-          <h2 className="text-base font-semibold text-text">Invite Members</h2>
-          <p className="text-sm text-text-secondary mt-1">
-            Send invites to {workspaceName}
-          </p>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+          <div>
+            <h2 className="text-base font-semibold text-text">Invite Members</h2>
+            <p className="text-sm text-text-secondary mt-0.5">
+              Send invites to {workspaceName}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 text-text-secondary hover:text-text rounded-lg hover:bg-bg-tertiary transition-colors"
+          >
+            <X size={18} />
+          </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
           <div>
             <label htmlFor="emails" className="block text-sm font-semibold text-text-secondary mb-1.5">
               Email Addresses
