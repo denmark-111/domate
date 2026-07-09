@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { X, Loader, ExternalLink, ChevronDown, Check, ArrowLeft } from 'lucide-react';
+import { X, Loader, ExternalLink, ChevronDown, Check } from 'lucide-react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { taskService } from '../../services/taskService.js';
 import { labelService, supabaseStorageService } from '../../services/index.js';
@@ -361,109 +361,93 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
     }
   };
 
-  const renderHeader = () => (
-    <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border bg-bg rounded-t-lg shrink-0">
-      <div className="flex items-center gap-3 flex-1 pr-4 min-w-0">
-        {readOnly ? (
-          task?.list?.board?.id && workspaceId ? (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/workspaces/${workspaceId}`, { state: { selectBoardId: task.list.board.id } });
-              }}
-              className="flex items-center gap-1.5 text-sm font-medium text-button hover:text-button-hover transition-colors"
-            >
-              <ExternalLink size={14} />
-              <span className="truncate">{task.list.board.workspace?.name || 'Workspace'} / {task.list.board.name || 'Board'}</span>
-            </button>
-          ) : null
-        ) : (
-          onMoveTask && lists?.length > 0 && (
-            <div ref={listPickerRef}>
-              <button
-                onClick={() => setShowListPicker(!showListPicker)}
-                className="flex items-center gap-2 text-sm text-text bg-bg border border-border rounded-lg px-3 py-1.5 hover:border-input-border-focus transition-colors cursor-pointer"
-              >
-                <span className="truncate max-w-[120px] sm:max-w-none">{lists.find(l => l.id === task.listId)?.title || lists.find(l => l.id === task.listId)?.name || 'Select list'}</span>
-                <ChevronDown size={14} className={`text-text-secondary transition-transform shrink-0 ${showListPicker ? 'rotate-180' : ''}`} />
-              </button>
-              {showListPicker && listPickerRef.current && createPortal(
-                <div
-                  ref={listDropdownRef}
-                  className="fixed z-[100] bg-bg border border-border rounded-lg shadow-xl p-1.5 space-y-0.5"
-                  style={{
-                    top: listPickerRef.current.getBoundingClientRect().bottom + 4,
-                    left: Math.min(listPickerRef.current.getBoundingClientRect().left, window.innerWidth - 200),
-                    minWidth: Math.max(180, Math.min(listPickerRef.current.offsetWidth, window.innerWidth - 24)),
-                  }}
-                >
-                  {lists.map((list) => (
-                    <button
-                      key={list.id}
-                      type="button"
-                      onClick={() => {
-                        if (list.id !== task.listId) {
-                          onMoveTask?.(task.id, list.id);
-                        }
-                        setShowListPicker(false);
-                      }}
-                      className="flex items-center gap-2 w-full px-3 py-2 rounded-lg hover:bg-bg-tertiary transition-colors text-left"
-                    >
-                      <span className="flex-1 text-sm text-text truncate">{list.title || list.name}</span>
-                      {list.id === task.listId && (
-                        <Check size={14} className="text-button shrink-0" />
-                      )}
-                    </button>
-                  ))}
-                </div>,
-                document.body
-              )}
-            </div>
-          )
-        )}
-      </div>
-      {/* Desktop close */}
-      <button
-        onClick={onClose}
-        className="hidden sm:block text-text-secondary hover:text-text text-2xl font-light transition-colors shrink-0"
-      >
-        ✕
-      </button>
-    </div>
-  );
+  document.title = editName || 'Task';
 
   return (
     <>
-      {/* Backdrop - hidden on mobile since we use full-screen */}
+      {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/50 z-40 transition-opacity hidden sm:block"
+        className="fixed inset-0 bg-black/50 z-40 transition-opacity"
         onClick={onClose}
       />
 
       {/* Modal */}
       <div className="fixed inset-0 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:transform sm:-translate-x-1/2 sm:-translate-y-1/2 z-50 sm:max-w-4xl lg:max-w-5xl sm:max-h-[90vh] flex flex-col bg-bg sm:rounded-xl sm:shadow-xl w-full">
-        {/* Mobile header with back button */}
-        <div className="sm:hidden flex items-center gap-2 p-3 border-b border-border shrink-0 bg-bg">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border bg-bg shrink-0">
+          <div className="flex items-center gap-3 flex-1 pr-4 min-w-0">
+            {readOnly ? (
+              task?.list?.board?.id && workspaceId ? (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/workspaces/${workspaceId}`, { state: { selectBoardId: task.list.board.id } });
+                  }}
+                  className="flex items-center gap-1.5 text-sm font-medium text-button hover:text-button-hover transition-colors"
+                >
+                  <ExternalLink size={14} />
+                  <span className="truncate">{task.list.board.workspace?.name || 'Workspace'} / {task.list.board.name || 'Board'}</span>
+                </button>
+              ) : null
+            ) : (
+              onMoveTask && lists?.length > 0 && (
+                <div ref={listPickerRef}>
+                  <button
+                    onClick={() => setShowListPicker(!showListPicker)}
+                    className="flex items-center gap-2 text-sm text-text bg-bg border border-border rounded-lg px-3 py-1.5 hover:border-input-border-focus transition-colors cursor-pointer"
+                  >
+                    <span className="truncate max-w-[120px] sm:max-w-none">{lists.find(l => l.id === task.listId)?.title || lists.find(l => l.id === task.listId)?.name || 'Select list'}</span>
+                    <ChevronDown size={14} className={`text-text-secondary transition-transform shrink-0 ${showListPicker ? 'rotate-180' : ''}`} />
+                  </button>
+                  {showListPicker && listPickerRef.current && createPortal(
+                    <div
+                      ref={listDropdownRef}
+                      className="fixed z-[100] bg-bg border border-border rounded-lg shadow-xl p-1.5 space-y-0.5"
+                      style={{
+                        top: listPickerRef.current.getBoundingClientRect().bottom + 4,
+                        left: Math.min(listPickerRef.current.getBoundingClientRect().left, window.innerWidth - 200),
+                        minWidth: Math.max(180, Math.min(listPickerRef.current.offsetWidth, window.innerWidth - 24)),
+                      }}
+                    >
+                      {lists.map((list) => (
+                        <button
+                          key={list.id}
+                          type="button"
+                          onClick={() => {
+                            if (list.id !== task.listId) {
+                              onMoveTask?.(task.id, list.id);
+                            }
+                            setShowListPicker(false);
+                          }}
+                          className="flex items-center gap-2 w-full px-3 py-2 rounded-lg hover:bg-bg-tertiary transition-colors text-left"
+                        >
+                          <span className="flex-1 text-sm text-text truncate">{list.title || list.name}</span>
+                          {list.id === task.listId && (
+                            <Check size={14} className="text-button shrink-0" />
+                          )}
+                        </button>
+                      ))}
+                    </div>,
+                    document.body
+                  )}
+                </div>
+              )
+            )}
+          </div>
           <button
             onClick={onClose}
-            className="p-1 text-text-secondary hover:text-text transition-colors"
-            aria-label="Back"
+            className="text-text-secondary hover:text-text text-2xl font-light transition-colors shrink-0"
+            aria-label="Close"
           >
-            <ArrowLeft size={22} />
+            ✕
           </button>
-          <h2 className="text-sm font-bold text-text truncate">
-            {editName || 'Task'}
-          </h2>
         </div>
-
-        {renderHeader()}
 
         {/* Body: responsive layout */}
         <div className="flex flex-1 min-h-0 flex-col sm:flex-row overflow-y-auto sm:overflow-hidden">
           {/* Left Column: Task Details */}
-          <div className="sm:w-1/2 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6 sm:border-r border-border thin-scrollbar">
+          <div className="sm:w-1/2 sm:overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6 sm:border-r border-border sm:thin-scrollbar">
             {/* Task Title + checkbox */}
-            <div className="flex items-start gap-3">
+            <div className="flex flex-col sm:flex-row sm:gap-2 sm:items-start">
               {!readOnly && (
                 <label onClick={(e) => e.stopPropagation()} className="shrink-0 mt-1">
                   <input
@@ -512,7 +496,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                         e.currentTarget.blur();
                       }
                     }}
-                    className="w-full text-lg sm:text-xl font-bold text-text bg-transparent -ml-3 -mt-2 px-3 py-2 border-none outline-none focus:bg-bg-tertiary rounded transition-colors resize-none overflow-hidden"
+                    className="w-full text-lg sm:text-xl font-bold text-text bg-transparent border-none outline-none focus:bg-bg-tertiary rounded transition-colors resize-none overflow-hidden"
                     placeholder="Task name"
                   />
                 )}
