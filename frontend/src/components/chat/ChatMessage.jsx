@@ -48,7 +48,7 @@ const ChatMessage = ({ message, isOwnMessage, onDelete }) => {
 
         {/* Bubble */}
         <div
-          className={`px-3.5 py-2 rounded-xl text-sm leading-relaxed ${
+          className={`px-3.5 py-2 rounded-lg text-sm leading-relaxed ${
             isOwnMessage
               ? 'bg-button text-white rounded-br-sm'
               : 'bg-bg text-text rounded-bl-sm'

@@ -36,7 +36,7 @@ const ChatInput = ({ onSend, isLoading }) => {
           onKeyDown={handleKeyDown}
           placeholder="Type a message..."
           rows={1}
-          className="flex-1 px-4 py-2.5 bg-input-bg border border-border rounded-xl text-sm text-text placeholder-text-tertiary resize-none outline-none focus:border-input-border-focus transition-colors"
+          className="flex-1 px-4 py-2.5 bg-input-bg border border-border rounded-lg text-sm text-text placeholder-text-tertiary resize-none outline-none focus:border-input-border-focus transition-colors"
           style={{ minHeight: '42px', maxHeight: '120px' }}
             onInput={(e) => {
               e.target.style.height = 'auto';
@@ -48,7 +48,7 @@ const ChatInput = ({ onSend, isLoading }) => {
         <button
           type="submit"
           disabled={!content.trim() || isLoading}
-          className="shrink-0 px-4 py-2.5 bg-button hover:bg-button-hover disabled:bg-button/50 disabled:cursor-not-allowed text-white rounded-xl transition-colors flex items-center gap-2 text-sm font-semibold"
+          className="shrink-0 px-4 py-2.5 bg-button hover:bg-button-hover disabled:bg-button/50 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center gap-2 text-sm font-semibold"
           style={{ minHeight: '42px' }}
         >
           {isLoading ? (

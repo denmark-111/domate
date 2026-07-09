@@ -33,6 +33,7 @@
   --label-team-text: #7e22ce;
   --label-personal-bg: #dcfce7;
   --label-personal-text: #15803d;
+  --accent: #2563eb;
 }
 
 /* Dark theme */
@@ -68,6 +69,7 @@ html[data-theme='dark'] {
   --label-team-text: #d6bcfa;
   --label-personal-bg: #1b4a2e;
   --label-personal-text: #81e6d9;
+  --accent: #63b3ed;
 }
 
 @theme {
@@ -102,6 +104,7 @@ html[data-theme='dark'] {
   --color-label-team-text: var(--label-team-text);
   --color-label-personal-bg: var(--label-personal-bg);
   --color-label-personal-text: var(--label-personal-text);
+  --color-accent: var(--accent);
   --font-sans: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
 }
 

@@ -7,7 +7,7 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message, confirmLabel
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-bg rounded-2xl border border-border p-6 shadow-xl max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+      <div className="relative bg-bg rounded-xl border border-border p-6 shadow-xl max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-text-secondary hover:text-text transition-colors"
@@ -20,14 +20,14 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message, confirmLabel
           <button
             onClick={onClose}
             disabled={isLoading}
-            className="px-4 py-2 rounded-lg font-bold text-text-secondary hover:bg-bg-tertiary transition-colors disabled:opacity-50"
+            className="px-4 py-2 rounded-lg font-semibold text-text-secondary hover:bg-bg-tertiary transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
             disabled={isLoading}
-            className="px-4 py-2 rounded-lg font-bold bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+            className="px-4 py-2 rounded-lg font-semibold bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           >
             {isLoading ? 'Deleting...' : confirmLabel}
           </button>

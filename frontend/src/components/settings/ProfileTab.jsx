@@ -156,7 +156,7 @@ const ProfileTab = () => {
           <div>
             <label
               htmlFor="profile-fullName"
-              className="block text-sm font-medium text-text mb-1.5"
+              className="block text-sm font-semibold text-text mb-1.5"
             >
               Full name
             </label>
@@ -165,7 +165,7 @@ const ProfileTab = () => {
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-border bg-bg text-text text-sm outline-none focus:border-input-border-focus transition-colors"
+              className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg text-text text-sm outline-none focus:border-input-border-focus transition-colors"
               placeholder="Your full name"
               maxLength={255}
             />
@@ -174,7 +174,7 @@ const ProfileTab = () => {
           <div>
             <label
               htmlFor="profile-email"
-              className="block text-sm font-medium text-text mb-1.5"
+              className="block text-sm font-semibold text-text mb-1.5"
             >
               Email
             </label>
@@ -222,7 +222,7 @@ const ProfileTab = () => {
                 setError('');
                 setSuccess('');
               }}
-              className="px-5 py-2 rounded-lg text-sm font-medium text-text-secondary hover:text-text hover:bg-bg-tertiary transition-colors"
+              className="px-5 py-2 rounded-lg text-sm font-semibold text-text-secondary hover:text-text hover:bg-bg-tertiary transition-colors"
             >
               Cancel
             </button>

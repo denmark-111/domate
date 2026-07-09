@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Loader } from 'lucide-react';
 import ColorPicker from '../common/ColorPicker';
 import { BOARD_COLORS, autoAssignColor } from '../../data/colorPalette';
 
@@ -63,7 +64,7 @@ const CreateBoardForm = ({ workspaceName, onClose, onSubmit }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-bg rounded-2xl shadow-lg w-full max-w-md">
+      <div className="bg-bg rounded-xl shadow-lg w-full max-w-md">
         {/* Header */}
         <div className="p-6 border-b border-border">
           <h2 className="text-xl font-bold text-text">Create Board</h2>
@@ -74,7 +75,7 @@ const CreateBoardForm = ({ workspaceName, onClose, onSubmit }) => {
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Name */}
           <div>
-            <label htmlFor="name" className="block text-sm font-semibold text-text mb-2">
+            <label htmlFor="name" className="block text-sm font-semibold text-text-secondary mb-1.5">
               Name *
             </label>
             <input
@@ -84,7 +85,7 @@ const CreateBoardForm = ({ workspaceName, onClose, onSubmit }) => {
               value={formData.name}
               onChange={handleInputChange}
               placeholder="e.g., Development, Marketing, Q2 Planning"
-              className={`w-full px-4 py-2 rounded-lg border-2 outline-none focus:border-input-border-focus transition-colors ${
+              className={`w-full px-4 py-2.5 rounded-lg border outline-none focus:border-input-border-focus transition-colors ${
                 errors.name ? 'border-error-border bg-error-bg' : 'border-border bg-bg'
               }`}
             />
@@ -95,7 +96,7 @@ const CreateBoardForm = ({ workspaceName, onClose, onSubmit }) => {
 
           {/* Color */}
           <div>
-            <label className="block text-sm font-semibold text-text mb-2">
+            <label className="block text-sm font-semibold text-text-secondary mb-1.5">
               Color
             </label>
             <ColorPicker
@@ -107,7 +108,7 @@ const CreateBoardForm = ({ workspaceName, onClose, onSubmit }) => {
 
           {/* Description */}
           <div>
-            <label htmlFor="description" className="block text-sm font-semibold text-text mb-2">
+            <label htmlFor="description" className="block text-sm font-semibold text-text-secondary mb-1.5">
               Description
             </label>
             <textarea
@@ -117,7 +118,7 @@ const CreateBoardForm = ({ workspaceName, onClose, onSubmit }) => {
               onChange={handleInputChange}
               placeholder="What is this board for?"
               rows="3"
-              className="w-full px-4 py-2 rounded-lg border-2 border-border bg-bg outline-none focus:border-input-border-focus transition-colors resize-none"
+              className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg outline-none focus:border-input-border-focus transition-colors resize-none"
             />
           </div>
 
@@ -133,21 +134,18 @@ const CreateBoardForm = ({ workspaceName, onClose, onSubmit }) => {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 rounded-lg border-2 border-border bg-bg hover:bg-bg-secondary transition-colors font-medium text-text"
+              className="flex-1 px-4 py-2 rounded-lg border border-border bg-bg hover:bg-bg-secondary transition-colors font-semibold text-text"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 px-4 py-2 rounded-lg bg-button hover:bg-button-hover disabled:bg-gray-400 transition-colors font-medium text-white disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2 rounded-lg bg-button hover:bg-button-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold text-white flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
                 <>
-                  <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
+                  <Loader size={16} className="animate-spin" />
                   Creating...
                 </>
               ) : (

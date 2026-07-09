@@ -159,8 +159,8 @@ const Tasks = () => {
               <span className="text-[10px] font-bold text-text-secondary">
                 {task.list?.board?.workspace?.name || 'Workspace'}
               </span>
-              <span className="text-[10px] font-medium text-text-secondary">•</span>
-              <span className="text-[10px] font-medium text-text-secondary">
+              <span className="text-[10px] font-semibold text-text-secondary">•</span>
+              <span className="text-[10px] font-semibold text-text-secondary">
                 {task.list?.board?.name || 'Board'}
               </span>
               {task.attachments?.length > 0 && (
@@ -279,7 +279,7 @@ const Tasks = () => {
             <p className="text-red-500">Failed to load tasks: {error}</p>
             <button
               onClick={() => fetchTasks(1)}
-              className="mt-4 px-4 py-2 bg-button text-white text-sm font-medium rounded hover:bg-button-hover transition-colors"
+              className="mt-4 px-4 py-2 bg-button text-white text-sm font-semibold rounded hover:bg-button-hover transition-colors"
             >
               Retry
             </button>
@@ -291,7 +291,7 @@ const Tasks = () => {
             <p className="text-red-500">Failed to load completed tasks: {error}</p>
             <button
               onClick={() => fetchCompletedTasks(1)}
-              className="mt-4 px-4 py-2 bg-button text-white text-sm font-medium rounded hover:bg-button-hover transition-colors"
+              className="mt-4 px-4 py-2 bg-button text-white text-sm font-semibold rounded hover:bg-button-hover transition-colors"
             >
               Retry
             </button>

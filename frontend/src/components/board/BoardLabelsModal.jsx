@@ -125,7 +125,7 @@ const BoardLabelsModal = ({ isOpen, onClose, boardId, boardLabels, onLabelCreate
               <button
                 type="submit"
                 disabled={isSavingLabel || !newLabelName.trim()}
-                className="w-full px-3 py-2 bg-button hover:bg-button-hover text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+                className="w-full px-3 py-2 bg-button hover:bg-button-hover text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50"
               >
                 {isSavingLabel ? 'Adding...' : 'Create'}
               </button>

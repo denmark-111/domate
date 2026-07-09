@@ -130,7 +130,7 @@ const MemberPicker = ({ workspaceId, selectedUserIds = [], selectedUsers = [], o
             {isOpen && triggerRef.current && createPortal(
             <div
               ref={dropdownRef}
-              className="fixed z-[100] bg-bg border border-border rounded-xl shadow-xl p-2 space-y-1"
+              className="fixed z-[100] bg-bg border border-border rounded-lg shadow-xl p-2 space-y-1"
               style={{
                 top: triggerRef.current.getBoundingClientRect().bottom + 6,
                 left: triggerRef.current.getBoundingClientRect().left,

@@ -43,10 +43,10 @@ const InviteMembersForm = ({ workspaceName, onClose, onSubmit }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-bg rounded-2xl shadow-lg w-full max-w-lg">
+      <div className="bg-bg rounded-xl shadow-lg w-full max-w-lg">
         {/* Header */}
         <div className="p-6 border-b border-border">
-          <h2 className="text-xl font-bold text-text">Invite Members</h2>
+          <h2 className="text-base font-semibold text-text">Invite Members</h2>
           <p className="text-sm text-text-secondary mt-1">
             Send invites to {workspaceName}
           </p>
@@ -55,7 +55,7 @@ const InviteMembersForm = ({ workspaceName, onClose, onSubmit }) => {
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label htmlFor="emails" className="block text-sm font-semibold text-text mb-2">
+            <label htmlFor="emails" className="block text-sm font-semibold text-text-secondary mb-1.5">
               Email Addresses
             </label>
             <textarea
@@ -63,7 +63,7 @@ const InviteMembersForm = ({ workspaceName, onClose, onSubmit }) => {
               value={rawInput}
               onChange={(e) => { setRawInput(e.target.value); setResult(null); }}
               rows="4"
-              className="w-full px-4 py-3 rounded-lg border-2 border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none"
+              className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none"
               placeholder="alice@example.com, bob@example.com"
             />
             <p className="text-xs text-text-secondary mt-1">
@@ -99,14 +99,14 @@ const InviteMembersForm = ({ workspaceName, onClose, onSubmit }) => {
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-6 py-2 rounded-lg font-bold text-text-secondary hover:bg-bg-tertiary transition-colors"
+              className="px-6 py-2 rounded-lg font-semibold text-text-secondary hover:bg-bg-tertiary transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting || emails.length === 0 || invalidEmails.length > 0}
-              className="px-6 py-2 rounded-lg font-bold bg-button hover:bg-button-hover text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+              className="px-6 py-2 rounded-lg font-semibold bg-button hover:bg-button-hover text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
             >
               {isSubmitting ? 'Sending...' : `Send ${emails.length > 0 ? `(${emails.length})` : ''}`}
             </button>

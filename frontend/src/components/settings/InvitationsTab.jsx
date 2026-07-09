@@ -142,7 +142,7 @@ const InvitationsTab = () => {
                       <button
                         onClick={() => handleDecline(inv.id)}
                         disabled={actionLoading === inv.id}
-                        className="px-3 py-1.5 rounded-lg text-sm font-medium text-text-secondary hover:bg-bg-tertiary border border-border transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                        className="px-3 py-1.5 rounded-lg text-sm font-semibold text-text-secondary hover:bg-bg-tertiary border border-border transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
                       >
                         <X size={13} />
                         Decline

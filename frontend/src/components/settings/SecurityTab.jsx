@@ -84,7 +84,7 @@ const SecurityTab = () => {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="max-w-sm space-y-3">
           <div>
-            <label htmlFor="newPassword" className="block text-sm font-medium text-text mb-1.5">
+            <label htmlFor="newPassword" className="block text-sm font-semibold text-text mb-1.5">
               New password
             </label>
             <input
@@ -93,7 +93,7 @@ const SecurityTab = () => {
               value={newPassword}
               onChange={(e) => { setNewPassword(e.target.value); setError(''); setReauthRequired(false); }}
               placeholder="At least 6 characters"
-              className={`w-full px-3 py-2 rounded-lg border text-sm outline-none transition-colors ${
+              className={`w-full px-4 py-2.5 rounded-lg border text-sm outline-none transition-colors ${
                 error
                   ? 'border-error-border bg-error-bg focus:border-error-border'
                   : 'border-border bg-bg focus:border-input-border-focus'
@@ -102,7 +102,7 @@ const SecurityTab = () => {
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-text mb-1.5">
+            <label htmlFor="confirmPassword" className="block text-sm font-semibold text-text mb-1.5">
               Confirm new password
             </label>
             <input
@@ -111,7 +111,7 @@ const SecurityTab = () => {
               value={confirmPassword}
               onChange={(e) => { setConfirmPassword(e.target.value); setError(''); setReauthRequired(false); }}
               placeholder="Re-enter your password"
-              className={`w-full px-3 py-2 rounded-lg border text-sm outline-none transition-colors ${
+              className={`w-full px-4 py-2.5 rounded-lg border text-sm outline-none transition-colors ${
                 error
                   ? 'border-error-border bg-error-bg focus:border-error-border'
                   : 'border-border bg-bg focus:border-input-border-focus'
@@ -139,7 +139,7 @@ const SecurityTab = () => {
             <button
               type="button"
               onClick={() => { setNewPassword(''); setConfirmPassword(''); setError(''); }}
-              className="px-5 py-2 rounded-lg text-sm font-medium text-text-secondary hover:text-text hover:bg-bg-tertiary transition-colors"
+              className="px-5 py-2 rounded-lg text-sm font-semibold text-text-secondary hover:text-text hover:bg-bg-tertiary transition-colors"
             >
               Cancel
             </button>

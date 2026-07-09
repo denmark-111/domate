@@ -179,7 +179,7 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
 
   return (
     <div
-      className={`rounded-xl border transition-all ${
+      className={`rounded-lg border transition-all ${
         announcement.pinned ? 'border-accent/40' : 'border-border'
       }`}
     >

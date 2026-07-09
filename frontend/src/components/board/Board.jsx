@@ -452,7 +452,7 @@ const Board = () => {
                       style={{ backgroundColor: activeBoard.color }}
                     />
                   )}
-                  <h1 className="text-lg font-extrabold text-text">{activeBoard?.name}</h1>
+                  <h1 className="text-lg font-bold text-text">{activeBoard?.name}</h1>
                 </div>
                 <div className="flex items-center gap-2">
                   <ActiveUsersBar users={activeUsers} />
@@ -527,7 +527,7 @@ const Board = () => {
                   <div className="w-80 flex-shrink-0">
                     <button
                       onClick={() => setShowAddList(true)}
-                      className="w-full py-2 rounded-xl border border-dashed border-border text-text-secondary hover:text-text hover:border-text-secondary text-xs font-medium transition-colors"
+                      className="w-full py-2 rounded-lg border border-dashed border-border text-text-secondary hover:text-text hover:border-text-secondary text-xs font-medium transition-colors"
                     >
                       + Add List
                     </button>

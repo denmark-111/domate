@@ -158,7 +158,7 @@ const Landing = () => {
 
       {/* CTA Section */}
       <section className="py-20 border-t border-border">
-        <div className="max-w-4xl mx-auto px-6 text-center bg-bg-secondary rounded-2xl p-12">
+        <div className="max-w-4xl mx-auto px-6 text-center bg-bg-secondary rounded-xl p-12">
           <h2 className="text-3xl font-bold mb-4">Ready to boost your productivity?</h2>
           <p className="text-text-secondary text-lg mb-8 max-w-2xl mx-auto">
             Join thousands of teams using Board-Done to organize their work and achieve their goals.

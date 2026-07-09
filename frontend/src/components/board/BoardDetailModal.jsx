@@ -87,7 +87,7 @@ const BoardDetailModal = ({ isOpen, onClose, board, onUpdate }) => {
                     style={{ backgroundColor: board.color }}
                   />
                 )}
-                <h3 className="text-xl font-extrabold text-text">{board.name}</h3>
+                <h3 className="text-xl font-bold text-text">{board.name}</h3>
               </div>
 
               <div>

@@ -400,7 +400,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                   {showListPicker && listPickerRef.current && createPortal(
                     <div
                       ref={listDropdownRef}
-                      className="fixed z-[100] bg-bg border border-border rounded-xl shadow-xl p-1.5 space-y-0.5"
+                      className="fixed z-[100] bg-bg border border-border rounded-lg shadow-xl p-1.5 space-y-0.5"
                       style={{
                         top: listPickerRef.current.getBoundingClientRect().bottom + 4,
                         left: listPickerRef.current.getBoundingClientRect().left,
@@ -560,7 +560,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                       {showLabelPicker && labelContainerRef.current && createPortal(
                         <div
                           ref={labelDropdownRef}
-                          className="fixed z-[100] bg-bg border border-border rounded-xl shadow-xl p-3 space-y-2"
+                          className="fixed z-[100] bg-bg border border-border rounded-lg shadow-xl p-3 space-y-2"
                           style={{
                             top: labelContainerRef.current.getBoundingClientRect().bottom + 6,
                             left: labelContainerRef.current.getBoundingClientRect().left,

@@ -88,7 +88,7 @@ const ForgotPassword = () => {
                   value={email}
                   onChange={(e) => { setEmail(e.target.value); setError(''); }}
                   placeholder="you@example.com"
-                  className={`w-full pl-10 pr-4 py-2.5 rounded-lg border outline-none transition-colors ${
+                  className={`w-full pl-10 pr-4 py-2.5 rounded-md border outline-none transition-colors ${
                     error
                       ? 'border-error-border bg-error-bg focus:border-error-border'
                       : 'border-border bg-bg focus:border-input-border-focus'
@@ -103,7 +103,7 @@ const ForgotPassword = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-button hover:bg-button-hover disabled:opacity-50 text-white font-semibold rounded-lg transition-colors disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-button hover:bg-button-hover disabled:opacity-50 text-white font-semibold rounded-md transition-colors disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <>

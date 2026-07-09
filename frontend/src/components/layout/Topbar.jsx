@@ -99,7 +99,7 @@ const Topbar = ({ collapsed, onToggle }) => {
           />
 
           {showSearchDropdown && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-bg border border-border rounded-xl shadow-xl z-50 max-h-80 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-bg border border-border rounded-lg shadow-xl z-50 max-h-80 overflow-y-auto">
               {isSearching ? (
                 <div className="p-4 text-sm text-text-secondary text-center">Searching...</div>
               ) : searchResults.workspaces.length === 0 && searchResults.boards.length === 0 ? (
@@ -207,7 +207,7 @@ const Topbar = ({ collapsed, onToggle }) => {
           </button>
 
           {dropdownOpen && (
-            <div className="absolute right-0 top-full mt-2 w-48 bg-bg border border-border rounded-xl shadow-xl z-50 py-1">
+            <div className="absolute right-0 top-full mt-2 w-48 bg-bg border border-border rounded-lg shadow-xl z-50 py-1">
               <button
                 onClick={() => { navigate('/settings'); setDropdownOpen(false); }}
                 className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text hover:bg-bg-tertiary transition-colors text-left"

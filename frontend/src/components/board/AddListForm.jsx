@@ -13,7 +13,7 @@ const AddListForm = ({ onSubmit, onCancel }) => {
 
   return (
     <div className="w-80 flex-shrink-0">
-      <div className="bg-bg border border-border rounded-xl p-3 space-y-3">
+      <div className="bg-bg border border-border rounded-lg p-3 space-y-3">
         <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">New List</h3>
 
         <form onSubmit={handleSubmit} className="space-y-2">
