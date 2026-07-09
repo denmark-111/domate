@@ -36,7 +36,7 @@ const ChatInput = ({ onSend, isLoading }) => {
           onKeyDown={handleKeyDown}
           placeholder="Type a message..."
           rows={1}
-          className="flex-1 px-4 py-2.5 bg-input-bg border border-border rounded-lg text-sm text-text placeholder-text-tertiary resize-none outline-none focus:border-input-border-focus transition-colors"
+          className="flex-1 px-4 py-2.5 bg-bg border border-border rounded-lg text-sm text-text placeholder-text-tertiary resize-none outline-none focus:border-input-border-focus transition-colors"
           style={{ minHeight: '42px', maxHeight: '120px' }}
             onInput={(e) => {
               e.target.style.height = 'auto';

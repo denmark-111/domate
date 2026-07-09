@@ -119,8 +119,8 @@ const BoardDetailModal = ({ isOpen, onClose, board, onUpdate }) => {
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-4 py-2.5 rounded-lg border border-border bg-input-bg text-text outline-none focus:border-input-border-focus transition-colors"
-                  placeholder="Board name"
+className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors"
+              placeholder="Board name"
                   autoFocus
                 />
               </div>
@@ -140,8 +140,8 @@ const BoardDetailModal = ({ isOpen, onClose, board, onUpdate }) => {
                   value={formData.description}
                   onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
                   rows="4"
-                  className="w-full px-4 py-2.5 rounded-lg border border-border bg-input-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none"
-                  placeholder="Board description"
+className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none"
+              placeholder="Board description"
                 />
               </div>
 

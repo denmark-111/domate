@@ -238,7 +238,7 @@ const AnnouncementForm = ({
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg border border-border bg-input-bg text-text outline-none focus:border-input-border-focus transition-colors"
+              className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors"
               placeholder="Announcement title"
               maxLength={255}
             />
@@ -257,7 +257,7 @@ const AnnouncementForm = ({
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows="6"
-              className="w-full px-4 py-2.5 rounded-lg border border-border bg-input-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none"
+              className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none"
               placeholder="Write your announcement..."
               maxLength={5000}
             />
@@ -350,7 +350,7 @@ const AnnouncementForm = ({
             )}
 
             {/* File picker */}
-            <label className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-dashed border-border bg-input-bg cursor-pointer hover:border-accent/50 transition-colors">
+            <label className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-dashed border-border bg-bg cursor-pointer hover:border-accent/50 transition-colors">
               <Upload size={16} className="text-text-secondary" />
               <span className="text-sm text-text-secondary">
                 {loadingFiles.length > 0

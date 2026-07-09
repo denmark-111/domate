@@ -392,7 +392,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                 <div ref={listPickerRef}>
                   <button
                     onClick={() => setShowListPicker(!showListPicker)}
-                    className="flex items-center gap-2 text-sm text-text bg-input-bg border border-border rounded-lg px-3 py-1.5 hover:border-input-border-focus transition-colors cursor-pointer"
+                    className="flex items-center gap-2 text-sm text-text bg-bg border border-border rounded-lg px-3 py-1.5 hover:border-input-border-focus transition-colors cursor-pointer"
                   >
                     {lists.find(l => l.id === task.listId)?.title || lists.find(l => l.id === task.listId)?.name || 'Select list'}
                     <ChevronDown size={14} className={`text-text-secondary transition-transform ${showListPicker ? 'rotate-180' : ''}`} />
