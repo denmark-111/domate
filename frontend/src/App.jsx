@@ -52,6 +52,7 @@ const AppContent = ({ viewType }) => {
           collapsed={sidebarCollapsed}
           mobileSidebarOpen={mobileSidebarOpen}
           onToggle={handleToggleSidebar}
+          hideSidebarToggle={viewType === 'settings'}
         />
 
         <div className="flex flex-1 overflow-hidden relative">
@@ -64,23 +65,25 @@ const AppContent = ({ viewType }) => {
           )}
 
           {/* Desktop sidebar */}
-          <div className={`hidden lg:flex ${sidebarCollapsed ? 'w-16' : 'w-64'} shrink-0 transition-all duration-200`}>
-            {viewType !== 'settings' && <Sidebar collapsed={sidebarCollapsed} onToggle={handleToggleSidebar} />}
-          </div>
+          {viewType !== 'settings' && (
+            <div className={`hidden lg:flex ${sidebarCollapsed ? 'w-16' : 'w-64'} shrink-0 transition-all duration-200`}>
+              <Sidebar collapsed={sidebarCollapsed} onToggle={handleToggleSidebar} />
+            </div>
+          )}
 
           {/* Mobile sidebar drawer */}
-          <div className={`lg:hidden fixed inset-y-0 left-0 z-40 transform transition-transform duration-200 ease-in-out ${
-            mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}>
-            {viewType !== 'settings' && (
+          {viewType !== 'settings' && (
+            <div className={`lg:hidden fixed inset-y-0 left-0 z-40 transform transition-transform duration-200 ease-in-out ${
+              mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+            }`}>
               <Sidebar
                 collapsed={false}
                 onToggle={handleToggleSidebar}
                 mobile={true}
                 onCloseMobile={handleCloseMobileSidebar}
               />
-            )}
-          </div>
+            </div>
+          )}
 
           <main className="flex-1 flex flex-col overflow-hidden min-w-0">
             {viewType === 'home' && <HomeDashboard />}

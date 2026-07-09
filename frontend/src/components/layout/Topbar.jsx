@@ -7,7 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import { supabaseStorageService, searchService } from '../../services/index.js';
 import AppLogo from '../common/AppLogo';
 
-const Topbar = ({ collapsed, mobileSidebarOpen, onToggle }) => {
+const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = false }) => {
   const navigate = useNavigate();
   const { activeWorkspace, activeView, activeBoard } = useWorkspace();
   const { theme, toggleTheme } = useTheme();
@@ -82,23 +82,27 @@ const Topbar = ({ collapsed, mobileSidebarOpen, onToggle }) => {
   return (
     <header className="h-14 sm:h-16 border-b border-border bg-bg flex items-center justify-between px-3 sm:px-4 z-10">
       <div className="flex items-center gap-1 sm:gap-2 min-w-0">
-        {/* Mobile hamburger */}
-        <button
-          onClick={onToggle}
-          className="lg:hidden p-2 text-text-secondary hover:bg-bg-tertiary rounded-lg transition-colors"
-          aria-label={mobileSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
-        >
-          {mobileSidebarOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
+        {!hideSidebarToggle && (
+          <>
+            {/* Mobile hamburger */}
+            <button
+              onClick={onToggle}
+              className="lg:hidden p-2 text-text-secondary hover:bg-bg-tertiary rounded-lg transition-colors"
+              aria-label={mobileSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+            >
+              {mobileSidebarOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
 
-        {/* Desktop sidebar toggle */}
-        <button
-          onClick={onToggle}
-          className="hidden lg:block p-2 text-text-secondary hover:bg-bg-tertiary rounded-lg transition-colors"
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {collapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
-        </button>
+            {/* Desktop sidebar toggle */}
+            <button
+              onClick={onToggle}
+              className="hidden lg:block p-2 text-text-secondary hover:bg-bg-tertiary rounded-lg transition-colors"
+              title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {collapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
+            </button>
+          </>
+        )}
 
         <button
           onClick={() => navigate('/dashboard')}
