@@ -26,9 +26,7 @@ const AttachmentsSection = ({
         Attachments {attachments.length > 0 && <span className="text-text-secondary">({attachments.length})</span>}
       </label>
 
-      {attachments.length === 0 && (
-        <p className="text-sm text-text-secondary">No attachments</p>
-      )}
+      
 
       {attachments.length > 0 && (
         <div className="space-y-2 mb-3">

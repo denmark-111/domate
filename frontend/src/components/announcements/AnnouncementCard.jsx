@@ -179,7 +179,7 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
 
   return (
     <div
-      className={`rounded-lg border transition-all ${
+      className={`rounded-lg border transition-all overflow-hidden ${
         announcement.pinned ? 'border-accent/40' : 'border-border'
       }`}
     >
@@ -193,7 +193,7 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
               </span>
             )}
             <h3
-              className="text-base font-semibold text-text cursor-pointer hover:text-accent transition-colors"
+              className="text-base font-semibold text-text cursor-pointer hover:text-accent transition-colors break-words"
               onClick={() => setExpanded(!expanded)}
             >
               {announcement.title}
@@ -242,7 +242,7 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
 
       {/* Content */}
       <div className="px-5 pb-3">
-        <div className="text-sm text-text-secondary whitespace-pre-wrap leading-relaxed">
+        <div className="text-sm text-text-secondary whitespace-pre-wrap leading-relaxed break-words">
           {expanded ? announcement.content : contentPreview}
         </div>
         {announcement.content?.length > 300 && (
