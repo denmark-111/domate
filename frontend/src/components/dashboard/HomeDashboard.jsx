@@ -48,7 +48,7 @@ const HomeDashboard = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 <button
                   onClick={() => setShowCreateForm(true)}
-                  className="flex flex-col items-center justify-center gap-3 p-4 sm:p-6 rounded-xl border border-dashed border-border text-text-secondary hover:text-text hover:border-text-secondary transition-colors h-28 sm:h-32"
+                  className="flex flex-col items-center justify-center gap-3 px-4 sm:px-6 py-8 sm:py-9 rounded-xl border border-dashed border-border text-text-secondary hover:text-text hover:border-text-secondary transition-colors"
                 >
                   <Plus size={24} />
                   <span className="text-sm font-medium">New Workspace</span>
@@ -58,7 +58,7 @@ const HomeDashboard = () => {
                   <button
                     key={ws.id}
                     onClick={() => navigate(`/workspaces/${ws.id}`)}
-                    className="flex flex-col items-start gap-3 sm:gap-4 p-4 sm:p-5 rounded-xl border border-border bg-bg text-left h-28 sm:h-32"
+                    className="flex flex-col items-start gap-3 sm:gap-4 p-4 sm:p-5 rounded-xl border border-border bg-bg text-left"
                   >
                     <div className="flex items-center gap-3 w-full">
                       <WorkspaceIcon

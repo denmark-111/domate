@@ -28,13 +28,13 @@ const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = fa
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setDropdownOpen(false);
       }
-      if (searchRef.current && !searchRef.current.contains(e.target)) {
+      if (!showMobileSearch && searchRef.current && !searchRef.current.contains(e.target)) {
         setShowSearchDropdown(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [showMobileSearch]);
 
   useEffect(() => {
     if (searchQuery.length < 2) {
@@ -140,12 +140,16 @@ const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = fa
                           onClick={() => { navigate(`/workspaces/${ws.id}`); setShowSearchDropdown(false); setSearchQuery(''); }}
                           className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text hover:bg-bg-tertiary transition-colors text-left"
                         >
-                          <div
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0"
-                            style={{ backgroundColor: ws.color || 'var(--color-button)' }}
-                          >
-                            {ws.name[0]}
-                          </div>
+                          {ws.coverImageUrl ? (
+                            <img src={supabaseStorageService.getCoverImageUrl(ws.coverImageUrl)} alt="" className="w-8 h-8 rounded-lg object-cover shrink-0" />
+                          ) : (
+                            <div
+                              className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0"
+                              style={{ backgroundColor: ws.color || 'var(--color-button)' }}
+                            >
+                              {ws.name[0]}
+                            </div>
+                          )}
                           <div className="min-w-0">
                             <p className="font-bold truncate">{ws.name}</p>
                             <p className="text-xs text-text-secondary">Workspace</p>
@@ -298,15 +302,21 @@ const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = fa
                       {searchResults.workspaces.map((ws) => (
                         <button
                           key={ws.id}
-                          onClick={() => { navigate(`/workspaces/${ws.id}`); setShowMobileSearch(false); setSearchQuery(''); }}
+                          type="button"
+                          onClick={() => { navigate(`/workspaces/${ws.id}`); setShowMobileSearch(false); setShowSearchDropdown(false); setSearchQuery(''); }}
+                          onTouchEnd={(e) => { e.preventDefault(); navigate(`/workspaces/${ws.id}`); setShowMobileSearch(false); setShowSearchDropdown(false); setSearchQuery(''); }}
                           className="w-full flex items-center gap-3 px-4 py-3 text-sm text-text hover:bg-bg-tertiary transition-colors text-left border-b border-border-light"
                         >
-                          <div
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0"
-                            style={{ backgroundColor: ws.color || 'var(--color-button)' }}
-                          >
-                            {ws.name[0]}
-                          </div>
+                          {ws.coverImageUrl ? (
+                            <img src={supabaseStorageService.getCoverImageUrl(ws.coverImageUrl)} alt="" className="w-8 h-8 rounded-lg object-cover shrink-0" />
+                          ) : (
+                            <div
+                              className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0"
+                              style={{ backgroundColor: ws.color || 'var(--color-button)' }}
+                            >
+                              {ws.name[0]}
+                            </div>
+                          )}
                           <div className="min-w-0">
                             <p className="font-bold truncate">{ws.name}</p>
                             <p className="text-xs text-text-secondary">Workspace</p>
@@ -321,7 +331,9 @@ const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = fa
                       {searchResults.boards.map((board) => (
                         <button
                           key={board.id}
-                          onClick={() => { navigate(`/workspaces/${board.workspace.id}`, { state: { selectBoardId: board.id } }); setShowMobileSearch(false); setSearchQuery(''); }}
+                          type="button"
+                          onClick={() => { navigate(`/workspaces/${board.workspace.id}`, { state: { selectBoardId: board.id } }); setShowMobileSearch(false); setShowSearchDropdown(false); setSearchQuery(''); }}
+                          onTouchEnd={(e) => { e.preventDefault(); navigate(`/workspaces/${board.workspace.id}`, { state: { selectBoardId: board.id } }); setShowMobileSearch(false); setShowSearchDropdown(false); setSearchQuery(''); }}
                           className="w-full flex items-center gap-3 px-4 py-3 text-sm text-text hover:bg-bg-tertiary transition-colors text-left border-b border-border-light"
                         >
                           <div

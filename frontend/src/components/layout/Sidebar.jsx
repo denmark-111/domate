@@ -62,7 +62,7 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
     <>
       <div className={`${collapsed ? 'px-2 pt-2 pb-4' : 'px-3 pt-2 pb-4'} border-b border-border-light mb-4`}>
         <button 
-          onClick={() => setActiveView('Overview')}
+            onClick={() => { setActiveView('Overview'); onCloseMobile?.(); }}
           className={`w-full flex items-center gap-3 rounded-lg transition-colors ${
             collapsed ? 'justify-center p-2' : 'px-3 py-2'
           } ${
@@ -90,7 +90,7 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
         {activeWorkspace.type?.toLowerCase() === 'team' && (
           <>
             <button 
-              onClick={() => setActiveView('Announcements')}
+              onClick={() => { setActiveView('Announcements'); onCloseMobile?.(); }}
               className={`w-full text-left ${collapsed ? 'px-0 justify-center' : 'px-3'} py-2 rounded-lg font-semibold text-sm flex items-center gap-3 transition-all ${
                 activeView === 'Announcements' ? 'bg-button text-white' : 'text-text-tertiary hover:bg-bg-tertiary/50'
               }`}
@@ -99,7 +99,7 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
               <Megaphone size={20} /> {!collapsed && 'Announcements'}
             </button>
             <button 
-              onClick={() => setActiveView('Chat')}
+              onClick={() => { setActiveView('Chat'); onCloseMobile?.(); }}
               className={`w-full text-left ${collapsed ? 'px-0 justify-center' : 'px-3'} py-2 rounded-lg font-semibold text-sm flex items-center gap-3 transition-all ${
                 activeView === 'Chat' ? 'bg-button text-white' : 'text-text-tertiary hover:bg-bg-tertiary/50'
               }`}
@@ -130,6 +130,7 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
                 onClick={() => {
                   setActiveView('Board');
                   setActiveBoard(board);
+                  onCloseMobile?.();
                 }}
                 className={`w-full text-left ${collapsed ? 'px-0 justify-center' : 'px-3 pr-8'} py-2 rounded-lg text-sm truncate transition-colors font-medium flex items-center ${collapsed ? '' : 'gap-2'} ${
                   activeView === 'Board' && activeBoard?.id === board.id 

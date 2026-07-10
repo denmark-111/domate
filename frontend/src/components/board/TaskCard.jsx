@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import ConfirmModal from '../common/ConfirmModal';
-import { Trash2, Calendar, MessageSquare, Paperclip } from 'lucide-react';
+import { Trash2, Calendar, MessageSquare, Paperclip, AlignLeft } from 'lucide-react';
 import { supabaseStorageService } from '../../services/index.js';
 
 const getInitials = (name) => {
@@ -97,16 +97,21 @@ const TaskCard = ({ task, sortableId, onClick, onDelete, onToggleComplete }) => 
                   {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                 </span>
               )}
-              {task.attachments?.length > 0 && (
+              {task.description && (
                 <span className="flex items-center gap-0.5 text-[10px]">
-                  <Paperclip size={10} />
-                  {task.attachments.length}
+                  <AlignLeft size={10} />
                 </span>
               )}
               {commentCount > 0 && (
                 <span className="flex items-center gap-0.5 text-[10px]">
                   <MessageSquare size={10} />
                   {commentCount}
+                </span>
+              )}
+              {task.attachments?.length > 0 && (
+                <span className="flex items-center gap-0.5 text-[10px]">
+                  <Paperclip size={10} />
+                  {task.attachments.length}
                 </span>
               )}
             </div>

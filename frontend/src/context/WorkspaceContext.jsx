@@ -108,6 +108,19 @@ export const WorkspaceProvider = ({ children }) => {
     }
   }, [workspaceId, isAuthenticated, activeWorkspace?.role]);
 
+  // Handle navigation to a board within the same workspace (same URL, different state)
+  useEffect(() => {
+    const selectBoardId = location.state?.selectBoardId;
+    if (selectBoardId && workspaceId) {
+      const boardToSelect = boards.find(b => b.id === selectBoardId);
+      if (boardToSelect) {
+        setActiveBoard(boardToSelect);
+        setActiveView('Board');
+      }
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state?.selectBoardId]);
+
   const createWorkspace = async (data) => {
     const res = await workspaceService.createWorkspace(data);
     if (res.success) {

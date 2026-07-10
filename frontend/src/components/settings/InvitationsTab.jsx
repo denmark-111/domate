@@ -123,7 +123,7 @@ const InvitationsTab = () => {
                     </a>
                   ) : status?.state === 'declined' ? (
                     <span className="px-3 py-1.5 rounded-lg text-sm font-medium text-text-tertiary border border-border">
-                      Declined
+                    Declined
                     </span>
                   ) : (
                     <>
@@ -132,20 +132,22 @@ const InvitationsTab = () => {
                         disabled={actionLoading === inv.id}
                         className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-button hover:bg-button-hover text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
                       >
+                        <span className="sm:hidden">Accept</span>
                         {actionLoading === inv.id ? (
-                          <Loader size={13} className="animate-spin" />
+                          <Loader size={13} className="hidden sm:inline animate-spin" />
                         ) : (
-                          <Check size={13} />
+                          <Check size={13} className="hidden sm:inline" />
                         )}
-                        Accept
+                        <span className="hidden sm:inline">Accept</span>
                       </button>
                       <button
                         onClick={() => handleDecline(inv.id)}
                         disabled={actionLoading === inv.id}
                         className="px-3 py-1.5 rounded-lg text-sm font-semibold text-text-secondary hover:bg-bg-tertiary border border-border transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
                       >
-                        <X size={13} />
-                        Decline
+                        <span className="sm:hidden">Decline</span>
+                        <X size={13} className="hidden sm:inline" />
+                        <span className="hidden sm:inline">Decline</span>
                       </button>
                     </>
                   )}
