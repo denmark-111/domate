@@ -47,7 +47,7 @@ const AppContent = ({ viewType }) => {
 
   return (
     <WorkspaceProvider>
-      <div className="flex flex-col h-screen font-sans">
+      <div className="flex flex-col h-dvh font-sans">
         <Topbar
           collapsed={sidebarCollapsed}
           mobileSidebarOpen={mobileSidebarOpen}
