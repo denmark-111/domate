@@ -58,7 +58,7 @@ const HomeDashboard = () => {
                   <button
                     key={ws.id}
                     onClick={() => navigate(`/workspaces/${ws.id}`)}
-                    className="flex flex-col items-start gap-3 sm:gap-4 p-4 sm:p-5 rounded-xl border border-border bg-bg shadow-sm hover:shadow-md transition-shadow text-left h-28 sm:h-32"
+                    className="flex flex-col items-start gap-3 sm:gap-4 p-4 sm:p-5 rounded-xl border border-border bg-bg text-left h-28 sm:h-32"
                   >
                     <div className="flex items-center gap-3 w-full">
                       <WorkspaceIcon

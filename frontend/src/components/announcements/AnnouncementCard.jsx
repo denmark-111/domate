@@ -179,12 +179,10 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
 
   return (
     <div
-      className={`rounded-lg border transition-all overflow-hidden ${
-        announcement.pinned ? 'border-accent/40' : 'border-border'
-      }`}
+      className="rounded-xl border border-border bg-bg overflow-hidden"
     >
       {/* Header */}
-      <div className="p-5 pb-3">
+      <div className="p-4 sm:p-5 pb-2 sm:pb-3">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             {announcement.pinned && (
@@ -241,7 +239,7 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
       </div>
 
       {/* Content */}
-      <div className="px-5 pb-3">
+      <div className="px-4 sm:px-5 pb-2 sm:pb-3">
         <div className="text-sm text-text-secondary whitespace-pre-wrap leading-relaxed break-words">
           {expanded ? announcement.content : contentPreview}
         </div>
@@ -257,7 +255,7 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
 
       {/* Image Attachments - displayed inline */}
       {imageAttachments.length > 0 && (
-        <div className="px-5 pb-3">
+        <div className="px-4 sm:px-5 pb-2 sm:pb-3">
           <div className="flex items-center gap-1.5 mb-2 text-xs font-semibold text-text-secondary">
             <Image size={13} />
             Images ({imageAttachments.length})
@@ -317,7 +315,7 @@ const AnnouncementCard = ({ announcement, isOwner, onEdit, onDelete }) => {
 
       {/* Non-image Attachments */}
       {fileAttachments.length > 0 && (
-        <div className="px-5 pb-5">
+        <div className="px-4 sm:px-5 pb-3 sm:pb-4">
           <div className="flex items-center gap-1.5 mb-2 text-xs font-semibold text-text-secondary">
             <Paperclip size={13} />
             Attachments ({fileAttachments.length})

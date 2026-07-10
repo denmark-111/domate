@@ -167,10 +167,10 @@ const AnnouncementList = () => {
   }
 
   return (
-      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto bg-bg-secondary p-8 sm:p-12">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto bg-bg-secondary p-4 sm:p-8 lg:p-12">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <header className="mb-10 flex items-center justify-between">
+        <header className="mb-6 sm:mb-8 flex items-center justify-between">
           <h1 className="text-2xl font-bold text-text">Announcements</h1>
           {isOwner && (
             <button
@@ -220,7 +220,7 @@ const AnnouncementList = () => {
             )}
           </div>
         ) : (
-          <div className="space-y-5">
+          <div className="space-y-3">
             {announcements.map((announcement) => (
               <AnnouncementCard
                 key={announcement.id}

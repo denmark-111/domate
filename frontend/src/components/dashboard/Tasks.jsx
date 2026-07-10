@@ -2,8 +2,10 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { taskService, listService, labelService, supabaseStorageService } from '../../services/index.js';
 import TaskModal from '../board/TaskModal.jsx';
 import { Calendar, MessageSquare, Paperclip, Loader } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const Tasks = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('active');
   const [tasks, setTasks] = useState([]);
   const [completedTasks, setCompletedTasks] = useState([]);
@@ -123,6 +125,23 @@ const Tasks = () => {
     setSelectedTask(null);
   };
 
+  const handleCommentChange = (taskId, delta) => {
+    setTasks(prev =>
+      prev.map(a =>
+        a.task.id === taskId
+          ? { ...a, task: { ...a.task, _count: { comments: (a.task._count?.comments ?? 0) + delta } } }
+          : a
+      )
+    );
+    setCompletedTasks(prev =>
+      prev.map(a =>
+        a.task.id === taskId
+          ? { ...a, task: { ...a.task, _count: { comments: (a.task._count?.comments ?? 0) + delta } } }
+          : a
+      )
+    );
+  };
+
   const dueLabel = (dueDate) => {
     if (!dueDate) return null;
     const due = new Date(dueDate);
@@ -132,7 +151,7 @@ const Tasks = () => {
     if (diffDays === 0) return { text: 'Today', urgent: true };
     if (diffDays === 1) return { text: 'Tomorrow', urgent: false };
     if (diffDays <= 7) return { text: `In ${diffDays}d`, urgent: false };
-    return { text: due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), urgent: false };
+    return { text: due.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }), urgent: false };
   };
 
   const getInitials = (name) => {
@@ -147,72 +166,79 @@ const Tasks = () => {
     return (
       <div
         key={assignment.id}
-        className="bg-bg p-4 rounded-xl border border-border flex items-center justify-between group hover:bg-bg-tertiary/50 transition-colors cursor-pointer"
+        className="bg-bg p-4 rounded-xl border border-border flex items-start justify-between group hover:bg-bg-tertiary/50 transition-colors cursor-pointer"
         onClick={() => openModal(assignment)}
       >
         <div className="flex items-center gap-4 min-w-0 flex-1">
           <div className="min-w-0 flex-1">
-            <p className={`text-sm font-bold truncate ${isCompleted ? 'line-through text-text-secondary' : 'text-text'}`}>
-              {task.name}
-            </p>
-            <div className="flex items-center gap-2 mt-1 flex-wrap">
-              <span className="text-[10px] font-bold text-text-secondary">
-                {task.list?.board?.workspace?.name || 'Workspace'}
-              </span>
-              <span className="text-[10px] font-semibold text-text-secondary">•</span>
-              <span className="text-[10px] font-semibold text-text-secondary">
-                {task.list?.board?.name || 'Board'}
-              </span>
-              {task.attachments?.length > 0 && (
-                <span className="flex items-center gap-1 text-[10px] text-text-secondary">
-                  <Paperclip size={10} />
-                  {task.attachments.length}
+            <div className="flex items-center justify-between gap-2">
+              <p className={`text-sm font-bold truncate ${isCompleted ? 'line-through text-text-secondary' : 'text-text'}`}>
+                {task.name}
+              </p>
+              {due && (
+                <span className={`inline-flex items-center gap-1 text-xs font-semibold whitespace-nowrap shrink-0 ${
+                  due.urgent ? 'text-red-500' : 'text-text-secondary'
+                }`}>
+                  <Calendar size={12} />
+                  {due.text}
                 </span>
               )}
+            </div>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <span className="text-xs text-text-secondary">
+                {task.list?.board?.workspace?.name || 'Workspace'}
+              </span>
+              <span className="text-xs text-text-secondary">•</span>
+              <span className="text-xs text-text-secondary">
+                {task.list?.board?.name || 'Board'}
+              </span>
+            </div>
+            <div className="flex items-center gap-3 mt-1.5">
+              {task.assignments?.length > 0 && (
+                <div className="flex items-center" title={task.assignments.map(a => a.user?.fullName || a.user?.email || '?').join(', ')}>
+                  {[...task.assignments].sort((a, b) => {
+                    if (a.userId === user?.id) return -1;
+                    if (b.userId === user?.id) return 1;
+                    return 0;
+                  }).slice(0, 3).map((a, i, arr) => {
+                    const avatarUrl = a.user?.avatarUrl ? supabaseStorageService.getAvatarUrl(a.user.avatarUrl) : null;
+                    return (
+                      <div
+                        key={a.userId}
+                        className="w-6 h-6 rounded-full bg-button border-2 border-bg flex items-center justify-center text-[9px] text-white font-bold -ml-[6px] first:ml-0 overflow-hidden"
+                        style={{ zIndex: arr.length - i }}
+                      >
+                        {avatarUrl ? (
+                          <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          getInitials(a.user?.fullName || a.user?.email)
+                        )}
+                      </div>
+                    );
+                  })}
+                  {task.assignments.length > 3 && (
+                    <div className="w-6 h-6 rounded-full bg-bg-tertiary border-2 border-bg flex items-center justify-center text-[9px] text-text-secondary font-bold -ml-[6px]">
+                      +{task.assignments.length - 3}
+                    </div>
+                  )}
+                </div>
+              )}
               {commentCount > 0 && (
-                <span className="flex items-center gap-1 text-[10px] text-text-secondary">
-                  <MessageSquare size={10} />
+                <span className="flex items-center gap-1 text-xs text-text-secondary">
+                  <MessageSquare size={12} />
                   {commentCount}
+                </span>
+              )}
+              {task.attachments?.length > 0 && (
+                <span className="flex items-center gap-1 text-xs text-text-secondary">
+                  <Paperclip size={12} />
+                  {task.attachments.length}
                 </span>
               )}
             </div>
           </div>
-          {task.assignments?.length > 0 && (
-            <div className="hidden sm:flex items-center shrink-0" title={task.assignments.map(a => a.user?.fullName || a.user?.email || '?').join(', ')}>
-              {task.assignments.slice(0, 3).map((a, i, arr) => {
-                const avatarUrl = a.user?.avatarUrl ? supabaseStorageService.getAvatarUrl(a.user.avatarUrl) : null;
-                return (
-                  <div
-                    key={a.userId}
-                    className="w-6 h-6 rounded-full bg-button border-2 border-bg-secondary flex items-center justify-center text-[8px] text-white font-bold -ml-[6px] first:ml-0 overflow-hidden"
-                    style={{ zIndex: arr.length - i }}
-                  >
-                    {avatarUrl ? (
-                      <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      getInitials(a.user?.fullName || a.user?.email)
-                    )}
-                  </div>
-                );
-              })}
-              {task.assignments.length > 3 && (
-                <div className="w-6 h-6 rounded-full bg-bg-tertiary border-2 border-bg-secondary flex items-center justify-center text-[8px] text-text-secondary font-bold -ml-[6px]">
-                  +{task.assignments.length - 3}
-                </div>
-              )}
-            </div>
-          )}
         </div>
-        <div className="flex items-center gap-3 shrink-0 ml-4">
-          {due && (
-            <span className={`text-xs font-semibold whitespace-nowrap transition-colors ${
-              due.urgent ? 'text-red-500' : 'text-text-secondary group-hover:text-text-accent'
-            }`}>
-              <Calendar size={12} className="inline mr-1" />
-              {due.text}
-            </span>
-          )}
-        </div>
+
       </div>
     );
   };
@@ -307,7 +333,7 @@ const Tasks = () => {
         )}
 
         {!isEmpty && !error && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {listItems.map((assignment) => renderTaskRow(assignment, activeTab === 'completed'))}
           </div>
         )}
@@ -332,6 +358,7 @@ const Tasks = () => {
         lists={boardLists}
         boardLabels={boardLabels}
         workspaceId={selectedTask?.list?.board?.workspace?.id}
+        onCommentChange={handleCommentChange}
       />
     </div>
   );

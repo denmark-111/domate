@@ -62,13 +62,10 @@ const CommentsSection = ({ taskId, onCommentChange, commentCount = 0 }) => {
     if (taskId) {
       setNewComment('');
       setIsAddingComment(false);
+      setComments([]);
+      setCommentsPagination({ page: 1, limit: 50, total: commentCount, hasMore: false });
       if (commentCount > 0) {
-        setComments([]);
-        setCommentsPagination({ page: 1, limit: 50, total: 0, hasMore: false });
         fetchComments(taskId);
-      } else {
-        setComments([]);
-        setCommentsPagination({ page: 1, limit: 50, total: 0, hasMore: false });
       }
     }
   }, [taskId, fetchComments, commentCount]);

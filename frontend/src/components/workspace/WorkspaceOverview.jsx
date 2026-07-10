@@ -193,7 +193,7 @@ const WorkspaceOverview = () => {
           )}
         </header>
 
-        <div className="rounded-xl border border-border bg-bg p-4 sm:p-6 mb-6">
+        <div className="rounded-xl border border-border bg-bg p-4 sm:p-6 mb-3">
           {!isEditing ? (
             <div className="space-y-5">
               <div className="flex items-center gap-4 sm:gap-5">
