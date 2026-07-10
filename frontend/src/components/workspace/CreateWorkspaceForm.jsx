@@ -4,7 +4,7 @@ import { useWorkspace } from '../../context/WorkspaceContext';
 import { supabaseStorageService } from '../../services/supabaseStorageService';
 import ColorPicker from '../common/ColorPicker';
 import { WORKSPACE_COLORS, autoAssignColor } from '../../data/colorPalette';
-import { Image, Loader } from 'lucide-react';
+import { Image, Loader, X } from 'lucide-react';
 
 const CreateWorkspaceForm = ({ onClose }) => {
   const navigate = useNavigate();
@@ -91,15 +91,25 @@ const CreateWorkspaceForm = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-bg rounded-xl shadow-lg w-full max-w-md">
+    <>
+      <div
+        className="fixed inset-0 bg-black/50 z-40"
+        onClick={onClose}
+      />
+      <div className="fixed inset-0 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:transform sm:-translate-x-1/2 sm:-translate-y-1/2 z-50 sm:max-w-md sm:max-h-[90vh] flex flex-col bg-bg sm:rounded-xl sm:shadow-xl w-full">
         {/* Header */}
-        <div className="p-6 border-b border-border">
+        <div className="flex items-center justify-between p-6 border-b border-border shrink-0">
           <h2 className="text-xl font-bold text-text">Create Workspace</h2>
+          <button
+            onClick={onClose}
+            className="p-1.5 text-text-secondary hover:text-text rounded-lg hover:bg-bg-tertiary transition-colors"
+          >
+            <X size={18} />
+          </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
           {/* Name */}
           <div>
             <label htmlFor="name" className="block text-sm font-semibold text-text-secondary mb-1.5">
@@ -194,34 +204,35 @@ const CreateWorkspaceForm = ({ onClose }) => {
               <p className="text-error-text text-sm">{errors.submit}</p>
             </div>
           )}
-
-          {/* Actions */}
-          <div className="flex gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-2 rounded-lg border border-border bg-bg hover:bg-bg-secondary transition-colors font-semibold text-text"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex-1 px-4 py-2 rounded-lg bg-button hover:bg-button-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold text-white flex items-center justify-center gap-2"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader size={16} className="animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                'Create'
-              )}
-            </button>
-          </div>
         </form>
+
+        {/* Actions */}
+        <div className="flex gap-3 p-6 border-t border-border shrink-0">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 px-4 py-2 rounded-lg border border-border bg-bg hover:bg-bg-secondary transition-colors font-semibold text-text"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="flex-1 px-4 py-2 rounded-lg bg-button hover:bg-button-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold text-white flex items-center justify-center gap-2"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader size={16} className="animate-spin" />
+                Creating...
+              </>
+            ) : (
+              'Create'
+            )}
+          </button>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

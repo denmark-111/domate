@@ -63,16 +63,17 @@ const CreateBoardForm = ({ workspaceName, onClose, onSubmit }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-bg rounded-xl shadow-lg w-full max-w-md">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-bg rounded-t-xl sm:rounded-xl border border-border shadow-xl w-full sm:max-w-md sm:mx-4 flex flex-col max-h-[85vh] sm:max-h-[80vh]">
         {/* Header */}
-        <div className="p-6 border-b border-border">
+        <div className="p-6 border-b border-border shrink-0">
           <h2 className="text-xl font-bold text-text">Create Board</h2>
           <p className="text-sm text-text-secondary mt-1">Add a new board to {workspaceName}</p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
           {/* Name */}
           <div>
             <label htmlFor="name" className="block text-sm font-semibold text-text-secondary mb-1.5">
@@ -103,22 +104,6 @@ const CreateBoardForm = ({ workspaceName, onClose, onSubmit }) => {
               colors={BOARD_COLORS}
               selectedColor={formData.color}
               onChange={(color) => setFormData(prev => ({ ...prev, color }))}
-            />
-          </div>
-
-          {/* Description */}
-          <div>
-            <label htmlFor="description" className="block text-sm font-semibold text-text-secondary mb-1.5">
-              Description
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              placeholder="What is this board for?"
-              rows="3"
-              className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg outline-none focus:border-input-border-focus transition-colors resize-none"
             />
           </div>
 
