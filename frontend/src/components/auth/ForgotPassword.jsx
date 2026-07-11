@@ -43,8 +43,8 @@ const ForgotPassword = () => {
     <div className="min-h-screen bg-bg flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <AppLogo className="mb-4" />
-          <h1 className="text-3xl font-bold text-text mb-2">Board-Done</h1>
+          <AppLogo className="mx-auto mb-4" />
+          <h1 className="text-3xl font-bold text-text mb-2">Domate</h1>
           <p className="text-text-secondary">
             {isSent ? 'Check your email' : 'Reset your password'}
           </p>

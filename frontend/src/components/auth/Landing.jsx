@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import AppLogo from '../common/AppLogo';
 import { Check, ClipboardList, Users, Zap } from 'lucide-react';
 
 const Landing = () => {
@@ -35,10 +36,8 @@ const Landing = () => {
       <nav className="border-b border-border">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-button text-white font-bold flex items-center justify-center">
-              B
-            </div>
-            <span className="text-xl font-bold">Board-Done</span>
+            <AppLogo size="sm" />
+            <span className="text-xl font-bold">Domate</span>
           </div>
           <div className="flex items-center gap-4">
             <button className="text-text-secondary hover:text-text transition">
@@ -72,7 +71,7 @@ const Landing = () => {
         </h1>
         
         <p className="text-xl text-text-secondary mb-10 max-w-2xl mx-auto leading-relaxed">
-          Board-Done helps teams organize, plan, and track their work with intuitive boards, lists, and cards. Simple, powerful, and built for collaboration.
+          Domate helps teams organize, plan, and track their work with intuitive boards, lists, and cards. Simple, powerful, and built for collaboration.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -134,7 +133,7 @@ const Landing = () => {
       {/* Benefits Section */}
       <section className="py-20 border-t border-border">
         <div className="max-w-4xl mx-auto px-6">
-          <h2 className="text-4xl font-bold mb-12 text-center">Why Choose Board-Done?</h2>
+          <h2 className="text-4xl font-bold mb-12 text-center">Why Choose Domate?</h2>
           
           <div className="space-y-4">
             {[
@@ -161,7 +160,7 @@ const Landing = () => {
         <div className="max-w-4xl mx-auto px-6 text-center bg-bg-secondary rounded-xl p-12">
           <h2 className="text-3xl font-bold mb-4">Ready to boost your productivity?</h2>
           <p className="text-text-secondary text-lg mb-8 max-w-2xl mx-auto">
-            Join thousands of teams using Board-Done to organize their work and achieve their goals.
+            Join thousands of teams using Domate to organize their work and achieve their goals.
           </p>
           <button
             onClick={() => navigate('/auth')}
@@ -179,10 +178,8 @@ const Landing = () => {
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-button text-white font-bold flex items-center justify-center text-sm">
-                  B
-                </div>
-                <span className="font-bold">Board-Done</span>
+                <AppLogo size="xs" />
+                <span className="font-bold">Domate</span>
               </div>
               <p className="text-text-secondary">The easiest way to manage your team's work.</p>
             </div>
@@ -219,7 +216,7 @@ const Landing = () => {
           </div>
 
           <div className="border-t border-border pt-8 flex flex-col sm:flex-row items-center justify-between text-text-secondary">
-            <p>&copy; 2026 Board-Done. All rights reserved.</p>
+            <p>&copy; 2026 Domate. All rights reserved.</p>
             <div className="flex gap-6 mt-4 sm:mt-0">
               <button className="hover:text-text transition">Twitter</button>
               <button className="hover:text-text transition">GitHub</button>

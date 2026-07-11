@@ -96,7 +96,7 @@ const AcceptInvitation = () => {
           <strong className="text-text">{invite?.workspace?.name}</strong>
         </p>
         <p className="text-sm text-text-secondary mb-6">
-          {invite?.workspace?.description || 'Join this workspace on Board Done.'}
+          {invite?.workspace?.description || 'Join this workspace on Domate.'}
         </p>
 
         {!isAuthenticated ? (

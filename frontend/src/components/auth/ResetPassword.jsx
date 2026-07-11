@@ -90,7 +90,7 @@ const ResetPassword = () => {
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center p-4">
         <div className="w-full max-w-md text-center">
-          <AppLogo className="mb-4" />
+          <AppLogo className="mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-text mb-2">Link Expired</h1>
           <p className="text-text-secondary mb-6">
             This password reset link has expired or is invalid. Please request a new one.
@@ -119,7 +119,7 @@ const ResetPassword = () => {
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center p-4">
         <div className="w-full max-w-md text-center">
-          <AppLogo className="mb-4" />
+          <AppLogo className="mx-auto mb-4" />
           <Loader size={24} className="animate-spin mx-auto text-text-secondary" />
           <p className="text-text-secondary mt-4">Verifying your reset link...</p>
         </div>
@@ -131,7 +131,7 @@ const ResetPassword = () => {
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center p-4">
         <div className="w-full max-w-md text-center">
-          <AppLogo className="mb-4" />
+          <AppLogo className="mx-auto mb-4" />
           <CheckCircle size={48} className="mx-auto text-label-done-text mb-4" />
           <h1 className="text-2xl font-bold text-text mb-2">Password Reset</h1>
           <p className="text-text-secondary mb-2">
@@ -149,7 +149,7 @@ const ResetPassword = () => {
     <div className="min-h-screen bg-bg flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <AppLogo className="mb-4" />
+          <AppLogo className="mx-auto mb-4" />
           <h1 className="text-3xl font-bold text-text mb-2">Set New Password</h1>
           <p className="text-text-secondary">
             Enter your new password below.

@@ -108,7 +108,7 @@ const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = fa
           onClick={() => navigate('/dashboard')}
           className="group shrink-0"
         >
-          <AppLogo size="sm" className="shadow-sm group-hover:scale-105 transition-transform" />
+          <AppLogo size="xs" className="group-hover:scale-105 transition-transform" />
         </button>
 
         {/* Desktop search */}
@@ -230,7 +230,7 @@ const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = fa
             className="flex items-center gap-1 cursor-pointer"
           >
             <div
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-button flex items-center justify-center text-white text-xs font-bold shadow-sm border-2 border-white overflow-hidden shrink-0"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-button flex items-center justify-center text-white text-xs font-bold border-2 border-white overflow-hidden shrink-0"
             >
               {avatarUrl ? (
                 <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
