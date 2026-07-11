@@ -1,9 +1,9 @@
-# Agents file for board-done
+# Agents file for Domate
 
 ## Project structure
 
 ```
-board-done/
+domate/
 ├── frontend/   # React 19 + Vite 8 SPA
 │   ├── src/
 │   │   ├── components/   # UI components grouped by domain

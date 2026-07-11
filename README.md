@@ -1,4 +1,4 @@
-# board-done
+# Domate
 
 A collaboration app with Kanban boards, real-time chat, and team announcements.
 
@@ -46,7 +46,7 @@ The React frontend communicates with the Express backend via REST API calls. Sup
 ## Project Structure
 
 ```
-board-done/
+domate/
 ├── frontend/                  # React SPA
 │   ├── src/
 │   │   ├── components/        # UI components grouped by domain
