@@ -8,7 +8,6 @@ const Landing = () => {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading } = useAuth();
 
-  // Redirect authenticated users to dashboard
   if (isLoading) return null;
   if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 
@@ -32,46 +31,38 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen bg-bg text-text">
-      {/* Navigation */}
       <nav className="border-b border-border">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <AppLogo size="sm" />
             <span className="text-xl font-bold">Domate</span>
           </div>
-          <div className="flex items-center gap-4">
-            <button className="text-text-secondary hover:text-text transition">
-              Features
-            </button>
-            <button className="text-text-secondary hover:text-text transition">
-              Pricing
-            </button>
-            <button className="text-text-secondary hover:text-text transition">
-              About
-            </button>
+          <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/auth')}
-              className="px-4 py-2 rounded-lg bg-bg-secondary text-text hover:bg-bg-tertiary transition font-medium"
+              className="px-4 py-2 rounded-lg border border-border text-text hover:bg-bg-secondary transition font-medium"
             >
               Sign In
+            </button>
+            <button
+              onClick={() => navigate('/auth?action=register')}
+              className="px-4 py-2 rounded-lg bg-button hover:bg-button-hover text-white font-medium transition-colors"
+            >
+              Sign Up
             </button>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-6 py-20 text-center">
-        <div className="mb-6 inline-block px-4 py-2 rounded-full bg-label-feature-bg">
-          <span className="text-label-feature-text text-sm font-semibold">✨ The easiest way to organize</span>
-        </div>
-        
-        <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-          Your Team's Productivity 
-          <span className="block text-text-accent">Starts Here</span>
+        <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
+          Your Projects, Boards, and Team{' '}
+          <span className="text-text-accent">— All in One Place</span>
         </h1>
-        
-        <p className="text-xl text-text-secondary mb-10 max-w-2xl mx-auto leading-relaxed">
-          Domate helps teams organize, plan, and track their work with intuitive boards, lists, and cards. Simple, powerful, and built for collaboration.
+
+        <p className="text-lg md:text-xl text-text-secondary mb-10 max-w-2xl mx-auto leading-relaxed">
+          Domate is a real-time collaborative project management tool. Organize work with
+          Kanban boards, stay connected with built-in team chat, and move faster together.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -79,32 +70,12 @@ const Landing = () => {
             onClick={() => navigate('/auth')}
             className="px-8 py-3 bg-button hover:bg-button-hover text-white font-semibold rounded-lg transition-colors"
           >
-            Get Started Free
+            Get Started
           </button>
-          <button className="px-8 py-3 border border-border text-text font-semibold rounded-lg hover:bg-bg-secondary transition-colors">
-            Watch Demo
-          </button>
-        </div>
-
-        {/* Hero Metrics */}
-        <div className="mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto">
-          <div>
-            <div className="text-3xl font-bold text-text-accent">10k+</div>
-            <div className="text-text-secondary">Active Users</div>
-          </div>
-          <div>
-            <div className="text-3xl font-bold text-text-accent">50k+</div>
-            <div className="text-text-secondary">Tasks Completed</div>
-          </div>
-          <div>
-            <div className="text-3xl font-bold text-text-accent">99.9%</div>
-            <div className="text-text-secondary">Uptime</div>
-          </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 border-t border-border">
+      <section className="py-20 bg-bg-secondary">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-4">Powerful Features</h2>
@@ -117,9 +88,9 @@ const Landing = () => {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="p-8 rounded-xl bg-bg-secondary border border-border hover:border-text-accent transition-colors group"
+                className="p-8 rounded-xl bg-bg border border-border hover:border-text-accent transition-colors group overflow-hidden"
               >
-                <div className="mb-4 text-text-accent group-hover:scale-110 transition-transform">
+                <div className="mb-4 text-text-accent group-hover:scale-110 transition-transform origin-left">
                   {feature.icon}
                 </div>
                 <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
@@ -130,19 +101,18 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Benefits Section */}
-      <section className="py-20 border-t border-border">
+      <section className="py-20">
         <div className="max-w-4xl mx-auto px-6">
-          <h2 className="text-4xl font-bold mb-12 text-center">Why Choose Domate?</h2>
-          
+          <h2 className="text-4xl font-bold mb-12 text-center">Built for Real Work</h2>
+
           <div className="space-y-4">
             {[
-              'Beautiful, intuitive interface that your team will love',
-              'Real-time collaboration with instant updates',
-              'Flexible workflows that adapt to your process',
-              'Powerful integrations with your favorite tools',
-              'Mobile-friendly design for work on the go',
-              'Advanced security and data privacy'
+              'Real-time collaborative boards with instant updates',
+              'Kanban-style task management with drag and drop',
+              'Built-in team chat and announcements',
+              'Custom labels, due dates, and priority tracking',
+              'Dark mode and customizable workspaces',
+              'Free for everyone — no hidden costs'
             ].map((benefit, index) => (
               <div key={index} className="flex items-start gap-4 p-4 rounded-lg bg-bg-secondary">
                 <div className="mt-1 text-text-accent flex-shrink-0">
@@ -155,73 +125,36 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 border-t border-border">
+      <section className="py-20">
         <div className="max-w-4xl mx-auto px-6 text-center bg-bg-secondary rounded-xl p-12">
-          <h2 className="text-3xl font-bold mb-4">Ready to boost your productivity?</h2>
+          <h2 className="text-3xl font-bold mb-4">Start building your first board</h2>
           <p className="text-text-secondary text-lg mb-8 max-w-2xl mx-auto">
-            Join thousands of teams using Domate to organize their work and achieve their goals.
+            Domate is free and ready to use. Sign up and start organizing your work in seconds.
           </p>
           <button
             onClick={() => navigate('/auth')}
             className="px-8 py-4 bg-button hover:bg-button-hover text-white font-semibold rounded-lg transition-colors text-lg"
           >
-            Start Your Free Trial
+            Get Started
           </button>
-          <p className="text-text-secondary mt-4">No credit card required. Sign up in seconds.</p>
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="border-t border-border py-12 mt-20">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <AppLogo size="xs" />
-                <span className="font-bold">Domate</span>
-              </div>
-              <p className="text-text-secondary">The easiest way to manage your team's work.</p>
+          <div className="flex flex-col sm:flex-row items-center justify-between mb-8">
+            <div className="flex items-center gap-3 mb-4 sm:mb-0">
+              <AppLogo size="xs" />
+              <span className="font-bold">Domate</span>
             </div>
-            
-            <div>
-              <h3 className="font-semibold mb-4">Product</h3>
-              <div className="space-y-2 text-text-secondary">
-                <button className="hover:text-text transition block">Features</button>
-                <button className="hover:text-text transition block">Pricing</button>
-                <button className="hover:text-text transition block">Security</button>
-                <button className="hover:text-text transition block">Roadmap</button>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-4">Company</h3>
-              <div className="space-y-2 text-text-secondary">
-                <button className="hover:text-text transition block">About</button>
-                <button className="hover:text-text transition block">Blog</button>
-                <button className="hover:text-text transition block">Careers</button>
-                <button className="hover:text-text transition block">Contact</button>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-4">Legal</h3>
-              <div className="space-y-2 text-text-secondary">
-                <button className="hover:text-text transition block">Privacy</button>
-                <button className="hover:text-text transition block">Terms</button>
-                <button className="hover:text-text transition block">Cookies</button>
-                <button className="hover:text-text transition block">Licenses</button>
-              </div>
+            <div className="flex gap-6">
+              <button className="text-text-secondary hover:text-text transition">Twitter</button>
+              <button className="text-text-secondary hover:text-text transition">GitHub</button>
+              <button className="text-text-secondary hover:text-text transition">LinkedIn</button>
             </div>
           </div>
-
-          <div className="border-t border-border pt-8 flex flex-col sm:flex-row items-center justify-between text-text-secondary">
+          <div className="border-t border-border pt-8 flex justify-center text-text-secondary text-sm">
             <p>&copy; 2026 Domate. All rights reserved.</p>
-            <div className="flex gap-6 mt-4 sm:mt-0">
-              <button className="hover:text-text transition">Twitter</button>
-              <button className="hover:text-text transition">GitHub</button>
-              <button className="hover:text-text transition">LinkedIn</button>
-            </div>
           </div>
         </div>
       </footer>

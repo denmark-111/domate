@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Navigate, Link } from 'react-router-dom';
+import { useNavigate, Navigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Mail, Lock, ArrowRight, Loader } from 'lucide-react';
 import AppLogo from '../common/AppLogo';
@@ -15,8 +15,9 @@ const GoogleIcon = () => (
 
 const Auth = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { login, register, loginWithOAuth, isAuthenticated, isLoading } = useAuth();
-  const [isLoginMode, setIsLoginMode] = useState(true);
+  const [isLoginMode, setIsLoginMode] = useState(searchParams.get('action') !== 'register');
   const [formData, setFormData] = useState({
     email: '',
     password: '',
