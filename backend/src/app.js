@@ -15,7 +15,7 @@ import userRoutes from "./routes/userRoutes.js";
 
 const app = express();
 
-const corsOrigin = process.env.NODE_ENV === "production" ? process.env.CORS_ORIGIN : process.env.CORS_ORIGIN || "http://localhost:5173";
+const corsOrigin = (process.env.NODE_ENV === "production" ? process.env.CORS_ORIGIN : process.env.CORS_ORIGIN || "http://localhost:5173").replace(/\/+$/, "");
 
 if (!corsOrigin) {
   console.error('CORS_ORIGIN is required in production. Aborting startup.');
