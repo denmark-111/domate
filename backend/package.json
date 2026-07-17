@@ -9,6 +9,10 @@
     "start": "node src/server.js",
     "db:init": "npx prisma db execute --file sql/setup_auth.sql && npx prisma db execute --file sql/setup_attachments_bucket.sql && npx prisma db execute --file sql/setup_avatars_bucket.sql && npx prisma db execute --file sql/setup_workspace_covers_bucket.sql"
   },
+  "engines": {
+    "node": ">=24.18.0",
+    "npm": ">=11.16.0"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
