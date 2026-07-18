@@ -96,6 +96,7 @@ Create `backend/.env` with your Supabase credentials:
 PORT=8000
 DATABASE_URL=postgresql://...
 SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 SUPABASE_AUD=authenticated
 CORS_ORIGIN=http://localhost:5173
 NODE_ENV=dev
@@ -153,6 +154,7 @@ Open [http://localhost:5173](http://localhost:5173).
 | `PORT` | Server port (default: 8000) |
 | `DATABASE_URL` | PostgreSQL connection string |
 | `SUPABASE_URL` | Supabase project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key |
 | `SUPABASE_AUD` | JWT audience (default: `authenticated`) |
 | `CORS_ORIGIN` | Allowed CORS origin |
 | `NODE_ENV` | Environment (`dev`, `production`) |
