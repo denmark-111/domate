@@ -54,7 +54,7 @@ const ChatList = () => {
     setMessages((prev) => prev.filter((m) => m.id !== messageId));
   }, []);
  
-  const { broadcastMessage, broadcastDelete } = useChatRealtime(activeWorkspace?.id, onNewMessage, onDeleteMessage);
+  useChatRealtime(activeWorkspace?.id, onNewMessage, onDeleteMessage);
 
   // Fetch initial messages
   const fetchMessages = useCallback(async () => {
@@ -151,7 +151,6 @@ const ChatList = () => {
     const res = await chatService.sendMessage(activeWorkspace.id, content);
     if (res.success) {
       setMessages((prev) => [...prev, res.data]);
-      broadcastMessage(res.data);
     } else {
       throw new Error(res.error || 'Failed to send message');
     }
@@ -164,7 +163,6 @@ const ChatList = () => {
     const res = await chatService.deleteMessage(deletingMessageId);
     if (res.success) {
       setMessages((prev) => prev.filter((m) => m.id !== deletingMessageId));
-      broadcastDelete(deletingMessageId);
       setShowDeleteConfirm(false);
       setDeletingMessageId(null);
     } else {

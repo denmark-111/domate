@@ -1,5 +1,6 @@
 import prisma from "../client.js";
 import { ApiError } from "../middleware/errorHandler.js";
+import { broadcastChatMessage, broadcastChatDelete } from "../services/realtimeService.js";
 
 const fullMessageInclude = {
     author: {
@@ -61,6 +62,8 @@ export const sendMessage = async (req, res, next) => {
         include: fullMessageInclude
     });
 
+    broadcastChatMessage(workspaceId, message).catch(() => {});
+
     res.status(201).json({
         message: "Message sent successfully",
         data: message
@@ -73,7 +76,7 @@ export const deleteMessage = async (req, res, next) => {
 
     const message = await prisma.chatMessage.findUnique({
         where: { id: messageId },
-        select: { authorId: true }
+        select: { authorId: true, workspaceId: true }
     });
 
     if (!message) {
@@ -87,6 +90,8 @@ export const deleteMessage = async (req, res, next) => {
     await prisma.chatMessage.delete({
         where: { id: messageId }
     });
+
+    broadcastChatDelete(message.workspaceId, messageId).catch(() => {});
 
     res.status(200).json({
         message: "Message deleted successfully"
