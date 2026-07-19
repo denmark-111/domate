@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import prisma from "../client.js";
 import { ApiError } from "../middleware/errorHandler.js";
+import { createNotifications } from "./notificationService.js";
 
 const INVITATION_TTL_DAYS = 7;
 
@@ -56,6 +57,34 @@ export const invitationService = {
         })),
         skipDuplicates: true
       });
+    }
+
+    // Create notifications for existing users matching invited emails
+    if (newEmails.length > 0) {
+      const invitedUsers = await prisma.user.findMany({
+        where: { email: { in: newEmails } },
+        select: { id: true }
+      });
+
+      if (invitedUsers.length > 0) {
+        const workspace = await prisma.workspace.findUnique({
+          where: { id: workspaceId },
+          select: { name: true }
+        });
+
+        await createNotifications({
+          userIds: invitedUsers.map(u => u.id),
+          actorId: invitedById,
+          type: 'invitation',
+          data: {
+            title: `Invited to ${workspace.name}`,
+            body: `You've been invited to join "${workspace.name}"`,
+            workspaceId,
+            workspaceName: workspace.name,
+            url: `/settings`
+          }
+        });
+      }
     }
 
     return {

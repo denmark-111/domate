@@ -1,5 +1,6 @@
 import prisma from "../client.js";
 import { ApiError } from "../middleware/errorHandler.js";
+import { createNotificationsForWorkspaceMembers } from "../services/notificationService.js";
 
 const fullAnnouncementInclude = {
     author: {
@@ -93,6 +94,27 @@ export const createAnnouncement = async (req, res, next) => {
     const announcement = await prisma.announcement.create({
         data,
         include: fullAnnouncementInclude
+    });
+
+    // Notify all workspace members except the author
+    const workspace = await prisma.workspace.findUnique({
+        where: { id: workspaceId },
+        select: { name: true }
+    });
+
+    await createNotificationsForWorkspaceMembers({
+        workspaceId,
+        type: 'announcement',
+        actorId: userId,
+        data: {
+            title: `New announcement in ${workspace.name}`,
+            body: title,
+            announcementId: announcement.id,
+            workspaceId,
+            workspaceName: workspace.name,
+            url: `/workspaces/${workspaceId}`
+        },
+        excludeUserId: userId
     });
 
     res.status(201).json({

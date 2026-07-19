@@ -11,6 +11,7 @@ import { router as taskCommentRoutes } from "./routes/taskCommentRoutes.js";
 import { router as announcementRoutes } from "./routes/announcementRoutes.js";
 import { router as chatRoutes } from "./routes/chatRoutes.js";
 import invitationRoutes from "./routes/invitationRoutes.js";
+import { router as notificationRoutes } from "./routes/notificationRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 
 const app = express();
@@ -52,6 +53,7 @@ app.use('/api/tasks', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AU
 app.use('/api/comments', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), taskCommentRoutes);
 app.use('/api/announcements', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), announcementRoutes);
 app.use('/api/chat', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), chatRoutes);
+app.use('/api/notifications', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), notificationRoutes);
 app.use('/api/users', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), userRoutes);
 app.use('/api/invitations', supabaseAuthMiddleware({ audience: process.env.SUPABASE_AUD }), invitationRoutes);
 

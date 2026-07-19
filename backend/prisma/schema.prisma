@@ -198,6 +198,9 @@ model User {
   taskAssignments      TaskAssignment[]  @relation("TaskAssignees")
   assignedTasks        TaskAssignment[]  @relation("AssignedTasks")
 
+  receivedNotifications Notification[] @relation("NotificationRecipient")
+  actedNotifications    Notification[] @relation("NotificationActor")
+
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 }
@@ -252,6 +255,22 @@ model TaskComment {
   updatedAt DateTime @updatedAt
 
   @@index([taskId, createdAt])
+}
+
+model Notification {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  actorId   String?   @db.Uuid
+  type      String    @db.VarChar(50)
+  data      Json
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user      User      @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  actor     User?     @relation("NotificationActor", fields: [actorId], references: [id])
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([userId, readAt])
 }
 
 model RecentVisit {
