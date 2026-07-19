@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { notificationService } from '../services/index.js';
 import { useAuth } from './AuthContext.jsx';
 
@@ -10,6 +10,10 @@ export function NotificationProvider({ children }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(false);
+  const notificationsRef = useRef(notifications);
+  useEffect(() => {
+    notificationsRef.current = notifications;
+  }, [notifications]);
 
   const refreshUnreadCount = useCallback(async () => {
     if (!isAuthenticated) return;
@@ -45,11 +49,14 @@ export function NotificationProvider({ children }) {
 
   const markAsRead = useCallback(async (id) => {
     try {
+      const target = notificationsRef.current.find(n => n.id === id);
       await notificationService.markNotificationRead(id);
       setNotifications(prev =>
         prev.map(n => n.id === id ? { ...n, readAt: new Date().toISOString() } : n)
       );
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      if (target && !target.readAt) {
+        setUnreadCount(current => Math.max(0, current - 1));
+      }
     } catch {
       // silent
     }
