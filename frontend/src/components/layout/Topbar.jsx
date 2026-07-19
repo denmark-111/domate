@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, Settings, Search, Sun, Moon, LogOut, User, ChevronDown, PanelLeftClose, PanelLeftOpen, Menu, X } from 'lucide-react';
+import { Settings, Search, Sun, Moon, LogOut, User, ChevronDown, PanelLeftClose, PanelLeftOpen, Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { supabaseStorageService, searchService } from '../../services/index.js';
+import NotificationBell from '../notifications/NotificationBell';
 import AppLogo from '../common/AppLogo';
 
 const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = false }) => {
@@ -208,10 +209,7 @@ const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = fa
         </button>
 
         <div className="flex items-center gap-1 sm:gap-2 pr-3 sm:pr-6 border-r border-border-light">
-          <button className="p-2 text-text-secondary hover:bg-bg-tertiary rounded-full transition-colors relative">
-            <Bell size={18} />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-error-text border-2 border-white rounded-full"></span>
-          </button>
+          <NotificationBell />
           <button
             onClick={() => navigate('/settings')}
             className="hidden sm:block p-2 text-text-secondary hover:bg-bg-tertiary rounded-full transition-colors"

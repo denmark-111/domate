@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { WorkspaceProvider } from './context/WorkspaceContext';
 import { ThemeContextProvider } from './context/ThemeContext';
 import { AuthContextProvider } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext';
 import Landing from './components/auth/Landing';
 import Auth from './components/auth/Auth';
 import ForgotPassword from './components/auth/ForgotPassword';
@@ -46,8 +47,9 @@ const AppContent = ({ viewType }) => {
   };
 
   return (
-    <WorkspaceProvider>
-      <div className="flex flex-col h-dvh font-sans">
+    <NotificationProvider>
+      <WorkspaceProvider>
+        <div className="flex flex-col h-dvh font-sans">
         <Topbar
           collapsed={sidebarCollapsed}
           mobileSidebarOpen={mobileSidebarOpen}
@@ -93,7 +95,8 @@ const AppContent = ({ viewType }) => {
           </main>
         </div>
       </div>
-    </WorkspaceProvider>
+      </WorkspaceProvider>
+    </NotificationProvider>
   );
 };
 
