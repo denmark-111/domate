@@ -1,11 +1,12 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { notificationService } from '../services/index.js';
 import { useAuth } from './AuthContext.jsx';
+import useNotificationRealtime from '../hooks/useNotificationRealtime.js';
 
 const NotificationContext = createContext(null);
 
 export function NotificationProvider({ children }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -14,6 +15,15 @@ export function NotificationProvider({ children }) {
   useEffect(() => {
     notificationsRef.current = notifications;
   }, [notifications]);
+
+  const handleNewNotification = useCallback((notification) => {
+    setNotifications(prev => [notification, ...prev]);
+    if (!notification.readAt) {
+      setUnreadCount(current => current + 1);
+    }
+  }, []);
+
+  useNotificationRealtime(isAuthenticated ? user?.id : null, handleNewNotification);
 
   const refreshUnreadCount = useCallback(async () => {
     if (!isAuthenticated) return;

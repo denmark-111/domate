@@ -9,3 +9,8 @@ export const broadcastChatDelete = async (workspaceId, messageId) => {
   const channel = supabaseAdmin.channel(`workspace:${workspaceId}:chat`);
   await channel.httpSend('chat:delete-message', { messageId });
 };
+
+export const broadcastNotification = async (notification) => {
+  const channel = supabaseAdmin.channel(`user:${notification.userId}:notifications`);
+  await channel.httpSend('notification:new', notification);
+};

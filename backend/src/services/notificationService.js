@@ -1,27 +1,26 @@
 import prisma from '../client.js';
+import { broadcastNotification } from './realtimeService.js';
 
-export async function createNotification({ userId, actorId, type, data }) {
-  return prisma.notification.create({
-    data: { userId, actorId, type, data },
+export async function createNotifications({ userIds, actorId, type, data }) {
+  if (userIds.length === 0) return;
+
+  const notifications = await prisma.notification.createManyAndReturn({
+    data: userIds.map(userId => ({
+      userId,
+      actorId,
+      type,
+      data
+    })),
     include: {
       actor: {
         select: { id: true, fullName: true, avatarUrl: true }
       }
     }
   });
-}
 
-export async function createNotifications({ userIds, actorId, type, data }) {
-  if (userIds.length === 0) return;
-
-  await prisma.notification.createMany({
-    data: userIds.map(userId => ({
-      userId,
-      actorId,
-      type,
-      data
-    }))
-  });
+  for (const notification of notifications) {
+    broadcastNotification(notification).catch(() => {});
+  }
 }
 
 export async function createNotificationsForWorkspaceMembers({ workspaceId, type, data, excludeUserId, actorId }) {
@@ -35,14 +34,23 @@ export async function createNotificationsForWorkspaceMembers({ workspaceId, type
 
   if (members.length === 0) return [];
 
-  await prisma.notification.createMany({
+  const notifications = await prisma.notification.createManyAndReturn({
     data: members.map(m => ({
       userId: m.userId,
       actorId,
       type,
       data
-    }))
+    })),
+    include: {
+      actor: {
+        select: { id: true, fullName: true, avatarUrl: true }
+      }
+    }
   });
+
+  for (const notification of notifications) {
+    broadcastNotification(notification).catch(() => {});
+  }
 }
 
 export async function getNotifications({ userId, page = 1, limit = 20 }) {
