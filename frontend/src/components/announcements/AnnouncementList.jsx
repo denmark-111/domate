@@ -6,6 +6,7 @@ import { announcementService, workspaceService } from '../../services/index.js';
 import AnnouncementCard from './AnnouncementCard';
 import AnnouncementForm from './AnnouncementForm';
 import ConfirmModal from '../common/ConfirmModal';
+import useAnnouncementRealtime from '../../hooks/useAnnouncementRealtime';
 
 const PAGE_SIZE = 20;
 
@@ -135,7 +136,39 @@ const AnnouncementList = () => {
     setIsDeleting(false);
   };
 
+  const handleNewAnnouncementRealtime = useCallback((announcement) => {
+    setAnnouncements((prev) => {
+      if (prev.some(a => a.id === announcement.id)) return prev;
+      return [announcement, ...prev].sort((a, b) => {
+        if (a.pinned !== b.pinned) return b.pinned ? 1 : -1;
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+    });
+  }, []);
+
+  const handleUpdateAnnouncementRealtime = useCallback((announcement) => {
+    setAnnouncements((prev) => {
+      const updated = prev.map((a) => (a.id === announcement.id ? { ...a, ...announcement } : a));
+      return updated.sort((a, b) => {
+        if (a.pinned !== b.pinned) return b.pinned ? 1 : -1;
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+    });
+  }, []);
+
+  const handleDeleteAnnouncementRealtime = useCallback((announcementId) => {
+    setAnnouncements((prev) => prev.filter((a) => a.id !== announcementId));
+  }, []);
+
+  useAnnouncementRealtime(
+    activeWorkspace?.id,
+    handleNewAnnouncementRealtime,
+    handleUpdateAnnouncementRealtime,
+    handleDeleteAnnouncementRealtime
+  );
+
   const openCreateForm = () => {
+
     setEditingAnnouncement(null);
     setShowForm(true);
   };

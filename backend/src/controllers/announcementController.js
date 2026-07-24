@@ -1,6 +1,7 @@
 import prisma from "../client.js";
 import { ApiError } from "../middleware/errorHandler.js";
 import { createNotificationsForWorkspaceMembers } from "../services/notificationService.js";
+import { broadcastAnnouncement } from "../services/realtimeService.js";
 
 const fullAnnouncementInclude = {
     author: {
@@ -117,6 +118,8 @@ export const createAnnouncement = async (req, res, next) => {
         excludeUserId: userId
     });
 
+    broadcastAnnouncement(workspaceId, 'new', announcement).catch(() => {});
+
     res.status(201).json({
         message: "Announcement created successfully",
         data: announcement
@@ -175,6 +178,8 @@ export const updateAnnouncement = async (req, res, next) => {
         include: fullAnnouncementInclude
     });
 
+    broadcastAnnouncement(workspaceId, 'update', announcement).catch(() => {});
+
     res.status(200).json({
         message: "Announcement updated successfully",
         data: announcement
@@ -183,10 +188,13 @@ export const updateAnnouncement = async (req, res, next) => {
 
 export const deleteAnnouncement = async (req, res, next) => {
     const { announcementId } = req.validated.params;
+    const { workspaceId } = req.authorization;
 
     await prisma.announcement.delete({
         where: { id: announcementId }
     });
+
+    broadcastAnnouncement(workspaceId, 'delete', { id: announcementId, workspaceId }).catch(() => {});
 
     res.status(200).json({
         message: "Announcement deleted successfully"
