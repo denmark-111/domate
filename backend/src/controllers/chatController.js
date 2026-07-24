@@ -1,6 +1,6 @@
 import prisma from "../client.js";
 import { ApiError } from "../middleware/errorHandler.js";
-import { broadcastChatMessage, broadcastChatDelete } from "../services/realtimeService.js";
+import { broadcastChat } from "../services/realtimeService.js";
 
 const fullMessageInclude = {
     author: {
@@ -62,7 +62,7 @@ export const sendMessage = async (req, res, next) => {
         include: fullMessageInclude
     });
 
-    broadcastChatMessage(workspaceId, message).catch(() => {});
+    broadcastChat(workspaceId, 'new-message', message).catch(() => {});
 
     res.status(201).json({
         message: "Message sent successfully",
@@ -91,7 +91,7 @@ export const deleteMessage = async (req, res, next) => {
         where: { id: messageId }
     });
 
-    broadcastChatDelete(message.workspaceId, messageId).catch(() => {});
+    broadcastChat(message.workspaceId, 'delete-message', { messageId }).catch(() => {});
 
     res.status(200).json({
         message: "Message deleted successfully"

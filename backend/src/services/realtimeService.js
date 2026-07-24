@@ -1,13 +1,8 @@
 import supabaseAdmin from '../lib/supabaseAdmin.js';
 
-export const broadcastChatMessage = async (workspaceId, message) => {
+export const broadcastChat = async (workspaceId, event, data) => {
   const channel = supabaseAdmin.channel(`workspace:${workspaceId}:chat`);
-  await channel.httpSend('chat:new-message', message);
-};
-
-export const broadcastChatDelete = async (workspaceId, messageId) => {
-  const channel = supabaseAdmin.channel(`workspace:${workspaceId}:chat`);
-  await channel.httpSend('chat:delete-message', { messageId });
+  await channel.httpSend(`chat:${event}`, data);
 };
 
 export const broadcastNotification = async (notification) => {
