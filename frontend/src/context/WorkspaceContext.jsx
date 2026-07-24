@@ -44,6 +44,15 @@ export const WorkspaceProvider = ({ children }) => {
     ? workspaces.find(w => w.id === workspaceId) 
     : null;
 
+  // Update page title based on active workspace name or default 'Domate'
+  useEffect(() => {
+    if (activeWorkspace?.name) {
+      document.title = activeWorkspace.name;
+    } else {
+      document.title = 'Domate';
+    }
+  }, [activeWorkspace?.name]);
+
   // Log board visit whenever the active board changes to a non-null board
   useEffect(() => {
     if (activeBoard?.id && activeWorkspace) {

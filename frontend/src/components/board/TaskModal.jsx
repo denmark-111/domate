@@ -361,8 +361,6 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
     }
   };
 
-  document.title = editName || 'Task';
-
   return (
     <>
       {/* Backdrop */}
