@@ -36,6 +36,10 @@ export const apiCall = async (endpoint, options = {}) => {
   });
 
   if (!response.ok) {
+    if (response.status === 401) {
+      await supabase.auth.signOut().catch(() => {});
+    }
+
     const body = await response.text().catch(() => null);
     let message = `API error: ${response.status} ${response.statusText}`;
     if (body) {

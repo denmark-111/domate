@@ -30,7 +30,13 @@ export const AuthContextProvider = ({ children }) => {
       try {
         const { data, error } = await supabase.auth.getSession();
         
-        if (error) throw error;
+        if (error) {
+          if (error.status >= 400 && error.status < 500) {
+            throw error;
+          } else {
+            console.warn('Non-auth error during session restore (e.g., network issue):', error);
+          }
+        }
 
         if (data?.session) {
           const profile = await fetchUserProfile(data.session);
