@@ -44,6 +44,12 @@ const ChatInput = ({ onSend, isLoading, onTyping, onStopTyping }) => {
     }, 3000);
   };
 
+  useEffect(() => {
+    if (inputRef.current && !content) {
+      inputRef.current.style.height = 'auto';
+    }
+  }, [content]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const trimmed = content.trim();
@@ -58,6 +64,9 @@ const ChatInput = ({ onSend, isLoading, onTyping, onStopTyping }) => {
     try {
       await onSend(trimmed);
       setContent('');
+      if (inputRef.current) {
+        inputRef.current.style.height = 'auto';
+      }
       inputRef.current?.focus();
     } catch {
       // Error handled by parent
@@ -72,7 +81,7 @@ const ChatInput = ({ onSend, isLoading, onTyping, onStopTyping }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="border-t border-border bg-bg-secondary px-8 py-4">
+    <form onSubmit={handleSubmit} className="border-t border-border bg-bg-secondary px-4 sm:px-8 py-4">
       <div className="max-w-4xl mx-auto flex gap-3 items-end">
         <textarea
           ref={inputRef}

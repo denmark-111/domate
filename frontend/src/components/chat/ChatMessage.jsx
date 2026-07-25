@@ -35,7 +35,7 @@ const ChatMessage = ({ message, isOwnMessage, onDelete }) => {
       </div>
 
       {/* Message content */}
-      <div className={`flex flex-col max-w-[75%] ${isOwnMessage ? 'items-end' : 'items-start'}`}>
+      <div className={`flex flex-col min-w-0 max-w-[75%] ${isOwnMessage ? 'items-end' : 'items-start'}`}>
         {/* Author name + timestamp */}
         <div className={`flex items-center gap-2 mb-0.5 ${isOwnMessage ? 'flex-row-reverse' : ''}`}>
           <span className="text-[11px] font-medium text-text-secondary">
@@ -48,13 +48,13 @@ const ChatMessage = ({ message, isOwnMessage, onDelete }) => {
 
         {/* Bubble */}
         <div
-          className={`px-3.5 py-2 rounded-lg text-sm leading-relaxed ${
+          className={`px-3.5 py-2 rounded-lg text-sm leading-relaxed max-w-full ${
             isOwnMessage
               ? 'bg-button text-white rounded-br-sm'
               : 'bg-bg text-text rounded-bl-sm'
           }`}
         >
-          <p className="whitespace-pre-wrap break-words">{message.content}</p>
+          <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] [word-break:break-word]">{message.content}</p>
         </div>
 
         {/* Delete button (only for own messages) */}
