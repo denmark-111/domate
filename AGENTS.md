@@ -31,7 +31,7 @@ domate/
 - **Backend**: Express 5, Prisma 7, Zod, jose (JWT), pg
 - **Database**: PostgreSQL (Supabase)
 - **Auth**: Supabase Auth (JWT verified via JWKS)
-- **Realtime**: Supabase Realtime (chat, presence)
+- **Realtime**: Supabase Realtime (chat, presence, boards, announcements, notifications)
 - **Storage**: Supabase Storage (avatars, covers, attachments)
 
 ## Conventions

@@ -1,19 +1,18 @@
 # Domate
 
-A collaboration app with Kanban boards, real-time chat, and team announcements.
-
-Built with **React** (frontend), **Express** (backend), **Prisma** (ORM), and **Supabase** (auth, real-time, storage).
+A real-time collaboration platform that seamlessly connects your team's work, conversations, and updates in one place.
 
 ## Features
 
-- **Workspaces** — Create workspaces and invite members via email
-- **Kanban Boards** — Full drag-and-drop boards, lists, and tasks (powered by dnd-kit)
-- **Presence Tracking** — See who else is viewing a board in real time (Supabase Realtime)
-- **Real-time Chat** — Workspace-scoped messaging with live updates
-- **Announcements** — Post and pin team-wide updates
+- **Workspaces** — Create workspaces, invite members, and collaborate
+- **Live Kanban Boards** — Full drag-and-drop boards, lists, and tasks with real-time sync across clients
+- **Presence Tracking** — See who else is viewing a board in real time
+- **Chat** — Workspace-scoped messaging with live updates and typing indicators
+- **Announcements** — Post and pin team-wide updates instantly
+- **Notifications** — Instant alerts for invitations, task assignments, and team updates
 - **Cross-Workspace Task View** — See all your assigned tasks across every workspace in one place
-- **Task Management** — Labels, due dates, assignments, comments, and file attachments
-- **Auth** — Email/password authentication with password reset (Supabase Auth)
+- **Task Management** — Labels, due dates, assignments, real-time comments, and file attachments
+- **Auth** — Email/password and OAuth (Google) authentication (Supabase Auth)
 - **File Storage** — Avatars, workspace covers, and task attachments stored in Supabase Storage
 - **Customization** — Workspace color themes and dark/light mode
 
@@ -25,7 +24,7 @@ Built with **React** (frontend), **Express** (backend), **Prisma** (ORM), and **
 | Backend | Express 5, Prisma 7, Zod |
 | Database | PostgreSQL (via Supabase) |
 | Auth | Supabase Auth (JWT verified via JWKS) |
-| Real-time | Supabase Realtime (chat messages, presence) |
+| Real-time | Supabase Realtime (chat, presence, boards, announcements, notifications) |
 | Storage | Supabase Storage (avatars, covers, attachments) |
 | Drag & Drop | dnd-kit |
 
@@ -174,6 +173,7 @@ All endpoints are prefixed with `/api` and require a Bearer JWT token.
 | `/api/chat` | Workspace chat messages |
 | `/api/users` | User profiles, search |
 | `/api/invitations` | Workspace invitations |
+| `/api/notifications` | Real-time notifications and alerts |
 
 ## Database
 
@@ -189,12 +189,16 @@ The database schema (managed via Prisma) includes these models:
 - **Attachment** — File attachments (tasks, announcements)
 - **Invitation** — Pending/accepted/declined/expired invitations
 - **User** — Synced from Supabase Auth
+- **Notification** — Live alerts and system notifications
 - **RecentVisit** — Tracks recent navigation
 
 ## Real-time Features
 
-- **Chat**: Workspace chat messages are delivered in real time via Supabase Realtime subscriptions
+- **Boards**: Task moves, edits, comments, and list changes sync instantly across all clients
+- **Chat**: Workspace messaging with real-time delivery and typing indicators via Supabase Realtime
 - **Presence**: Active users on a board are tracked and displayed using Supabase Realtime presence
+- **Announcements**: Team-wide announcements are broadcast immediately
+- **Notifications**: Instant alerts for invitations, task assignments, and team updates
 
 ## License
 
