@@ -1,5 +1,7 @@
 import prisma from "../client.js";
 import { ApiError } from "../middleware/errorHandler.js";
+import { broadcastBoard } from "../services/realtimeService.js";
+
 
 const fullTaskInclude = {
     _count: {
@@ -168,6 +170,10 @@ export const createTask = async (req, res, next) => {
         include: fullTaskInclude
     });
 
+    if (req.authorization?.boardId) {
+        broadcastBoard(req.authorization.boardId, 'task:create', task).catch(() => {});
+    }
+
     res.status(201).json({
         message: "Task created successfully",
         data: task
@@ -193,7 +199,7 @@ export const getTaskById = async (req, res, next) => {
 
 export const updateTask = async (req, res, next) => {
     const { taskId } = req.validated.params;
-    const { workspaceId } = req.authorization;
+    const { workspaceId, boardId } = req.authorization;
     const userId = req.supabase.user.id;
     const { name, description, dueDate, completed, attachments } = req.validated.body;
 
@@ -242,6 +248,10 @@ export const updateTask = async (req, res, next) => {
         include: fullTaskInclude
     });
 
+    if (boardId) {
+        broadcastBoard(boardId, 'task:update', task).catch(() => {});
+    }
+
     res.status(200).json({
         message: "Task updated successfully.",
         data: task
@@ -250,6 +260,7 @@ export const updateTask = async (req, res, next) => {
 
 export const deleteTask = async (req, res, next) => {
     const { taskId } = req.validated.params;
+    const { boardId, listId } = req.authorization || {};
 
     await prisma.$transaction(async (tx) => {
         const task = await tx.task.delete({
@@ -271,6 +282,10 @@ export const deleteTask = async (req, res, next) => {
         });
     });
 
+    if (boardId) {
+        broadcastBoard(boardId, 'task:delete', { taskId, listId }).catch(() => {});
+    }
+
     res.status(200).json({
         message: "Task deleted successfully"
     });
@@ -278,6 +293,7 @@ export const deleteTask = async (req, res, next) => {
 
 export const moveTask = async (req, res, next) => {
     const { taskId } = req.validated.params;
+    const { boardId } = req.authorization || {};
     const { listId: targetListId, position: reqPosition } = req.validated.body;
 
     const task = await prisma.task.findUnique({
@@ -358,8 +374,15 @@ export const moveTask = async (req, res, next) => {
         });
     });
 
+    const activeBoardId = boardId || task.list.boardId;
+    if (activeBoardId) {
+        broadcastBoard(activeBoardId, 'task:move', updatedTask).catch(() => {});
+    }
+
     return res.status(200).json({
         message: "Task moved successfully",
         data: updatedTask
     });
 };
+
+

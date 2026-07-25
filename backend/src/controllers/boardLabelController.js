@@ -1,4 +1,5 @@
 import prisma from "../client.js";
+import { broadcastBoard } from "../services/realtimeService.js";
 
 export const getBoardLabels = async (req, res, next) => {
     const { boardId } = req.validated.params;
@@ -24,6 +25,8 @@ export const createBoardLabel = async (req, res, next) => {
             boardId
         }
     });
+
+    broadcastBoard(boardId, 'label:change', label).catch(() => {});
 
     res.status(201).json({
         message: "Label created successfully",
@@ -51,6 +54,8 @@ export const updateBoardLabel = async (req, res, next) => {
         }
     });
 
+    broadcastBoard(existing.boardId, 'label:change', label).catch(() => {});
+
     res.status(200).json({
         message: "Label updated successfully",
         data: label
@@ -72,7 +77,10 @@ export const deleteBoardLabel = async (req, res, next) => {
         where: { id: labelId }
     });
 
+    broadcastBoard(existing.boardId, 'label:change', { labelId }).catch(() => {});
+
     res.status(200).json({
         message: "Label deleted successfully"
     });
 };
+

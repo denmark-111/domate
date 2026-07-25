@@ -1,4 +1,5 @@
 import prisma from "../client.js";
+import { broadcastBoard } from "../services/realtimeService.js";
 
 export const getLists = async (req, res, next) => {
     const { boardId } = req.validated.params;
@@ -35,6 +36,8 @@ export const createList = async (req, res, next) => {
             boardId
         }
     });
+
+    broadcastBoard(boardId, 'list:create', list).catch(() => {});
 
     res.status(201).json({
         message: "List created successfully",
@@ -116,6 +119,8 @@ export const updateList = async (req, res, next) => {
         });
     });
 
+    broadcastBoard(existingList.boardId, 'list:update', updatedList).catch(() => {});
+
     return res.status(200).json({
         message: "List updated successfully.",
         data: updatedList
@@ -124,11 +129,13 @@ export const updateList = async (req, res, next) => {
 
 export const deleteList = async (req, res, next) => {
     const { listId } = req.validated.params;
+    let deletedBoardId = null;
 
     await prisma.$transaction(async (tx) => {
         const list = await tx.list.delete({
             where: { id: listId }
         });
+        deletedBoardId = list.boardId;
 
         await tx.list.updateMany({
             where: {
@@ -145,7 +152,12 @@ export const deleteList = async (req, res, next) => {
         });
     });
 
+    if (deletedBoardId) {
+        broadcastBoard(deletedBoardId, 'list:delete', { listId, boardId: deletedBoardId }).catch(() => {});
+    }
+
     res.status(200).json({
         message: "List deleted successfully"
     });
 };
+

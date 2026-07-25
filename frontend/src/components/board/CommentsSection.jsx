@@ -29,7 +29,7 @@ const getAuthorInitials = (fullName) => {
     .slice(0, 2);
 };
 
-const CommentsSection = ({ taskId, onCommentChange, commentCount = 0 }) => {
+const CommentsSection = ({ taskId, onCommentChange, commentCount = 0, realtimeCommentPayload = null }) => {
   const { user } = useAuth();
 
   const [newComment, setNewComment] = useState('');
@@ -57,6 +57,30 @@ const CommentsSection = ({ taskId, onCommentChange, commentCount = 0 }) => {
     setIsLoadingComments(false);
   }, []);
 
+  // Handle realtime comment updates from other users
+  useEffect(() => {
+    if (!realtimeCommentPayload || realtimeCommentPayload.taskId !== taskId) return;
+    const { action, comment, commentId } = realtimeCommentPayload;
+    if (action === 'create' && comment) {
+      setComments((prev) => {
+        if (prev.some((c) => c.id === comment.id)) {
+          return prev;
+        }
+        setCommentsPagination((p) => ({ ...p, total: p.total + 1 }));
+        return [comment, ...prev];
+      });
+    } else if (action === 'delete' && commentId) {
+      setComments((prev) => {
+        if (!prev.some((c) => c.id === commentId)) {
+          return prev;
+        }
+        setCommentsPagination((p) => ({ ...p, total: Math.max(0, p.total - 1) }));
+        return prev.filter((c) => c.id !== commentId);
+      });
+    }
+  }, [realtimeCommentPayload, taskId]);
+
+
   // Reset state and fetch comments when taskId changes
   useEffect(() => {
     if (taskId) {
@@ -64,11 +88,11 @@ const CommentsSection = ({ taskId, onCommentChange, commentCount = 0 }) => {
       setIsAddingComment(false);
       setComments([]);
       setCommentsPagination({ page: 1, limit: 50, total: commentCount, hasMore: false });
-      if (commentCount > 0) {
-        fetchComments(taskId);
-      }
+      fetchComments(taskId);
     }
-  }, [taskId, fetchComments, commentCount]);
+  }, [taskId, fetchComments]);
+
+
 
   // Infinite scroll: observe sentinel
   useEffect(() => {
@@ -100,7 +124,6 @@ const CommentsSection = ({ taskId, onCommentChange, commentCount = 0 }) => {
       setCommentsPagination((prev) => ({ ...prev, total: prev.total + 1 }));
       setNewComment('');
       setIsAddingComment(false);
-      onCommentChange?.(taskId, 1);
     }
     setIsSubmittingComment(false);
   };
@@ -111,16 +134,21 @@ const CommentsSection = ({ taskId, onCommentChange, commentCount = 0 }) => {
     if (res.success) {
       setComments((prev) => prev.filter((c) => c.id !== commentId));
       setCommentsPagination((prev) => ({ ...prev, total: Math.max(0, prev.total - 1) }));
-      onCommentChange?.(taskId, -1);
     }
     setDeletingCommentId(null);
   };
 
+
+  const displayedCommentCount = isLoadingComments && comments.length === 0
+    ? commentCount
+    : (commentsPagination.hasMore ? Math.max(comments.length, commentsPagination.total) : comments.length);
+
   return (
     <div ref={scrollContainerRef} className="sm:w-1/2 sm:overflow-y-auto p-4 sm:p-6 space-y-4 sm:thin-scrollbar">
       <h3 className="text-sm font-semibold text-text">
-        Comments <span className="text-text-secondary">({commentsPagination.total})</span>
+        Comments <span className="text-text-secondary">({displayedCommentCount})</span>
       </h3>
+
 
       <textarea
         value={newComment}

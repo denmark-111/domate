@@ -17,7 +17,8 @@ const LABEL_COLORS = [
   '#FF78CB', '#B3BAC5',
 ];
 
-const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, onMoveTask, boardLabels, onBoardLabelCreated, workspaceId: propWorkspaceId, readOnly = false }) => {
+const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, onMoveTask, boardLabels, onBoardLabelCreated, workspaceId: propWorkspaceId, readOnly = false, realtimeCommentPayload = null }) => {
+
   const { activeWorkspace, activeBoard } = useWorkspace();
   const navigate = useNavigate();
   const workspaceIdRef = useRef(null);
@@ -67,6 +68,9 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
   const listPickerRef = useRef(null);
   const listDropdownRef = useRef(null);
   const titleRef = useRef(null);
+  const descriptionRef = useRef(null);
+  const dueDateRef = useRef(null);
+
 
   // Close label picker on outside click
   useEffect(() => {
@@ -154,7 +158,47 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
     return () => { cancelled = true; };
   }, [isOpen, task?.id]);
 
+  // Sync state when task object updates (e.g. from real-time events)
+  useEffect(() => {
+    if (isOpen && task) {
+      const active = document.activeElement;
+
+      const newName = task.name || task.title || '';
+      if (active !== titleRef.current) {
+        setEditName(newName);
+      }
+
+      const newDesc = task.description || '';
+      if (active !== descriptionRef.current) {
+        setEditDescription(newDesc);
+      }
+
+      const newDueDate = task.dueDate ? task.dueDate.substring(0, 10) : '';
+      if (active !== dueDateRef.current) {
+        setEditDueDate(newDueDate);
+      }
+
+      setEditCompletedAt(task.completedAt || null);
+
+      if (task.assignments) setAssignments(task.assignments);
+      if (task.labels) setTaskLabels(task.labels);
+      if (task.attachments) setAttachments(task.attachments);
+    }
+  }, [
+    isOpen,
+    task?.name,
+    task?.title,
+    task?.description,
+    task?.dueDate,
+    task?.completedAt,
+    task?.assignments,
+    task?.labels,
+    task?.attachments
+  ]);
+
+
   if (!isOpen || !task) return null;
+
 
   // Persist the current attachment set to the backend immediately
   const saveAttachments = async (updatedAttachments) => {
@@ -508,6 +552,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                   </p>
                 ) : (
                   <textarea
+                    ref={descriptionRef}
                     value={editDescription}
                     onChange={(e) => setEditDescription(e.target.value)}
                     onBlur={handleSaveDetails}
@@ -527,6 +572,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                   </p>
                 ) : (
                   <input
+                    ref={dueDateRef}
                     type="date"
                     value={editDueDate}
                     onChange={(e) => setEditDueDate(e.target.value)}
@@ -535,6 +581,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                   />
                 )}
               </div>
+
 
               {/* Labels */}
               <div className="mt-3 sm:mt-4">
@@ -670,24 +717,13 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                           const res = await taskService.setTaskAssignees(task.id, userIds);
                           if (res.success) {
                             setAssignments(res.data);
+                            onUpdate?.({ ...task, assignments: res.data });
                           }
-                          const updatedData = {
-                            name: editName.trim() || task.name,
-                            description: editDescription.trim() || task.description || '',
-                            dueDate: editDueDate || task.dueDate || null,
-                            completedAt: editCompletedAt || null,
-                            attachments: attachments.map(a => ({
-                              fileName: a.fileName,
-                              fileSize: a.fileSize,
-                              mimeType: a.mimeType,
-                              storagePath: a.storagePath,
-                            })),
-                          };
-                          await onUpdate({ ...task, ...updatedData });
                         } finally {
                           setIsSavingAssignees(false);
                         }
                       }}
+
                     />
                   </>
                 )}
@@ -713,7 +749,9 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
             readOnly={readOnly}
             onCommentChange={onCommentChange}
             commentCount={task?._count?.comments ?? 0}
+            realtimeCommentPayload={realtimeCommentPayload}
           />
+
         </div>
       </div>
     </>

@@ -1,4 +1,5 @@
 import prisma from "../client.js";
+import { broadcastBoard } from "../services/realtimeService.js";
 
 export const getTaskLabels = async (req, res, next) => {
     const { taskId } = req.validated.params;
@@ -74,8 +75,15 @@ export const setTaskLabels = async (req, res, next) => {
         });
     });
 
+    const { boardId } = req.authorization || {};
+    if (boardId) {
+        broadcastBoard(boardId, 'task:label', { taskId, taskLabels }).catch(() => {});
+    }
+
     res.status(200).json({
         message: "Task labels updated successfully",
         data: taskLabels
     });
 };
+
+

@@ -1,4 +1,5 @@
 import prisma from "../client.js";
+import { broadcastBoard } from "../services/realtimeService.js";
 
 const fullCommentInclude = {
   author: {
@@ -40,6 +41,7 @@ export const getComments = async (req, res, next) => {
 
 export const createComment = async (req, res, next) => {
   const { taskId } = req.validated.params;
+  const { boardId } = req.authorization || {};
   const userId = req.supabase.user.id;
   const { content } = req.validated.body;
 
@@ -51,6 +53,10 @@ export const createComment = async (req, res, next) => {
     },
     include: fullCommentInclude
   });
+
+  if (boardId) {
+    broadcastBoard(boardId, 'task:comment', { taskId, action: 'create', comment }).catch(() => {});
+  }
 
   res.status(201).json({
     message: "Comment created successfully",
@@ -64,7 +70,19 @@ export const deleteComment = async (req, res, next) => {
 
   const comment = await prisma.taskComment.findUnique({
     where: { id: commentId },
-    select: { authorId: true }
+    select: {
+      authorId: true,
+      taskId: true,
+      task: {
+        select: {
+          list: {
+            select: {
+              boardId: true
+            }
+          }
+        }
+      }
+    }
   });
 
   if (!comment) {
@@ -77,5 +95,13 @@ export const deleteComment = async (req, res, next) => {
 
   await prisma.taskComment.delete({ where: { id: commentId } });
 
+  const boardId = req.authorization?.boardId || comment.task?.list?.boardId;
+  if (boardId) {
+    broadcastBoard(boardId, 'task:comment', { taskId: comment.taskId, action: 'delete', commentId }).catch(() => {});
+  }
+
   res.status(200).json({ message: "Comment deleted successfully" });
 };
+
+
+

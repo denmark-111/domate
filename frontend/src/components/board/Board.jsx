@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, startTransition } from 'react';
+import { useRef, useState, useEffect, useCallback, startTransition } from 'react';
 import {
   closestCenter,
   pointerWithin,
@@ -28,6 +28,8 @@ import { boardService, listService, taskService } from '../../services/index.js'
 import { Info, Tag } from 'lucide-react';
 import ActiveUsersBar from '../common/ActiveUsersBar';
 import usePresenceRealtime from '../../hooks/usePresenceRealtime';
+import useBoardRealtime from '../../hooks/useBoardRealtime';
+
 
 const listSortableId = (listId) => `list:${listId}`;
 const taskSortableId = (taskId) => `task:${taskId}`;
@@ -180,6 +182,214 @@ const Board = () => {
     setIsBoardDetailOpen(false);
     setIsBoardLabelsOpen(false);
   }, [activeBoard?.id]);
+
+  const [realtimeCommentPayload, setRealtimeCommentPayload] = useState(null);
+  const pendingEventsRef = useRef([]);
+
+
+  const processRealtimeEvent = useCallback((event, payload) => {
+    if (!payload) return;
+
+    if (event === 'board:delete' || event === 'delete') {
+      if (activeBoard?.id === payload.boardId) {
+        setActiveBoard(null);
+      }
+      return;
+    }
+
+    if (event === 'board:update' || event === 'update') {
+      setActiveBoard((prev) => (prev?.id === payload.id ? { ...prev, ...payload } : prev));
+      return;
+    }
+
+    if (event === 'list:create' || event === 'board:list:create') {
+      const newList = {
+        id: payload.id,
+        title: payload.name,
+        position: payload.position,
+        tasks: []
+      };
+      setData((prev) => {
+        if (prev.some((col) => col.id === newList.id)) return prev;
+        return [...prev, newList].sort((a, b) => a.position - b.position);
+      });
+      return;
+    }
+
+    if (event === 'list:update' || event === 'board:list:update') {
+      setData((prev) => {
+        const oldIndex = prev.findIndex((col) => col.id === payload.id);
+        if (oldIndex === -1) return prev;
+
+        const updatedCol = {
+          ...prev[oldIndex],
+          title: payload.name ?? prev[oldIndex].title,
+          position: payload.position ?? prev[oldIndex].position
+        };
+
+        const targetPos = payload.position;
+        if (targetPos !== undefined && targetPos !== oldIndex && targetPos >= 0 && targetPos < prev.length) {
+          const nextLists = prev.map((col, idx) => (idx === oldIndex ? updatedCol : col));
+          return withPositions(arrayMove(nextLists, oldIndex, targetPos));
+        }
+
+        return prev.map((col) => (col.id === payload.id ? updatedCol : col));
+      });
+      return;
+    }
+
+    if (event === 'list:delete' || event === 'board:list:delete') {
+      setData((prev) => prev.filter((col) => col.id !== payload.listId));
+      return;
+    }
+
+    if (event === 'task:create' || event === 'board:task:create') {
+      const newTask = normalizeTask(payload);
+      setData((prev) =>
+        prev.map((col) => {
+          if (col.id === newTask.listId) {
+            if (col.tasks.some((t) => t.id === newTask.id)) return col;
+            return {
+              ...col,
+              tasks: [...col.tasks, newTask].sort((a, b) => a.position - b.position)
+            };
+          }
+          return col;
+        })
+      );
+      return;
+    }
+
+    if (event === 'task:update' || event === 'board:task:update') {
+      const updated = normalizeTask(payload);
+      setData((prev) =>
+        prev.map((col) => ({
+          ...col,
+          tasks: col.tasks.map((t) => (t.id === updated.id ? { ...t, ...updated } : t))
+        }))
+      );
+      setSelectedTask((prev) => (prev?.id === updated.id ? { ...prev, ...updated } : prev));
+      return;
+    }
+
+    if (event === 'task:move' || event === 'board:task:move') {
+      const moved = normalizeTask(payload);
+      setData((prev) => {
+        const next = moveTaskInLists(prev, moved.id, moved.listId, moved.position);
+        return next.map((col) => ({
+          ...col,
+          tasks: col.tasks.map((t) => (t.id === moved.id ? { ...t, ...moved } : t))
+        }));
+      });
+      setSelectedTask((prev) =>
+        prev?.id === moved.id ? { ...prev, listId: moved.listId, position: moved.position } : prev
+      );
+      return;
+    }
+
+    if (event === 'task:delete' || event === 'board:task:delete') {
+      setData((prev) =>
+        prev.map((col) => ({
+          ...col,
+          tasks: col.tasks.filter((t) => t.id !== payload.taskId)
+        }))
+      );
+      setSelectedTask((prev) => {
+        if (prev?.id === payload.taskId) {
+          setIsTaskModalOpen(false);
+          return null;
+        }
+        return prev;
+      });
+      return;
+    }
+
+    if (event === 'task:assign' || event === 'board:task:assign') {
+      const { taskId, assignments } = payload;
+      setData((prev) =>
+        prev.map((col) => ({
+          ...col,
+          tasks: col.tasks.map((t) => (t.id === taskId ? { ...t, assignments } : t))
+        }))
+      );
+      setSelectedTask((prev) => (prev?.id === taskId ? { ...prev, assignments } : prev));
+      return;
+    }
+
+    if (event === 'task:label' || event === 'board:task:label') {
+      const { taskId, taskLabels } = payload;
+      const labels = (taskLabels || []).map((tl) => tl.boardLabel);
+      setData((prev) =>
+        prev.map((col) => ({
+          ...col,
+          tasks: col.tasks.map((t) => (t.id === taskId ? { ...t, taskLabels, labels } : t))
+        }))
+      );
+      setSelectedTask((prev) => (prev?.id === taskId ? { ...prev, taskLabels, labels } : prev));
+      return;
+    }
+
+    if (event === 'label:change' || event === 'board:label:change') {
+      if (activeBoard?.id) {
+        boardService.getBoardById(activeBoard.id).then((res) => {
+          if (res.success && res.data) {
+            setBoardLabels(res.data.labels || []);
+          }
+        });
+      }
+      return;
+    }
+
+    if (event === 'task:comment' || event === 'board:task:comment') {
+      const { taskId, action, comment, commentId } = payload;
+      setData((prev) =>
+        prev.map((col) => ({
+          ...col,
+          tasks: col.tasks.map((t) => {
+            if (t.id === taskId) {
+              const currentCount = t._count?.comments || 0;
+              const newCount = action === 'create' ? currentCount + 1 : Math.max(0, currentCount - 1);
+              return { ...t, _count: { ...t._count, comments: newCount } };
+            }
+            return t;
+          })
+        }))
+      );
+      setSelectedTask((prev) => {
+        if (prev?.id === taskId) {
+          const currentCount = prev._count?.comments || 0;
+          const newCount = action === 'create' ? currentCount + 1 : Math.max(0, currentCount - 1);
+          return { ...prev, _count: { ...prev._count, comments: newCount } };
+        }
+        return prev;
+      });
+      setRealtimeCommentPayload({ taskId, action, comment, commentId, timestamp: Date.now() });
+      return;
+    }
+  }, [activeBoard?.id, setActiveBoard]);
+
+
+
+  const flushPendingEvents = useCallback(() => {
+    if (pendingEventsRef.current.length > 0) {
+      const queue = [...pendingEventsRef.current];
+      pendingEventsRef.current = [];
+      queue.forEach(({ event, payload }) => {
+        processRealtimeEvent(event, payload);
+      });
+    }
+  }, [processRealtimeEvent]);
+
+  const handleRealtimeEvent = useCallback((event, payload) => {
+    if (activeDrag.current !== null) {
+      pendingEventsRef.current.push({ event, payload });
+    } else {
+      processRealtimeEvent(event, payload);
+    }
+  }, [processRealtimeEvent]);
+
+  useBoardRealtime(activeBoard?.id, handleRealtimeEvent);
+
 
   const handleAddTask = (listId) => {
     setAddingTaskIn(listId);
@@ -357,6 +567,7 @@ const Board = () => {
     dragStartData.current = null;
     activeDrag.current = null;
     setActiveTask(null);
+    flushPendingEvents();
   };
 
   const handleDragEnd = async ({ active, over }) => {
@@ -365,6 +576,7 @@ const Board = () => {
     dragStartData.current = null;
     activeDrag.current = null;
     setActiveTask(null);
+    flushPendingEvents();
 
     if (!previousData || !dragData) return;
     if (!over) {
@@ -410,6 +622,7 @@ const Board = () => {
       }
     }
   };
+
 
   const openBoardDetail = () => {
     setIsBoardDetailOpen(true);
@@ -575,7 +788,9 @@ const Board = () => {
         boardLabels={boardLabels}
         onBoardLabelCreated={(label) => setBoardLabels(prev => [...prev, label])}
         onMoveTask={handleMoveTaskToList}
+        realtimeCommentPayload={realtimeCommentPayload}
         onCommentChange={(taskId, delta) => {
+
           setData((prevData) =>
             prevData.map((column) => ({
               ...column,

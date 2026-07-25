@@ -14,3 +14,9 @@ export const broadcastAnnouncement = async (workspaceId, event, data) => {
   const channel = supabaseAdmin.channel(`workspace:${workspaceId}:announcements`);
   await channel.httpSend(`announcement:${event}`, data);
 };
+
+export const broadcastBoard = async (boardId, event, data) => {
+  const channel = supabaseAdmin.channel(`board:${boardId}`);
+  await channel.httpSend(`board:${event}`, data);
+};
+

@@ -1,4 +1,5 @@
 import prisma from "../client.js";
+import { broadcastBoard } from "../services/realtimeService.js";
 
 const fullBoardInclude = {
     labels: true,
@@ -109,6 +110,8 @@ export const updateBoard = async (req, res, next) => {
         include: fullBoardInclude
     });
 
+    broadcastBoard(boardId, 'update', board).catch(() => {});
+
     res.status(200).json({
         message: "Board updated successfully",
         data: board
@@ -122,7 +125,10 @@ export const deleteBoard = async (req, res, next) => {
         where: { id: boardId }
     });
 
+    broadcastBoard(boardId, 'delete', { boardId }).catch(() => {});
+
     res.status(200).json({
         message: "Board deleted successfully"
     });
 };
+

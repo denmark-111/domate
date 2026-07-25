@@ -1,6 +1,8 @@
 import prisma from "../client.js";
 import { ApiError } from "../middleware/errorHandler.js";
 import { createNotifications } from "../services/notificationService.js";
+import { broadcastBoard } from "../services/realtimeService.js";
+
 
 export const getTaskAssignees = async (req, res, next) => {
     const { taskId } = req.validated.params;
@@ -139,8 +141,23 @@ export const setTaskAssignees = async (req, res, next) => {
         });
     }
 
+    let boardId = req.authorization?.boardId;
+    if (!boardId) {
+        const task = await prisma.task.findUnique({
+            where: { id: taskId },
+            select: { list: { select: { boardId: true } } }
+        });
+        boardId = task?.list?.boardId;
+    }
+    if (boardId) {
+        broadcastBoard(boardId, 'task:assign', { taskId, assignments }).catch(() => {});
+    }
+
     res.status(200).json({
         message: "Task assignees updated successfully",
         data: assignments
     });
 };
+
+
+
