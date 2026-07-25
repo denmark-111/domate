@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { MessageSquare, Loader, AlertCircle } from 'lucide-react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useAuth } from '../../context/AuthContext';
 import { chatService } from '../../services/index.js';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
+import TypingIndicator from './TypingIndicator';
 import useChatRealtime from '../../hooks/useChatRealtime';
 import ConfirmModal from '../common/ConfirmModal';
 
@@ -33,15 +34,6 @@ const ChatList = () => {
   const prevScrollHeightRef = useRef(0);
   const isAtBottomRef = useRef(true);
 
-  // Scroll to bottom when new messages arrive (only if already at bottom)
-  useEffect(() => {
-    if (messages.length > prevMessageCountRef.current && isAtBottomRef.current) {
-      const el = messagesContainerRef.current;
-      if (el) el.scrollTop = el.scrollHeight;
-    }
-    prevMessageCountRef.current = messages.length;
-  }, [messages.length]);
-
   // Handle incoming realtime messages
   const onNewMessage = useCallback((message) => {
     setMessages((prev) => {
@@ -53,8 +45,22 @@ const ChatList = () => {
   const onDeleteMessage = useCallback((messageId) => {
     setMessages((prev) => prev.filter((m) => m.id !== messageId));
   }, []);
- 
-  useChatRealtime(activeWorkspace?.id, onNewMessage, onDeleteMessage);
+
+  const { typingUsers, sendTyping, sendStopTyping } = useChatRealtime(
+    activeWorkspace?.id,
+    onNewMessage,
+    onDeleteMessage,
+    user
+  );
+
+  // Scroll to bottom when new messages arrive or typing status changes (only if already at bottom)
+  useEffect(() => {
+    if ((messages.length > prevMessageCountRef.current || typingUsers.length > 0) && isAtBottomRef.current) {
+      const el = messagesContainerRef.current;
+      if (el) el.scrollTop = el.scrollHeight;
+    }
+    prevMessageCountRef.current = messages.length;
+  }, [messages.length, typingUsers.length]);
 
   // Fetch initial messages
   const fetchMessages = useCallback(async () => {
@@ -245,6 +251,7 @@ const ChatList = () => {
               <p className="text-text-secondary text-sm max-w-md">
                 Start the conversation by sending a message below.
               </p>
+              <TypingIndicator typingUsers={typingUsers} />
             </div>
           ) : (
             <div className="space-y-4">
@@ -256,6 +263,7 @@ const ChatList = () => {
                   onDelete={openDeleteConfirm}
                 />
               ))}
+              <TypingIndicator typingUsers={typingUsers} />
               <div ref={messagesEndRef} />
             </div>
           )}
@@ -264,7 +272,12 @@ const ChatList = () => {
 
       {/* Input */}
       <div className="shrink-0">
-        <ChatInput onSend={handleSend} isLoading={isSending} />
+        <ChatInput
+          onSend={handleSend}
+          isLoading={isSending}
+          onTyping={sendTyping}
+          onStopTyping={sendStopTyping}
+        />
       </div>
 
       {/* Delete Confirmation */}
