@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { memberService, supabaseStorageService } from '../../services/index.js';
 import { X, Loader } from 'lucide-react';
+import { useDropdownPosition } from '../../hooks/useDropdownPosition.js';
 
 const getInitials = (name) => {
   if (!name) return '?';
@@ -17,6 +18,8 @@ const MemberPicker = ({ workspaceId, selectedUserIds = [], selectedUsers = [], o
   const containerRef = useRef(null);
   const triggerRef = useRef(null);
   const dropdownRef = useRef(null);
+
+  const dropdownStyle = useDropdownPosition(triggerRef, isOpen, { minWidth: 240, maxWidth: 320 });
 
   const fetchMembers = useCallback(async () => {
     if (!workspaceId || hasFetched) return;
@@ -130,13 +133,8 @@ const MemberPicker = ({ workspaceId, selectedUserIds = [], selectedUsers = [], o
             {isOpen && triggerRef.current && createPortal(
             <div
               ref={dropdownRef}
-              className="fixed z-[100] bg-bg border border-border rounded-lg shadow-xl p-2 space-y-1"
-              style={{
-                top: triggerRef.current.getBoundingClientRect().bottom + 6,
-                left: Math.min(triggerRef.current.getBoundingClientRect().left, window.innerWidth - 260),
-                minWidth: Math.max(240, Math.min(triggerRef.current.offsetWidth, window.innerWidth - 24)),
-                maxWidth: Math.min(320, window.innerWidth - 24),
-              }}
+              className="bg-bg border border-border rounded-lg shadow-xl p-2 space-y-1"
+              style={dropdownStyle}
             >
               <div className="p-1">
                 <input

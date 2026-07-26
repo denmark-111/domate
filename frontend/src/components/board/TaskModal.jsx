@@ -8,6 +8,7 @@ import { labelService, supabaseStorageService } from '../../services/index.js';
 import MemberPicker from '../common/MemberPicker.jsx';
 import CommentsSection from './CommentsSection.jsx';
 import AttachmentsSection from './AttachmentsSection.jsx';
+import { useDropdownPosition } from '../../hooks/useDropdownPosition.js';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
@@ -70,6 +71,9 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
   const titleRef = useRef(null);
   const descriptionRef = useRef(null);
   const dueDateRef = useRef(null);
+
+  const labelDropdownStyle = useDropdownPosition(labelContainerRef, showLabelPicker, { minWidth: 240, maxWidth: 320 });
+  const listDropdownStyle = useDropdownPosition(listPickerRef, showListPicker, { minWidth: 180, maxWidth: 300 });
 
 
   // Close label picker on outside click
@@ -443,12 +447,8 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                   {showListPicker && listPickerRef.current && createPortal(
                     <div
                       ref={listDropdownRef}
-                      className="fixed z-[100] bg-bg border border-border rounded-lg shadow-xl p-1.5 space-y-0.5"
-                      style={{
-                        top: listPickerRef.current.getBoundingClientRect().bottom + 4,
-                        left: Math.min(listPickerRef.current.getBoundingClientRect().left, window.innerWidth - 200),
-                        minWidth: Math.max(180, Math.min(listPickerRef.current.offsetWidth, window.innerWidth - 24)),
-                      }}
+                      className="bg-bg border border-border rounded-lg shadow-xl p-1.5 space-y-0.5"
+                      style={listDropdownStyle}
                     >
                       {lists.map((list) => (
                         <button
@@ -607,13 +607,8 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                       {showLabelPicker && labelContainerRef.current && createPortal(
                         <div
                           ref={labelDropdownRef}
-                          className="fixed z-[100] bg-bg border border-border rounded-lg shadow-xl p-3 space-y-2"
-                          style={{
-                            top: labelContainerRef.current.getBoundingClientRect().bottom + 6,
-                            left: Math.min(labelContainerRef.current.getBoundingClientRect().left, window.innerWidth - 260),
-                            minWidth: 240,
-                            maxWidth: Math.min(320, window.innerWidth - 24),
-                          }}
+                          className="bg-bg border border-border rounded-lg shadow-xl p-3 space-y-2"
+                          style={labelDropdownStyle}
                         >
                           {boardLabels && boardLabels.length > 0 && (
                             <div className="space-y-0.5 pb-2 border-b border-border max-h-40 overflow-y-auto">
