@@ -54,55 +54,6 @@ const findTaskLocation = (lists, taskId) => {
   return null;
 };
 
-const getTaskTarget = (lists, over, activeTaskId) => {
-  const overData = over?.data?.current;
-  if (!overData) return null;
-
-  if (overData.type === 'task') {
-    const location = findTaskLocation(lists, overData.taskId);
-    if (!location) return null;
-
-    const list = lists[location.listIndex];
-    const tasksWithoutActive = list.tasks.filter((t) => t.id !== activeTaskId);
-    const targetIdx = tasksWithoutActive.findIndex((t) => t.id === overData.taskId);
-
-    if (targetIdx === -1) {
-      return { listId: list.id, position: list.tasks.length };
-    }
-
-    const activeLocation = activeTaskId ? findTaskLocation(lists, activeTaskId) : null;
-    let placeAfter = false;
-
-    if (activeLocation && lists[activeLocation.listIndex].id === list.id) {
-      const activeTaskIdx = activeLocation.taskIndex;
-      if (activeTaskIdx === targetIdx + 1) {
-        placeAfter = true;
-      } else if (activeTaskIdx === targetIdx) {
-        placeAfter = false;
-      } else if (activeTaskIdx < targetIdx) {
-        placeAfter = true;
-      } else {
-        placeAfter = false;
-      }
-    } else {
-      placeAfter = false;
-    }
-
-    return {
-      listId: list.id,
-      position: placeAfter ? targetIdx + 1 : targetIdx
-    };
-  }
-
-  if (overData.type === 'task-list' || overData.type === 'list') {
-    const list = lists.find((item) => item.id === overData.listId);
-    if (!list) return null;
-    return { listId: list.id, position: list.tasks.length };
-  }
-
-  return null;
-};
-
 const getListTargetId = (lists, over) => {
   const overData = over?.data?.current;
   if (!overData) return null;
@@ -118,8 +69,24 @@ const getListTargetId = (lists, over) => {
 };
 
 const customCollisionDetection = (args) => {
+  if (args.active?.data?.current?.type === 'list') {
+    const listContainers = Array.from(args.droppableContainers.values()).filter(
+      (c) => !c.disabled && c.data?.current?.type === 'list'
+    );
+    return closestCenter({
+      ...args,
+      droppableContainers: listContainers
+    });
+  }
+
   const pointerCollisions = pointerWithin(args);
   if (pointerCollisions.length > 0) {
+    const taskCollision = pointerCollisions.find(
+      (c) => c.data?.current?.type === 'task'
+    );
+    if (taskCollision) {
+      return [taskCollision];
+    }
     return pointerCollisions;
   }
 
@@ -161,7 +128,79 @@ const customCollisionDetection = (args) => {
   return closestCenter(args);
 };
 
-const moveTaskInLists = (lists, taskId, targetListId, targetPosition) => {
+const moveTaskInLists = (lists, activeTaskId, overData) => {
+  if (!activeTaskId || !overData) return lists;
+
+  const activeLoc = findTaskLocation(lists, activeTaskId);
+  if (!activeLoc) return lists;
+
+  if (overData.type === 'task') {
+    const overTaskId = overData.taskId;
+    if (activeTaskId === overTaskId) return lists;
+
+    const overLoc = findTaskLocation(lists, overTaskId);
+    if (!overLoc) return lists;
+
+    if (activeLoc.listIndex === overLoc.listIndex) {
+      if (activeLoc.taskIndex === overLoc.taskIndex) return lists;
+
+      const listIndex = activeLoc.listIndex;
+      const reorderedTasks = arrayMove(
+        lists[listIndex].tasks,
+        activeLoc.taskIndex,
+        overLoc.taskIndex
+      );
+      const nextLists = lists.map((col, idx) =>
+        idx === listIndex ? { ...col, tasks: reorderedTasks } : col
+      );
+      return withPositions(nextLists);
+    }
+
+    const nextLists = lists.map((col) => ({ ...col, tasks: [...col.tasks] }));
+    const [movedTask] = nextLists[activeLoc.listIndex].tasks.splice(activeLoc.taskIndex, 1);
+    nextLists[overLoc.listIndex].tasks.splice(overLoc.taskIndex, 0, {
+      ...movedTask,
+      listId: lists[overLoc.listIndex].id
+    });
+
+    return withPositions(nextLists);
+  }
+
+  if (overData.type === 'task-list' || overData.type === 'list') {
+    const targetListIndex = lists.findIndex((col) => col.id === overData.listId);
+    if (targetListIndex === -1) return lists;
+
+    const targetList = lists[targetListIndex];
+
+    if (activeLoc.listIndex === targetListIndex) {
+      const lastIndex = targetList.tasks.length - 1;
+      if (activeLoc.taskIndex === lastIndex) return lists;
+
+      const reorderedTasks = arrayMove(
+        targetList.tasks,
+        activeLoc.taskIndex,
+        lastIndex
+      );
+      const nextLists = lists.map((col, idx) =>
+        idx === targetListIndex ? { ...col, tasks: reorderedTasks } : col
+      );
+      return withPositions(nextLists);
+    }
+
+    const nextLists = lists.map((col) => ({ ...col, tasks: [...col.tasks] }));
+    const [movedTask] = nextLists[activeLoc.listIndex].tasks.splice(activeLoc.taskIndex, 1);
+    nextLists[targetListIndex].tasks.push({
+      ...movedTask,
+      listId: targetList.id
+    });
+
+    return withPositions(nextLists);
+  }
+
+  return lists;
+};
+
+const moveTaskToPosition = (lists, taskId, targetListId, targetPosition) => {
   const source = findTaskLocation(lists, taskId);
   const targetListIndex = lists.findIndex((list) => list.id === targetListId);
   if (!source || targetListIndex === -1) return lists;
@@ -338,7 +377,7 @@ const Board = () => {
     if (event === 'task:move' || event === 'board:task:move') {
       const moved = normalizeTask(payload);
       setData((prev) => {
-        const next = moveTaskInLists(prev, moved.id, moved.listId, moved.position);
+        const next = moveTaskToPosition(prev, moved.id, moved.listId, moved.position);
         return next.map((col) => ({
           ...col,
           tasks: col.tasks.map((t) => (t.id === moved.id ? { ...t, ...moved } : t))
@@ -614,12 +653,13 @@ const Board = () => {
   const handleDragOver = ({ active, over }) => {
     if (!over || active.data.current?.type !== 'task') return;
 
+    const activeTaskId = active.data.current?.taskId;
+    const overData = over.data?.current;
+
+    if (!activeTaskId || !overData) return;
+
     startTransition(() => {
-      setData((currentData) => {
-        const target = getTaskTarget(currentData, over, active.data.current?.taskId);
-        if (!target) return currentData;
-        return moveTaskInLists(currentData, active.data.current.taskId, target.listId, target.position);
-      });
+      setData((currentData) => moveTaskInLists(currentData, activeTaskId, overData));
     });
   };
 
