@@ -5,17 +5,22 @@ import { supabase } from '../lib/supabaseClient.js';
 const AuthContext = createContext();
 
 const fetchUserProfile = async (session) => {
-  try {
-    const res = await profileService.getProfile();
-    if (!res.success) return null;
-    return {
-      ...res.data,
-      provider: session.user?.app_metadata?.provider || 'email',
-    };
-  } catch (error) {
-    console.error('Error fetching user profile:', error);
-    return null;
-  }
+  const res = await profileService.getProfile();
+  if (!res.success) throw new Error('Profile fetch failed');
+  return {
+    ...res.data,
+    provider: session.user?.app_metadata?.provider || 'email',
+  };
+};
+
+const SESSION_TIMEOUT_MS = 5000;
+
+const getSessionWithTimeout = () => {
+  const sessionPromise = supabase.auth.getSession();
+  const timeoutPromise = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('Session restore timed out')), SESSION_TIMEOUT_MS)
+  );
+  return Promise.race([sessionPromise, timeoutPromise]);
 };
 
 export const AuthContextProvider = ({ children }) => {
@@ -28,33 +33,28 @@ export const AuthContextProvider = ({ children }) => {
 
     const initializeAuth = async () => {
       try {
-        const { data, error } = await supabase.auth.getSession();
+        const { data, error } = await getSessionWithTimeout();
         
         if (error) {
           if (error.status >= 400 && error.status < 500) {
             throw error;
           } else {
-            console.warn('Non-auth error during session restore (e.g., network issue):', error);
+            console.warn('Non-auth error during session restore:', error);
           }
         }
 
         if (data?.session) {
-          const profile = await fetchUserProfile(data.session);
-          if (!mounted) return;
-
-          if (profile) {
+          try {
+            const profile = await fetchUserProfile(data.session);
+            if (!mounted) return;
             setUser(profile);
             setIsAuthenticated(true);
-          } else {
-            // Fallback to session data if profile fetch fails
-            const currentUser = data.session.user;
-            setUser({
-              id: currentUser.id,
-              email: currentUser.email,
-              fullName: currentUser.user_metadata?.full_name || currentUser.email,
-              provider: currentUser.app_metadata?.provider || 'email',
-            });
-            setIsAuthenticated(true);
+          } catch (profileError) {
+            console.error('Profile fetch failed, signing out:', profileError);
+            if (!mounted) return;
+            await supabase.auth.signOut().catch(() => {});
+            setUser(null);
+            setIsAuthenticated(false);
           }
         } else {
           setUser(null);
@@ -76,27 +76,22 @@ export const AuthContextProvider = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
 
-      if (event === 'INITIAL_SESSION') {
-        // Handled by getSession above to avoid duplicate profile fetches
+      if (event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
         return;
       }
 
       if (session?.user) {
-        const profile = await fetchUserProfile(session);
-        if (!mounted) return;
-
-        if (profile) {
+        try {
+          const profile = await fetchUserProfile(session);
+          if (!mounted) return;
           setUser(profile);
           setIsAuthenticated(true);
-        } else {
-          // Fallback
-          setUser({
-            id: session.user.id,
-            email: session.user.email,
-            fullName: session.user.user_metadata?.full_name || session.user.email,
-            provider: session.user.app_metadata?.provider || 'email',
-          });
-          setIsAuthenticated(true);
+        } catch (profileError) {
+          console.error('Profile fetch failed during auth event, signing out:', profileError);
+          if (!mounted) return;
+          await supabase.auth.signOut().catch(() => {});
+          setUser(null);
+          setIsAuthenticated(false);
         }
       } else {
         setUser(null);
@@ -120,25 +115,21 @@ export const AuthContextProvider = ({ children }) => {
     }
 
     const session = result.data.session;
-    const profile = await fetchUserProfile(session);
-    let userData;
-
-    if (profile) {
-      userData = profile;
-    } else {
-      const sessionUser = session.user;
-      userData = {
-        id: sessionUser.id,
-        email: sessionUser.email,
-        fullName: sessionUser.user_metadata?.full_name || sessionUser.email,
-        provider: sessionUser.app_metadata?.provider || 'email',
-      };
+    try {
+      const profile = await fetchUserProfile(session);
+      setUser(profile);
+      setIsAuthenticated(true);
+    } catch (profileError) {
+      console.error('Profile fetch failed after login, signing out:', profileError);
+      await supabase.auth.signOut().catch(() => {});
+      setUser(null);
+      setIsAuthenticated(false);
+      setIsLoading(false);
+      return { success: false, error: 'Failed to load user profile. Please try again.' };
     }
 
-    setUser(userData);
-    setIsAuthenticated(true);
     setIsLoading(false);
-    return { success: true, user: userData };
+    return { success: true, user };
   };
 
   const register = async (fullName, email, password) => {
