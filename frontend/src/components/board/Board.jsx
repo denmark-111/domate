@@ -507,7 +507,7 @@ const Board = () => {
         ...column,
         tasks: column.tasks.map((t) => (t.id === updatedTask.id ? normalized : t))
       })));
-      setSelectedTask(normalized);
+      setSelectedTask((prev) => (prev?.id === updatedTask.id ? normalized : prev));
     }
   };
 
@@ -538,7 +538,7 @@ const Board = () => {
           t.id === taskId ? normalized : t
         )
       })));
-      setSelectedTask(normalized);
+      setSelectedTask((prev) => (prev?.id === taskId ? normalized : prev));
     } else {
       setData((prevData) => prevData.map((column) => ({
         ...column,
@@ -845,7 +845,10 @@ const Board = () => {
       <TaskModal
         task={selectedTask}
         isOpen={isTaskModalOpen}
-        onClose={() => setIsTaskModalOpen(false)}
+        onClose={() => {
+          setIsTaskModalOpen(false);
+          setSelectedTask(null);
+        }}
         onUpdate={handleTaskUpdate}
         lists={data}
         boardLabels={boardLabels}

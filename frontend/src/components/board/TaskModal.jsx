@@ -134,6 +134,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
         setIsSavingAttachments(false);
         setAssignments(task.assignments || []);
         setTaskLabels(task.labels || []);
+        setPreviewUrls({});
 
         // Initialize attachments from the task
         const existingAttachments = task.attachments || [];
@@ -190,6 +191,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
     }
   }, [
     isOpen,
+    task?.id,
     task?.name,
     task?.title,
     task?.description,
