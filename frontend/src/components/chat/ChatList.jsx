@@ -95,7 +95,11 @@ const ChatList = () => {
     });
     if (res.success) {
       const pageData = res.data?.data ?? res.data ?? [];
-      setMessages((prev) => [...pageData, ...prev]);
+      setMessages((prev) => {
+        const existingIds = new Set(prev.map((m) => m.id));
+        const newMessages = pageData.filter((m) => !existingIds.has(m.id));
+        return [...newMessages, ...prev];
+      });
       setHasMore(Boolean(res.data?.pagination?.hasMore));
       setPage(nextPage);
     } else {
