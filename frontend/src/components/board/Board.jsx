@@ -54,16 +54,43 @@ const findTaskLocation = (lists, taskId) => {
   return null;
 };
 
-const getTaskTarget = (lists, over) => {
+const getTaskTarget = (lists, over, activeTaskId) => {
   const overData = over?.data?.current;
   if (!overData) return null;
 
   if (overData.type === 'task') {
     const location = findTaskLocation(lists, overData.taskId);
     if (!location) return null;
+
+    const list = lists[location.listIndex];
+    const tasksWithoutActive = list.tasks.filter((t) => t.id !== activeTaskId);
+    const targetIdx = tasksWithoutActive.findIndex((t) => t.id === overData.taskId);
+
+    if (targetIdx === -1) {
+      return { listId: list.id, position: list.tasks.length };
+    }
+
+    const activeLocation = activeTaskId ? findTaskLocation(lists, activeTaskId) : null;
+    let placeAfter = false;
+
+    if (activeLocation && lists[activeLocation.listIndex].id === list.id) {
+      const activeTaskIdx = activeLocation.taskIndex;
+      if (activeTaskIdx === targetIdx + 1) {
+        placeAfter = true;
+      } else if (activeTaskIdx === targetIdx) {
+        placeAfter = false;
+      } else if (activeTaskIdx < targetIdx) {
+        placeAfter = true;
+      } else {
+        placeAfter = false;
+      }
+    } else {
+      placeAfter = false;
+    }
+
     return {
-      listId: lists[location.listIndex].id,
-      position: location.taskIndex
+      listId: list.id,
+      position: placeAfter ? targetIdx + 1 : targetIdx
     };
   }
 
@@ -95,6 +122,42 @@ const customCollisionDetection = (args) => {
   if (pointerCollisions.length > 0) {
     return pointerCollisions;
   }
+
+  const { pointerCoordinates, droppableContainers, droppableRects } = args;
+  if (pointerCoordinates) {
+    const taskListContainers = Array.from(droppableContainers.values()).filter(
+      (c) => !c.disabled && (c.data?.current?.type === 'task-list' || c.data?.current?.type === 'list')
+    );
+
+    let bestContainer = null;
+    let minDistX = Infinity;
+
+    for (const container of taskListContainers) {
+      const rect = droppableRects.get(container.id);
+      if (!rect) continue;
+
+      const isHorizontallyWithin = pointerCoordinates.x >= rect.left && pointerCoordinates.x <= rect.right;
+      const isBelowTop = pointerCoordinates.y >= rect.top;
+
+      if (isHorizontallyWithin && isBelowTop) {
+        return [{ id: container.id, data: container.data }];
+      }
+
+      if (isBelowTop) {
+        const centerX = rect.left + rect.width / 2;
+        const distX = Math.abs(pointerCoordinates.x - centerX);
+        if (distX < minDistX) {
+          minDistX = distX;
+          bestContainer = container;
+        }
+      }
+    }
+
+    if (bestContainer) {
+      return [{ id: bestContainer.id, data: bestContainer.data }];
+    }
+  }
+
   return closestCenter(args);
 };
 
@@ -553,7 +616,7 @@ const Board = () => {
 
     startTransition(() => {
       setData((currentData) => {
-        const target = getTaskTarget(currentData, over);
+        const target = getTaskTarget(currentData, over, active.data.current?.taskId);
         if (!target) return currentData;
         return moveTaskInLists(currentData, active.data.current.taskId, target.listId, target.position);
       });
