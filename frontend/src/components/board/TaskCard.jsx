@@ -10,11 +10,13 @@ const getInitials = (name) => {
   return name.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2);
 };
 
-const TaskCard = ({ task, sortableId, onClick, onDelete, onToggleComplete }) => {
+const TaskCard = ({ task, sortableId, onClick, onDelete, onToggleComplete, lockInfo }) => {
   const isCompleted = !!task.completedAt;
   const commentCount = task._count?.comments ?? 0;
   const [showDeleteTask, setShowDeleteTask] = useState(false);
   const [isDeletingTask, setIsDeletingTask] = useState(false);
+  const isLockedByOther = !!lockInfo;
+
   const {
     attributes,
     listeners,
@@ -24,7 +26,8 @@ const TaskCard = ({ task, sortableId, onClick, onDelete, onToggleComplete }) => 
     isDragging
   } = useSortable({
     id: sortableId,
-    data: { type: 'task', taskId: task.id, listId: task.listId }
+    data: { type: 'task', taskId: task.id, listId: task.listId },
+    disabled: isLockedByOther
   });
 
   const handleDeleteTask = async () => {
@@ -42,13 +45,26 @@ const TaskCard = ({ task, sortableId, onClick, onDelete, onToggleComplete }) => 
       ref={setNodeRef}
       style={{
         transform: CSS.Transform.toString(transform),
-        transition
+        transition,
+        borderColor: lockInfo ? lockInfo.color : undefined
       }}
       onClick={onClick}
-      className={`bg-bg p-3 rounded-lg border border-border cursor-pointer group relative ${isDragging ? 'opacity-50 z-50' : ''} ${isCompleted ? 'opacity-60' : ''}`}
-      {...attributes}
-      {...listeners}
+      className={`bg-bg p-3 rounded-lg border cursor-pointer group relative transition-all ${
+        lockInfo ? 'border-2 shadow-md z-10' : 'border-border'
+      } ${isDragging ? 'opacity-50 z-50' : ''} ${isCompleted ? 'opacity-60' : ''} ${
+        isLockedByOther ? 'select-none opacity-80' : ''
+      }`}
+      {...(isLockedByOther ? {} : attributes)}
+      {...(isLockedByOther ? {} : listeners)}
     >
+      {lockInfo && (
+        <div
+          className="absolute -top-2.5 right-2 px-1.5 py-0.5 rounded-full text-white text-[9px] font-bold shadow-sm z-20 truncate max-w-[120px] pointer-events-none"
+          style={{ backgroundColor: lockInfo.color }}
+        >
+          Moving: {lockInfo.fullName}
+        </div>
+      )}
       <button
         onClick={(e) => {
           e.stopPropagation();

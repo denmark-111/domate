@@ -22,7 +22,9 @@ const ListColumn = ({
   onDeleteList,
   onDeleteTask,
   onSaveList,
-  onToggleComplete
+  onToggleComplete,
+  lockInfo,
+  taskLockMap
 }) => {
   const [showDeleteList, setShowDeleteList] = useState(false);
   const [isDeletingList, setIsDeletingList] = useState(false);
@@ -30,6 +32,8 @@ const ListColumn = ({
   const [editValue, setEditValue] = useState(title);
   const inputRef = useRef(null);
   const scrollContainerRef = useRef(null);
+  const isLockedByOther = !!lockInfo;
+
   const {
     attributes,
     listeners,
@@ -39,7 +43,8 @@ const ListColumn = ({
     isDragging
   } = useSortable({
     id: listSortableId,
-    data: { type: 'list', listId: id }
+    data: { type: 'list', listId: id },
+    disabled: isLockedByOther
   });
   const { setNodeRef: setTasksNodeRef, isOver } = useDroppable({
     id: taskListDroppableId,
@@ -93,18 +98,31 @@ const ListColumn = ({
       ref={setNodeRef}
       style={{
         transform: CSS.Transform.toString(transform),
-        transition
+        transition,
+        borderColor: lockInfo ? lockInfo.color : undefined
       }}
-      className={`w-72 sm:w-80 flex-shrink-0 flex flex-col gap-2 max-h-full bg-bg border border-border rounded-lg p-3 ${isDragging ? 'opacity-50' : ''}`}
+      className={`w-72 sm:w-80 flex-shrink-0 flex flex-col gap-2 max-h-full bg-bg border rounded-lg p-3 relative transition-all ${
+        lockInfo ? 'border-2 shadow-md z-10' : 'border-border'
+      } ${isDragging ? 'opacity-50' : ''}`}
     >
+      {lockInfo && (
+        <div
+          className="absolute -top-2.5 right-3 px-2 py-0.5 rounded-full text-white text-[9px] font-bold shadow-sm z-20 pointer-events-none"
+          style={{ backgroundColor: lockInfo.color }}
+        >
+          Moving List: {lockInfo.fullName}
+        </div>
+      )}
       <div className="flex items-center justify-between group/list">
         <div className="flex items-center gap-1.5 min-w-0">
           <button
             type="button"
-            className="cursor-grab active:cursor-grabbing text-text-secondary hover:text-text transition-colors flex-shrink-0"
-            title="Move list"
-            {...attributes}
-            {...listeners}
+            className={`cursor-grab active:cursor-grabbing text-text-secondary hover:text-text transition-colors flex-shrink-0 ${
+              isLockedByOther ? 'cursor-not-allowed opacity-50' : ''
+            }`}
+            title={isLockedByOther ? `Locked by ${lockInfo.fullName}` : 'Move list'}
+            {...(isLockedByOther ? {} : attributes)}
+            {...(isLockedByOther ? {} : listeners)}
           >
             <GripVertical size={12} />
           </button>
@@ -147,7 +165,7 @@ const ListColumn = ({
 
       <div
         ref={setCombinedRef}
-        className={`flex-1 flex flex-col gap-2 rounded-md transition-colors overflow-y-auto overflow-x-hidden min-h-0 thin-scrollbar ${isOver ? 'bg-bg-tertiary/70' : ''}`}
+        className={`flex-1 flex flex-col gap-2 pt-3.5 rounded-md transition-colors overflow-y-auto overflow-x-hidden min-h-0 thin-scrollbar ${isOver ? 'bg-bg-tertiary/70' : ''}`}
       >
         <SortableContext items={tasks.map((task) => taskSortableId(task.id))} strategy={verticalListSortingStrategy}>
           {tasks.map((task) => (
@@ -158,6 +176,7 @@ const ListColumn = ({
               onClick={() => onTaskClick(task)}
               onDelete={onDeleteTask}
               onToggleComplete={onToggleComplete}
+              lockInfo={taskLockMap?.[task.id]}
             />
           ))}
         </SortableContext>

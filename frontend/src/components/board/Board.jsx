@@ -29,6 +29,8 @@ import { Info, Tag } from 'lucide-react';
 import ActiveUsersBar from '../common/ActiveUsersBar';
 import usePresenceRealtime from '../../hooks/usePresenceRealtime';
 import useBoardRealtime from '../../hooks/useBoardRealtime';
+import useBoardCursors from '../../hooks/useBoardCursors';
+import LiveCursorsOverlay from './LiveCursorsOverlay';
 
 
 const listSortableId = (listId) => `list:${listId}`;
@@ -223,6 +225,15 @@ const Board = () => {
   const { activeBoard, setActiveBoard, updateTask, deleteTask, moveTask, updateList, deleteList, updateBoard } = useWorkspace();
   const { user } = useAuth();
   const { activeUsers } = usePresenceRealtime(activeBoard?.id, user);
+  const containerRef = useRef(null);
+  const {
+    activeDragCursors,
+    lockedItems,
+    handleMouseMove,
+    broadcastDragStart,
+    broadcastDragEnd
+  } = useBoardCursors(activeBoard?.id, user, containerRef);
+
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const dragStartData = useRef(null);
@@ -645,8 +656,16 @@ const Board = () => {
   const handleDragStart = ({ active }) => {
     dragStartData.current = data;
     activeDrag.current = active.data.current;
-    if (active.data.current?.type === 'task') {
-      setActiveTask(findTaskById(active.data.current.taskId));
+    const current = active.data.current;
+    const rectObj = active.rect.current?.translated || active.rect.current?.initial;
+    const initialPos = rectObj
+      ? { x: rectObj.left ?? rectObj.x ?? 0, y: rectObj.top ?? rectObj.y ?? 0 }
+      : null;
+    if (current?.type === 'task') {
+      setActiveTask(findTaskById(current.taskId));
+      broadcastDragStart('task', current.taskId, initialPos);
+    } else if (current?.type === 'list') {
+      broadcastDragStart('list', current.listId, initialPos);
     }
   };
 
@@ -664,6 +683,10 @@ const Board = () => {
   };
 
   const handleDragCancel = () => {
+    if (activeDrag.current) {
+      const current = activeDrag.current;
+      broadcastDragEnd(current.type, current.taskId || current.listId);
+    }
     if (dragStartData.current) {
       setData(dragStartData.current);
     }
@@ -676,6 +699,9 @@ const Board = () => {
   const handleDragEnd = async ({ active, over }) => {
     const previousData = dragStartData.current;
     const dragData = active.data.current || activeDrag.current;
+    if (dragData) {
+      broadcastDragEnd(dragData.type, dragData.taskId || dragData.listId);
+    }
     dragStartData.current = null;
     activeDrag.current = null;
     setActiveTask(null);
@@ -796,7 +822,12 @@ const Board = () => {
               onDragCancel={handleDragCancel}
               onDragEnd={handleDragEnd}
             >
-              <div className="flex items-start gap-3 sm:gap-4 flex-1 min-h-0 p-2 sm:p-3 overflow-x-auto">
+              <div
+                ref={containerRef}
+                onMouseMove={handleMouseMove}
+                className="relative flex items-start gap-3 sm:gap-4 flex-1 min-h-0 pt-3.5 pb-2 px-2 sm:pt-4 sm:pb-3 sm:px-3 overflow-x-auto"
+              >
+                <LiveCursorsOverlay cursors={activeDragCursors} />
                 <SortableContext items={data.map((col) => listSortableId(col.id))} strategy={horizontalListSortingStrategy}>
                   {data.map((col) => (
                     <ListColumn
@@ -835,6 +866,8 @@ const Board = () => {
                       }}
                       onSaveList={handleSaveList}
                       onToggleComplete={handleToggleComplete}
+                      lockInfo={lockedItems[col.id]}
+                      taskLockMap={lockedItems}
                     />
                   ))}
                 </SortableContext>
