@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabaseClient.js';
+import { getApiBaseUrl } from '../lib/envConfig.js';
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+export const API_BASE_URL = getApiBaseUrl();
 
 export const getAuthHeaders = async () => {
   const { data } = await supabase.auth.getSession();
@@ -66,7 +67,6 @@ export const apiCall = async (endpoint, options = {}) => {
     const result = JSON.parse(text);
     return result?.data ?? result;
   } catch {
-    // If response isn't valid JSON, return raw text fallback
-    return text;
+    throw new Error('API returned an invalid JSON response format.');
   }
 };

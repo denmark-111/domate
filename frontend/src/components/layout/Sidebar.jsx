@@ -203,27 +203,31 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
           </div>
         )}
         <div className="space-y-1">
-          {(showAllWorkspaces ? workspaces : workspaces.slice(0, 10)).map(ws => (
-            <button
-              key={ws.id}
-              onClick={() => handleWorkspaceChange(ws.id)}
-              className={`w-full py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-3 ${
-                collapsed
-                  ? 'justify-center px-0'
-                  : 'text-left px-3'
-              } text-text-secondary hover:bg-bg-tertiary/50 hover:text-button-secondary-text`}
-              title={collapsed ? ws.name : undefined}
-            >
-              <WorkspaceIcon
-                workspace={ws}
-                containerClassName="w-6 h-6 rounded"
-                className="rounded"
-              />
-              {!collapsed && <span className="truncate">{ws.name}</span>}
-              {!collapsed && ws.type === 'team' && <Users size={12} className="text-text-secondary shrink-0 ml-auto" />}
-            </button>
-          ))}
-          {!collapsed && workspaces.length > 10 && (
+          {(() => {
+            const safeWorkspaces = Array.isArray(workspaces) ? workspaces : [];
+            const displayWorkspaces = showAllWorkspaces ? safeWorkspaces : safeWorkspaces.slice(0, 10);
+            return displayWorkspaces.map(ws => (
+              <button
+                key={ws.id}
+                onClick={() => handleWorkspaceChange(ws.id)}
+                className={`w-full py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-3 ${
+                  collapsed
+                    ? 'justify-center px-0'
+                    : 'text-left px-3'
+                } text-text-secondary hover:bg-bg-tertiary/50 hover:text-button-secondary-text`}
+                title={collapsed ? ws.name : undefined}
+              >
+                <WorkspaceIcon
+                  workspace={ws}
+                  containerClassName="w-6 h-6 rounded"
+                  className="rounded"
+                />
+                {!collapsed && <span className="truncate">{ws.name}</span>}
+                {!collapsed && ws.type === 'team' && <Users size={12} className="text-text-secondary shrink-0 ml-auto" />}
+              </button>
+            ));
+          })()}
+          {!collapsed && Array.isArray(workspaces) && workspaces.length > 10 && (
             <button
               onClick={() => setShowAllWorkspaces(!showAllWorkspaces)}
               className="w-full text-left px-3 py-1.5 text-xs text-text-secondary hover:text-text-accent transition-colors"

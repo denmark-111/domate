@@ -27,8 +27,10 @@ export const WorkspaceProvider = ({ children }) => {
       if (isAuthenticated) {
         setIsLoadingWorkspaces(true);
         const res = await workspaceService.getWorkspaces();
-        if (res.success) {
+        if (res.success && Array.isArray(res.data)) {
           setWorkspaces(res.data);
+        } else {
+          setWorkspaces([]);
         }
         setIsLoadingWorkspaces(false);
       } else {
@@ -40,7 +42,7 @@ export const WorkspaceProvider = ({ children }) => {
   }, [isAuthenticated]);
 
   // Find the active workspace object
-  const activeWorkspace = workspaceId 
+  const activeWorkspace = workspaceId && Array.isArray(workspaces)
     ? workspaces.find(w => w.id === workspaceId) 
     : null;
 
@@ -73,7 +75,7 @@ export const WorkspaceProvider = ({ children }) => {
 
       const fetchBoards = async () => {
         const res = await boardService.getWorkspaceBoards(workspaceId, { signal: controller.signal });
-        if (res.success) {
+        if (res.success && Array.isArray(res.data)) {
           setBoards(res.data);
           // Check if navigation state has a board to auto-select
           const selectBoardId = location.state?.selectBoardId;
@@ -97,7 +99,7 @@ export const WorkspaceProvider = ({ children }) => {
       const fetchInvitations = async () => {
         setIsLoadingInvitations(true);
         const res = await invitationService.getWorkspaceInvitations(workspaceId);
-        if (res.success) {
+        if (res.success && Array.isArray(res.data)) {
           setInvitations(res.data);
         } else {
           setInvitations([]);
@@ -120,7 +122,7 @@ export const WorkspaceProvider = ({ children }) => {
   // Handle navigation to a board within the same workspace (same URL, different state)
   useEffect(() => {
     const selectBoardId = location.state?.selectBoardId;
-    if (selectBoardId && workspaceId) {
+    if (selectBoardId && workspaceId && Array.isArray(boards)) {
       const boardToSelect = boards.find(b => b.id === selectBoardId);
       if (boardToSelect) {
         setActiveBoard(boardToSelect);
@@ -128,7 +130,7 @@ export const WorkspaceProvider = ({ children }) => {
       }
       window.history.replaceState({}, document.title);
     }
-  }, [location.state?.selectBoardId]);
+  }, [location.state?.selectBoardId, boards, workspaceId]);
 
   const createWorkspace = async (data) => {
     const res = await workspaceService.createWorkspace(data);

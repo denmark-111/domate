@@ -1,15 +1,19 @@
 import { createClient } from '@supabase/supabase-js';
+import { envConfig } from './envConfig.js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = envConfig.supabaseUrl || 'https://placeholder.supabase.co';
+const supabaseAnonKey = envConfig.supabaseAnonKey || 'placeholder-key';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY');
+export const isSupabaseConfigured = Boolean(envConfig.supabaseUrl && envConfig.supabaseAnonKey && envConfig.isValid);
+
+if (!isSupabaseConfigured) {
+  console.warn('Supabase environment variables are missing or misconfigured. Frontend fallback active.', envConfig.errors);
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    persistSession: true,
-    detectSessionInUrl: true,
+    persistSession: isSupabaseConfigured,
+    detectSessionInUrl: isSupabaseConfigured,
   },
 });
+
