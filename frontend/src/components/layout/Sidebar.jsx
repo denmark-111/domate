@@ -59,71 +59,74 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
   const isTasks = location.pathname === '/tasks';
 
   const renderWorkspaceSidebar = () => (
-    <>
-      <div className={`${collapsed ? 'px-2 pt-2 pb-4' : 'px-3 pt-2 pb-4'} border-b border-border-light mb-4`}>
+    <div className="px-2 space-y-3">
+      <div className="pb-2.5 border-b border-border-light">
         <button 
-            onClick={() => { setActiveView('Overview'); onCloseMobile?.(); }}
-          className={`w-full flex items-center gap-3 rounded-lg transition-colors ${
-            collapsed ? 'justify-center p-2' : 'px-3 py-2'
-          } ${
+          onClick={() => { setActiveView('Overview'); onCloseMobile?.(); }}
+          className={`w-full px-3 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-3 text-left whitespace-nowrap overflow-hidden ${
             activeView === 'Overview' 
-              ? 'bg-input-bg text-text-accent' 
-              : 'text-text-secondary hover:bg-bg-tertiary/50'
+              ? 'bg-input-bg text-text-accent font-bold' 
+              : 'text-text-secondary hover:bg-bg-tertiary/50 hover:text-button-secondary-text'
           }`}
           title={collapsed ? activeWorkspace.name : undefined}
         >
+          <div className="w-6 h-6 flex items-center justify-center shrink-0">
             <WorkspaceIcon
               workspace={activeWorkspace}
-              containerClassName="w-8 h-8 rounded"
+              containerClassName="w-6 h-6 rounded shrink-0"
               className="rounded"
             />
+          </div>
           {!collapsed && (
-            <span className="text-sm font-semibold truncate">
+            <span className="truncate">
               {activeWorkspace.name}
             </span>
           )}
         </button>
       </div>
 
-      <nav className="px-4 space-y-1">
-        
-        {activeWorkspace.type?.toLowerCase() === 'team' && (
-          <>
-            <button 
-              onClick={() => { setActiveView('Announcements'); onCloseMobile?.(); }}
-              className={`w-full text-left ${collapsed ? 'px-0 justify-center' : 'px-3'} py-2 rounded-lg font-semibold text-sm flex items-center gap-3 transition-all ${
-                activeView === 'Announcements' ? 'bg-button text-white' : 'text-text-tertiary hover:bg-bg-tertiary/50'
-              }`}
-              title={collapsed ? 'Announcements' : undefined}
-            >
-              <Megaphone size={20} /> {!collapsed && 'Announcements'}
-            </button>
-            <button 
-              onClick={() => { setActiveView('Chat'); onCloseMobile?.(); }}
-              className={`w-full text-left ${collapsed ? 'px-0 justify-center' : 'px-3'} py-2 rounded-lg font-semibold text-sm flex items-center gap-3 transition-all ${
-                activeView === 'Chat' ? 'bg-button text-white' : 'text-text-tertiary hover:bg-bg-tertiary/50'
-              }`}
-              title={collapsed ? 'Chat' : undefined}
-            >
-              <MessageSquare size={20} /> {!collapsed && 'Chat'}
-            </button>
-          </>
-        )}
-      </nav>
+      {activeWorkspace.type?.toLowerCase() === 'team' && (
+        <nav className="space-y-0.5">
+          <button 
+            onClick={() => { setActiveView('Announcements'); onCloseMobile?.(); }}
+            className={`w-full px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-3 text-left transition-colors whitespace-nowrap overflow-hidden ${
+              activeView === 'Announcements' ? 'bg-button text-white' : 'text-text-tertiary hover:bg-bg-tertiary/50'
+            }`}
+            title={collapsed ? 'Announcements' : undefined}
+          >
+            <div className="w-6 h-6 flex items-center justify-center shrink-0">
+              <Megaphone size={20} className="shrink-0" />
+            </div>
+            {!collapsed && <span className="truncate">Announcements</span>}
+          </button>
+          <button 
+            onClick={() => { setActiveView('Chat'); onCloseMobile?.(); }}
+            className={`w-full px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-3 text-left transition-colors whitespace-nowrap overflow-hidden ${
+              activeView === 'Chat' ? 'bg-button text-white' : 'text-text-tertiary hover:bg-bg-tertiary/50'
+            }`}
+            title={collapsed ? 'Chat' : undefined}
+          >
+            <div className="w-6 h-6 flex items-center justify-center shrink-0">
+              <MessageSquare size={20} className="shrink-0" />
+            </div>
+            {!collapsed && <span className="truncate">Chat</span>}
+          </button>
+        </nav>
+      )}
 
-      <div className={`${collapsed ? 'mt-8 px-2' : 'mt-8 px-4'}`}>
+      <div>
         {!collapsed && (
-          <div className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2 px-2 flex justify-between items-center">
+          <div className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2 px-3 flex justify-between items-center whitespace-nowrap overflow-hidden">
             <span>Boards</span>
             <button 
               onClick={() => setShowCreateBoard(true)}
-              className="text-text-secondary hover:text-text-accent hover:bg-input-bg w-6 h-6 flex items-center justify-center rounded transition-colors"
+              className="text-text-secondary hover:text-text-accent hover:bg-input-bg w-6 h-6 flex items-center justify-center rounded transition-colors shrink-0"
             >
               <Plus size={16} />
             </button>
           </div>
         )}
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           {(showAllBoards ? boards : boards.slice(0, 10)).map((board) => (
             <div key={board.id} className="group relative">
               <button
@@ -132,18 +135,20 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
                   setActiveBoard(board);
                   onCloseMobile?.();
                 }}
-                className={`w-full text-left ${collapsed ? 'px-0 justify-center' : 'px-3 pr-8'} py-2 rounded-lg text-sm truncate transition-colors font-medium flex items-center ${collapsed ? '' : 'gap-2'} ${
+                className={`w-full px-3 ${collapsed ? '' : 'pr-8'} py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-3 text-left whitespace-nowrap overflow-hidden ${
                   activeView === 'Board' && activeBoard?.id === board.id 
                     ? 'text-text-accent bg-input-bg font-bold' 
                     : 'text-text-secondary hover:bg-bg-tertiary/50 hover:text-button-secondary-text'
                 }`}
                 title={collapsed ? board.name : undefined}
               >
-                <span
-                  className="w-2.5 h-2.5 rounded-full shrink-0"
-                  style={{ backgroundColor: board.color || 'var(--color-text-tertiary)' }}
-                />
-                {!collapsed && board.name}
+                <div className="w-6 h-6 flex items-center justify-center shrink-0">
+                  <span
+                    className="w-2.5 h-2.5 rounded-full shrink-0"
+                    style={{ backgroundColor: board.color || 'var(--color-text-tertiary)' }}
+                  />
+                </div>
+                {!collapsed && <span className="truncate">{board.name}</span>}
               </button>
               {!collapsed && (
                 <button
@@ -152,7 +157,7 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
                     setDeletingBoardId(board.id);
                     setShowDeleteBoard(true);
                   }}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 text-red-500 hover:bg-red-50 rounded transition-all"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 text-red-500 hover:bg-red-50 rounded transition-colors"
                   title="Delete board"
                 >
                   <Trash2 size={14} />
@@ -163,46 +168,52 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
           {!collapsed && boards.length > 10 && (
             <button
               onClick={() => setShowAllBoards(!showAllBoards)}
-              className="w-full text-left px-3 py-1.5 text-xs text-text-secondary hover:text-text-accent transition-colors"
+              className="w-full text-left px-3 py-1.5 text-xs text-text-secondary hover:text-text-accent transition-colors whitespace-nowrap overflow-hidden"
             >
               {showAllBoards ? 'Show less' : `Show more (${boards.length - 10})`}
             </button>
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 
   const renderHomeSidebar = () => (
-    <div className="px-4 space-y-6">
-        <nav className="space-y-1">
+    <div className="px-2 space-y-3">
+      <nav className="space-y-0.5">
         <button 
           onClick={() => navigate('/dashboard')}
-          className={`w-full text-left ${collapsed ? 'px-0 justify-center' : 'px-3'} py-2 rounded-lg font-bold text-sm flex items-center gap-3 transition-all ${
+          className={`w-full px-3 py-2 rounded-lg font-bold text-sm flex items-center gap-3 text-left transition-colors whitespace-nowrap overflow-hidden ${
             isHome ? 'bg-button text-white' : 'text-text-tertiary hover:bg-bg-tertiary/50'
           }`}
           title={collapsed ? 'Home' : undefined}
         >
-          <Home size={20} /> {!collapsed && 'Home'}
+          <div className="w-6 h-6 flex items-center justify-center shrink-0">
+            <Home size={20} className="shrink-0" />
+          </div>
+          {!collapsed && <span className="truncate">Home</span>}
         </button>
         <button 
           onClick={() => navigate('/tasks')}
-          className={`w-full text-left ${collapsed ? 'px-0 justify-center' : 'px-3'} py-2 rounded-lg font-bold text-sm flex items-center gap-3 transition-all ${
+          className={`w-full px-3 py-2 rounded-lg font-bold text-sm flex items-center gap-3 text-left transition-colors whitespace-nowrap overflow-hidden ${
             isTasks ? 'bg-button text-white' : 'text-text-tertiary hover:bg-bg-tertiary/50'
           }`}
           title={collapsed ? 'Tasks' : undefined}
         >
-          <ListTodo size={20} /> {!collapsed && 'Tasks'}
+          <div className="w-6 h-6 flex items-center justify-center shrink-0">
+            <ListTodo size={20} className="shrink-0" />
+          </div>
+          {!collapsed && <span className="truncate">Tasks</span>}
         </button>
       </nav>
 
       <div>
         {!collapsed && (
-          <div className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-4 px-3 flex justify-between items-center">
+          <div className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2 px-3 flex justify-between items-center whitespace-nowrap overflow-hidden">
             <span>My Workspaces</span>
           </div>
         )}
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           {(() => {
             const safeWorkspaces = Array.isArray(workspaces) ? workspaces : [];
             const displayWorkspaces = showAllWorkspaces ? safeWorkspaces : safeWorkspaces.slice(0, 10);
@@ -210,18 +221,16 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
               <button
                 key={ws.id}
                 onClick={() => handleWorkspaceChange(ws.id)}
-                className={`w-full py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-3 ${
-                  collapsed
-                    ? 'justify-center px-0'
-                    : 'text-left px-3'
-                } text-text-secondary hover:bg-bg-tertiary/50 hover:text-button-secondary-text`}
+                className="w-full px-3 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-3 text-left text-text-secondary hover:bg-bg-tertiary/50 hover:text-button-secondary-text whitespace-nowrap overflow-hidden"
                 title={collapsed ? ws.name : undefined}
               >
-                <WorkspaceIcon
-                  workspace={ws}
-                  containerClassName="w-6 h-6 rounded"
-                  className="rounded"
-                />
+                <div className="w-6 h-6 flex items-center justify-center shrink-0">
+                  <WorkspaceIcon
+                    workspace={ws}
+                    containerClassName="w-6 h-6 rounded shrink-0"
+                    className="rounded"
+                  />
+                </div>
                 {!collapsed && <span className="truncate">{ws.name}</span>}
                 {!collapsed && ws.type === 'team' && <Users size={12} className="text-text-secondary shrink-0 ml-auto" />}
               </button>
@@ -230,7 +239,7 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
           {!collapsed && Array.isArray(workspaces) && workspaces.length > 10 && (
             <button
               onClick={() => setShowAllWorkspaces(!showAllWorkspaces)}
-              className="w-full text-left px-3 py-1.5 text-xs text-text-secondary hover:text-text-accent transition-colors"
+              className="w-full text-left px-3 py-1.5 text-xs text-text-secondary hover:text-text-accent transition-colors whitespace-nowrap overflow-hidden"
             >
               {showAllWorkspaces ? 'Show less' : `Show more (${workspaces.length - 10})`}
             </button>
@@ -241,7 +250,7 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
   );
 
   return (
-    <aside className={`${mobile ? 'w-72' : collapsed ? 'w-16' : 'w-64'} bg-bg-secondary border-r border-border flex flex-col h-full shrink-0`}>
+    <aside className={`${mobile ? 'w-72' : collapsed ? 'w-16' : 'w-64'} bg-bg-secondary border-r border-border flex flex-col h-full shrink-0 transition-[width] duration-200 linear overflow-hidden`}>
       {/* Mobile header with close */}
       {mobile && (
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">

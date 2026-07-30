@@ -67,6 +67,7 @@ export const WorkspaceProvider = ({ children }) => {
     if (workspaceId) {
       setActiveView('Overview');
       setActiveBoard(null);
+      setInvitations([]);
 
       // Log the workspace visit (fire-and-forget)
       activityService.logVisit('workspace', workspaceId);
@@ -92,9 +93,6 @@ export const WorkspaceProvider = ({ children }) => {
           setBoards([]);
         }
       };
-      if (isAuthenticated) {
-        fetchBoards();
-      }
 
       const fetchInvitations = async () => {
         setIsLoadingInvitations(true);
@@ -106,8 +104,9 @@ export const WorkspaceProvider = ({ children }) => {
         }
         setIsLoadingInvitations(false);
       };
-      // Only the workspace owner can fetch/manage invitations
-      if (activeWorkspace?.role === 'OWNER') {
+
+      if (isAuthenticated) {
+        fetchBoards();
         fetchInvitations();
       }
 
@@ -116,8 +115,9 @@ export const WorkspaceProvider = ({ children }) => {
       setActiveView('Home');
       setActiveBoard(null);
       setBoards([]);
+      setInvitations([]);
     }
-  }, [workspaceId, isAuthenticated, activeWorkspace?.role]);
+  }, [workspaceId, isAuthenticated]);
 
   // Handle navigation to a board within the same workspace (same URL, different state)
   useEffect(() => {

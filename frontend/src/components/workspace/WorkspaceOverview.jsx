@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useAuth } from '../../context/AuthContext';
-import { Save, Edit3, X, Trash2, UserPlus, XCircle, Users, Image, Trash, MoreVertical } from 'lucide-react';
+import { Edit3, Trash2, UserPlus, XCircle, MoreVertical, Image, Trash } from 'lucide-react';
 import { workspaceService, supabaseStorageService } from '../../services/index.js';
 import ConfirmModal from '../common/ConfirmModal';
 import InviteMembersForm from './InviteMembersForm';
@@ -10,7 +10,14 @@ import WorkspaceIcon from './WorkspaceIcon';
 import { WORKSPACE_COLORS } from '../../data/colorPalette';
 
 const WorkspaceOverview = () => {
-  const { activeWorkspace, updateWorkspace, deleteWorkspace, invitations, isLoadingInvitations, createInvitation, revokeInvitation } = useWorkspace();
+  const { 
+    activeWorkspace, 
+    updateWorkspace, 
+    deleteWorkspace, 
+    invitations, 
+    createInvitation, 
+    revokeInvitation 
+  } = useWorkspace();
   const { user } = useAuth();
   
   const [isEditing, setIsEditing] = useState(false);
@@ -26,7 +33,6 @@ const WorkspaceOverview = () => {
   const [fullWorkspace, setFullWorkspace] = useState(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
 
-  // Fetch full details (which includes memberships) if not fully populated
   useEffect(() => {
     const loadDetails = async () => {
       if (activeWorkspace?.id) {
@@ -43,12 +49,10 @@ const WorkspaceOverview = () => {
 
   const displayWorkspace = fullWorkspace || activeWorkspace;
 
-  // Determine if the current user has owner permissions
   const isOwner = displayWorkspace?.memberships?.some(
     (m) => m.role === 'OWNER' && m.user?.id === user?.id
-  ) || displayWorkspace?.role === 'OWNER' || displayWorkspace?.type === 'personal'; // Usually personal workspaces are owned by the user
+  ) || displayWorkspace?.role === 'OWNER' || displayWorkspace?.type === 'personal';
 
-  // Initialize form data when workspace changes or editing starts
   useEffect(() => {
     if (displayWorkspace) {
       setFormData({
@@ -80,9 +84,7 @@ const WorkspaceOverview = () => {
     try {
       let coverImageUrl = formData.coverImageUrl;
 
-      // Upload new cover if a file was selected
       if (coverFile) {
-        // Delete old cover if it exists
         if (formData.coverImageUrl) {
           supabaseStorageService.deleteWorkspaceCoverUrl(formData.coverImageUrl);
         }
@@ -91,7 +93,6 @@ const WorkspaceOverview = () => {
         setCoverPreview(null);
       }
 
-      // Remove cover if requested
       if (removeCover) {
         if (formData.coverImageUrl) {
           supabaseStorageService.deleteWorkspaceCoverUrl(formData.coverImageUrl);
@@ -102,8 +103,7 @@ const WorkspaceOverview = () => {
 
       const payload = { name: formData.name, description: formData.description };
       if (formData.color) payload.color = formData.color;
-      if (coverImageUrl) payload.coverImageUrl = coverImageUrl;
-      else payload.coverImageUrl = null;
+      payload.coverImageUrl = coverImageUrl || null;
 
       const result = await updateWorkspace(displayWorkspace.id, payload);
       if (result.success) {
@@ -139,7 +139,6 @@ const WorkspaceOverview = () => {
 
   const handleDeleteWorkspace = async () => {
     setIsDeletingWorkspace(true);
-    // Clean up cover image from storage before deleting
     if (displayWorkspace.coverImageUrl) {
       supabaseStorageService.deleteWorkspaceCoverUrl(displayWorkspace.coverImageUrl);
     }
@@ -155,17 +154,21 @@ const WorkspaceOverview = () => {
 
   if (!displayWorkspace) return null;
 
+  const membersList = displayWorkspace.memberships?.filter(m => m.user) || [];
+
   return (
     <div className="flex-1 overflow-y-auto bg-bg-secondary p-4 sm:p-8 lg:p-12">
-      <div className="max-w-4xl mx-auto">
-        <header className="mb-6 sm:mb-10 flex items-center justify-between">
+      <div className="max-w-4xl mx-auto space-y-6">
+        
+        {/* Header */}
+        <div className="flex items-center justify-between">
           <h1 className="text-xl sm:text-2xl font-bold text-text">Overview</h1>
           {isOwner && !isEditing && (
             <div className="relative">
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
                 className="p-1.5 text-text-secondary hover:text-text hover:bg-bg-tertiary rounded-lg transition-colors"
-                title="More"
+                title="Workspace options"
               >
                 <MoreVertical size={20} />
               </button>
@@ -191,29 +194,27 @@ const WorkspaceOverview = () => {
               )}
             </div>
           )}
-        </header>
+        </div>
 
-        <div className="rounded-xl border border-border bg-bg p-4 sm:p-6 mb-3">
+        {/* Workspace Info / Edit Section */}
+        <section className="rounded-xl border border-border bg-bg p-4 sm:p-6">
           {!isEditing ? (
             <div className="space-y-5">
               <div className="flex items-center gap-4 sm:gap-5">
                 <WorkspaceIcon
                   workspace={displayWorkspace}
-                  containerClassName="w-16 h-16 sm:w-24 sm:h-24 rounded-xl sm:rounded-2xl"
-                  className="rounded-xl sm:rounded-2xl"
+                  containerClassName="w-16 h-16 sm:w-20 sm:h-20 rounded-xl"
+                  className="rounded-xl"
                 />
                 <div className="min-w-0">
-                  <p className="text-lg sm:text-xl font-bold text-text break-words">{displayWorkspace.name}</p>
-                  <p className="text-xs text-text-secondary mt-0.5">
-                    {displayWorkspace.type === 'team' ? (
-                      <><Users size={12} className="inline mr-0.5" /> Team workspace</>
-                    ) : (
-                      'Personal workspace'
-                    )}
+                  <h2 className="text-lg sm:text-xl font-bold text-text break-words">{displayWorkspace.name}</h2>
+                  <p className="text-xs text-text-secondary mt-1">
+                    {displayWorkspace.type === 'team' ? 'Team workspace' : 'Personal workspace'}
                     {' · '}Created {new Date(displayWorkspace.createdAt).toLocaleDateString()}
                   </p>
                 </div>
               </div>
+
               {displayWorkspace.description && (
                 <div className="pt-4 border-t border-border-light">
                   <p className="text-sm text-text-secondary whitespace-pre-wrap leading-relaxed">
@@ -224,6 +225,8 @@ const WorkspaceOverview = () => {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
+              <h2 className="text-base font-semibold text-text mb-4">Edit Workspace</h2>
+
               <div>
                 <label htmlFor="name" className="block text-sm font-semibold text-text-secondary mb-1.5">
                   Name
@@ -234,7 +237,7 @@ const WorkspaceOverview = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors"
+                  className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg text-text text-sm outline-none focus:border-input-border-focus transition-colors"
                   placeholder="Enter workspace name"
                 />
               </div>
@@ -250,7 +253,6 @@ const WorkspaceOverview = () => {
                 />
               </div>
 
-              {/* Cover Image */}
               <div>
                 <label className="block text-sm font-semibold text-text-secondary mb-1.5">
                   Cover Image
@@ -263,7 +265,7 @@ const WorkspaceOverview = () => {
                   className="hidden"
                 />
                 {(coverPreview || (formData.coverImageUrl && !removeCover)) ? (
-                    <div className="relative w-full max-w-64 aspect-square rounded-lg overflow-hidden border border-border mb-2">
+                  <div className="relative w-full max-w-64 aspect-square rounded-lg overflow-hidden border border-border mb-2">
                     <img
                       src={coverPreview || supabaseStorageService.getCoverImageUrl(formData.coverImageUrl)}
                       alt="Cover preview"
@@ -279,10 +281,10 @@ const WorkspaceOverview = () => {
                     </button>
                   </div>
                 ) : (
-                    <label
-                      htmlFor="coverImageUrl"
-                      className="flex flex-col items-center justify-center w-full max-w-64 aspect-square rounded-lg border-2 border-dashed border-border bg-bg-secondary hover:bg-bg-tertiary cursor-pointer transition-colors"
-                    >
+                  <label
+                    htmlFor="coverImageUrl"
+                    className="flex flex-col items-center justify-center w-full max-w-64 aspect-square rounded-lg border-2 border-dashed border-border bg-bg-secondary hover:bg-bg-tertiary cursor-pointer transition-colors"
+                  >
                     <Image size={24} className="text-text-secondary mb-1" />
                     <span className="text-sm text-text-secondary">Click to upload cover image</span>
                   </label>
@@ -299,7 +301,7 @@ const WorkspaceOverview = () => {
                   value={formData.description}
                   onChange={handleInputChange}
                   rows="4"
-                  className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none"
+                  className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg text-text text-sm outline-none focus:border-input-border-focus transition-colors resize-none"
                   placeholder="Add a description..."
                 />
               </div>
@@ -322,14 +324,14 @@ const WorkspaceOverview = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2 rounded-lg font-semibold bg-button hover:bg-button-hover text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-5 py-2 rounded-lg font-semibold bg-button hover:bg-button-hover text-white transition-colors disabled:opacity-50"
                 >
                   {isSubmitting ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </form>
           )}
-        </div>
+        </section>
 
         <ConfirmModal
           isOpen={showDeleteWorkspace}
@@ -342,87 +344,87 @@ const WorkspaceOverview = () => {
         />
 
         {/* Team Members Section */}
-        <div className="rounded-xl border border-border bg-bg p-4 sm:p-6">
-          <div className="flex items-center justify-between mb-4 gap-2">
-            <h2 className="text-sm font-semibold text-text-secondary">
-              Members{displayWorkspace.memberships ? ` (${displayWorkspace.memberships.length})` : ''}
-            </h2>
-            {isOwner && (
-              <button
-                onClick={() => setShowInviteModal(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-button hover:bg-button-hover text-white text-xs font-semibold transition-colors"
-              >
-                <UserPlus size={14} /> Add people
-              </button>
-            )}
-          </div>
-          {isLoadingDetails ? (
-            <p className="text-sm text-text-secondary">Loading members...</p>
-          ) : displayWorkspace.memberships && displayWorkspace.memberships.length > 0 && displayWorkspace.memberships.some(m => m.user) ? (
-            <div className="space-y-2">
-              {displayWorkspace.memberships.filter(m => m.user).map((membership) => (
-                <div key={membership.user.id} className="flex items-center justify-between p-3 bg-bg-secondary rounded-lg hover:bg-bg-tertiary/50 transition-colors">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-8 h-8 rounded-full bg-button flex items-center justify-center text-white text-xs font-bold overflow-hidden shrink-0">
-                      {membership.user?.avatarUrl ? (
-                        <img src={supabaseStorageService.getAvatarUrl(membership.user.avatarUrl)} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        (membership.user?.fullName || membership.user?.email || 'U').split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-text truncate">{membership.user?.fullName || 'Unknown User'}</p>
-                      <p className="text-xs text-text-secondary truncate">{membership.user?.email || ''}</p>
-                    </div>
-                  </div>
-                  <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-full shrink-0 ${
-                    membership.role === 'OWNER' ? 'bg-label-team-bg text-label-team-text' : 'bg-bg-tertiary text-text-secondary'
-                  }`}>
-                    {membership.role === 'OWNER' ? 'Owner' : 'Member'}
-                  </span>
-                </div>
-              ))}
+        {!isEditing && (
+          <section className="rounded-xl border border-border bg-bg p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-4 gap-2">
+              <h2 className="text-sm font-semibold text-text-secondary flex items-center gap-1.5">
+                <span>Members</span>
+                <span className="text-[10px] font-medium text-text-secondary bg-bg-tertiary px-1.5 py-0.5 rounded-full flex-shrink-0">{membersList.length}</span>
+              </h2>
+              {isOwner && (
+                <button
+                  onClick={() => setShowInviteModal(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-button hover:bg-button-hover text-white text-xs font-semibold transition-colors"
+                >
+                  <UserPlus size={14} /> Add people
+                </button>
+              )}
             </div>
-          ) : (
-            <p className="text-sm text-text-secondary">No members found.</p>
-          )}
 
-          {/* Pending Invitations (owner only) */}
-          {isOwner && invitations.length > 0 && (
-            <div className="mt-5 pt-5 border-t border-border-light">
-              <h4 className="text-xs font-semibold text-text-secondary mb-3">
-                Pending Invitations
-                <span className="ml-2 px-1.5 py-0.5 bg-label-feature-bg text-label-feature-text rounded-full text-[10px]">
-                  {invitations.length}
-                </span>
-              </h4>
+            {isLoadingDetails ? (
+              <p className="text-sm text-text-secondary">Loading members...</p>
+            ) : membersList.length > 0 ? (
               <div className="space-y-2">
-                {invitations.map((inv) => (
-                  <div key={inv.id} className="flex items-center justify-between p-3 bg-bg-secondary rounded-lg hover:bg-bg-tertiary/50 transition-colors">
+                {membersList.map((membership) => (
+                  <div key={membership.user.id} className="flex items-center justify-between p-3 bg-bg-secondary rounded-lg hover:bg-bg-tertiary/50 transition-colors">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-700 text-xs font-bold">
-                        {(inv.email || '?').slice(0, 2).toUpperCase()}
+                      <div className="w-8 h-8 rounded-full bg-button flex items-center justify-center text-white text-xs font-bold overflow-hidden shrink-0">
+                        {membership.user?.avatarUrl ? (
+                          <img src={supabaseStorageService.getAvatarUrl(membership.user.avatarUrl)} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          (membership.user?.fullName || membership.user?.email || 'U').split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                        )}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-text truncate">{inv.email}</p>
-                        <p className="text-xs text-text-secondary">
-                          Invited {new Date(inv.createdAt).toLocaleDateString()} &middot; expires {new Date(inv.expiresAt).toLocaleDateString()}
-                        </p>
+                        <p className="text-sm font-semibold text-text truncate">{membership.user?.fullName || 'Unknown User'}</p>
+                        <p className="text-xs text-text-secondary truncate">{membership.user?.email || ''}</p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => revokeInvitation(inv.id, displayWorkspace.id)}
-                      className="p-1.5 text-text-secondary hover:text-red-500 hover:bg-red-50 rounded transition-colors shrink-0"
-                      title="Revoke invitation"
-                    >
-                      <XCircle size={16} />
-                    </button>
+                    <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full shrink-0 bg-bg-tertiary text-text-secondary">
+                      {membership.role === 'OWNER' ? 'Owner' : 'Member'}
+                    </span>
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-        </div>
+            ) : (
+              <p className="text-sm text-text-secondary">No members found.</p>
+            )}
+
+            {/* Pending Invitations (owner only) */}
+            {isOwner && invitations.length > 0 && (
+              <div className="mt-5 pt-5 border-t border-border-light">
+                <h3 className="text-sm font-semibold text-text-secondary mb-3 flex items-center gap-1.5">
+                  <span>Pending Invitations</span>
+                  <span className="text-[10px] font-medium text-text-secondary bg-bg-tertiary px-1.5 py-0.5 rounded-full flex-shrink-0">{invitations.length}</span>
+                </h3>
+                <div className="space-y-2">
+                  {invitations.map((inv) => (
+                    <div key={inv.id} className="flex items-center justify-between p-3 bg-bg-secondary rounded-lg hover:bg-bg-tertiary/50 transition-colors">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-8 h-8 rounded-full bg-bg-tertiary flex items-center justify-center text-text-secondary text-xs font-bold shrink-0">
+                          {(inv.email || '?').slice(0, 2).toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-text truncate">{inv.email}</p>
+                          <p className="text-xs text-text-secondary">
+                            Invited {new Date(inv.createdAt).toLocaleDateString()} &middot; expires {new Date(inv.expiresAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => revokeInvitation(inv.id, displayWorkspace.id)}
+                        className="p-1.5 text-text-secondary hover:text-red-500 hover:bg-red-50 rounded transition-colors shrink-0"
+                        title="Revoke invitation"
+                      >
+                        <XCircle size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </section>
+        )}
 
         {/* Invite Members Modal */}
         {showInviteModal && (
@@ -440,3 +442,4 @@ const WorkspaceOverview = () => {
 };
 
 export default WorkspaceOverview;
+
