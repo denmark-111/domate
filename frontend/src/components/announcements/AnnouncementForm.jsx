@@ -204,13 +204,13 @@ const AnnouncementForm = ({
   if (!isOpen) return null;
 
   return (
-    <>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       <div
-        className="fixed inset-0 bg-black/50 z-40 transition-opacity"
+        className="fixed inset-0 bg-black/50 transition-opacity"
         onClick={onClose}
       />
       <div
-        className="fixed inset-0 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:transform sm:-translate-x-1/2 sm:-translate-y-1/2 z-50 sm:max-w-2xl sm:max-h-[90vh] flex flex-col bg-bg sm:rounded-xl sm:shadow-xl w-full"
+        className="relative bg-bg rounded-t-xl sm:rounded-xl border border-border shadow-xl w-full sm:max-w-2xl sm:mx-4 max-h-[90vh] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -404,7 +404,7 @@ const AnnouncementForm = ({
           </button>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

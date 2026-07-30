@@ -64,8 +64,8 @@ const CreateBoardForm = ({ workspaceName, onClose, onSubmit }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-bg rounded-t-xl sm:rounded-xl border border-border shadow-xl w-full sm:max-w-md sm:mx-4 flex flex-col max-h-[85vh] sm:max-h-[80vh]">
+      <div className="fixed inset-0 bg-black/50 transition-opacity" onClick={onClose} />
+      <div className="relative bg-bg rounded-t-xl sm:rounded-xl border border-border shadow-xl w-full sm:max-w-md sm:mx-4 flex flex-col max-h-[85vh] sm:max-h-[80vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="p-6 border-b border-border shrink-0">
           <h2 className="text-xl font-bold text-text">Create Board</h2>

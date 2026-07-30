@@ -5,10 +5,10 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message, confirmLabel
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" onClick={(e) => e.stopPropagation()}>
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-black/50 transition-opacity" onClick={onClose} />
       <div
-        className="relative bg-bg rounded-t-xl sm:rounded-xl border border-border p-5 sm:p-6 shadow-xl max-w-md w-full sm:mx-4"
+        className="relative bg-bg rounded-xl border border-border p-5 sm:p-6 shadow-xl max-w-md w-full overflow-hidden z-10"
         onClick={(e) => e.stopPropagation()}
       >
         <button

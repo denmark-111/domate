@@ -63,13 +63,13 @@ const BoardDetailModal = ({ isOpen, onClose, board, onUpdate }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/50 transition-opacity" onClick={onClose} />
       <div
-        className="relative bg-bg rounded-t-xl sm:rounded-xl border border-border shadow-xl w-full sm:max-w-md sm:mx-4 max-h-[85vh] overflow-y-auto"
+        className="relative bg-bg rounded-t-xl sm:rounded-xl border border-border shadow-xl w-full sm:max-w-md sm:mx-4 flex flex-col max-h-[85vh] sm:max-h-[80vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-border sticky top-0 bg-bg z-10">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-border shrink-0 sticky top-0 bg-bg z-10">
           <h2 className="text-base font-semibold text-text">Board Details</h2>
           <button
             onClick={onClose}
@@ -82,7 +82,7 @@ const BoardDetailModal = ({ isOpen, onClose, board, onUpdate }) => {
         {!editing ? (
           <>
             {/* View mode */}
-            <div className="px-4 sm:px-6 py-5 space-y-4">
+            <div className="px-4 sm:px-6 py-5 space-y-4 overflow-y-auto flex-1">
               <div className="flex items-center gap-3">
                 {board.color && (
                   <span
@@ -103,7 +103,7 @@ const BoardDetailModal = ({ isOpen, onClose, board, onUpdate }) => {
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-4 border-t border-border">
+            <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-4 border-t border-border shrink-0">
               <button
                 onClick={startEditing}
                 className="px-5 py-2 rounded-lg font-semibold text-sm bg-button hover:bg-button-hover text-white transition-colors"
@@ -113,9 +113,9 @@ const BoardDetailModal = ({ isOpen, onClose, board, onUpdate }) => {
             </div>
           </>
         ) : (
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
             {/* Edit mode */}
-            <div className="px-4 sm:px-6 py-5 space-y-4">
+            <div className="px-4 sm:px-6 py-5 space-y-4 overflow-y-auto flex-1">
               <div>
                 <label className="block text-sm font-semibold text-text-secondary mb-1.5">Name</label>
                 <input
@@ -156,7 +156,7 @@ const BoardDetailModal = ({ isOpen, onClose, board, onUpdate }) => {
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-4 border-t border-border">
+            <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-4 border-t border-border shrink-0">
               <button
                 type="button"
                 onClick={cancelEditing}

@@ -339,7 +339,7 @@ const WorkspaceOverview = () => {
           onConfirm={handleDeleteWorkspace}
           title="Delete Workspace"
           message="Are you sure you want to delete this workspace? This action cannot be undone."
-          confirmLabel="Delete Workspace"
+          confirmLabel="Delete"
           isLoading={isDeletingWorkspace}
         />
 

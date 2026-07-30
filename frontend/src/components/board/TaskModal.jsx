@@ -412,15 +412,18 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
   };
 
   return (
-    <>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/50 z-40 transition-opacity"
+        className="fixed inset-0 bg-black/50 transition-opacity"
         onClick={onClose}
       />
 
       {/* Modal */}
-      <div className="fixed inset-0 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:transform sm:-translate-x-1/2 sm:-translate-y-1/2 z-50 sm:max-w-4xl lg:max-w-5xl sm:max-h-[90vh] flex flex-col bg-bg sm:rounded-xl sm:shadow-xl w-full">
+      <div
+        className="relative bg-bg rounded-t-xl sm:rounded-xl border border-border shadow-xl w-full sm:max-w-4xl lg:max-w-5xl sm:mx-4 max-h-[90vh] sm:max-h-[90vh] flex flex-col overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border bg-bg shrink-0">
           <div className="flex items-center gap-3 flex-1 pr-4 min-w-0">
             {readOnly ? (
@@ -751,7 +754,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
 
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
