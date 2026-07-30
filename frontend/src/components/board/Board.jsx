@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback, startTransition } from 'react';
+import { useRef, useState, useEffect, useCallback, useMemo, startTransition } from 'react';
 import {
   closestCenter,
   pointerWithin,
@@ -20,12 +20,12 @@ import TaskModal from './TaskModal';
 import BoardDetailModal from './BoardDetailModal';
 import BoardLabelsModal from './BoardLabelsModal';
 import ListColumn from './ListColumn';
-import TaskCard from './TaskCard';
 import DragOverlayCard from './DragOverlayCard';
+import BoardFilterBar from './BoardFilterBar';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useAuth } from '../../context/AuthContext';
 import { boardService, listService, taskService } from '../../services/index.js';
-import { Info, Tag } from 'lucide-react';
+import { Info, Tag, Filter } from 'lucide-react';
 import ActiveUsersBar from '../common/ActiveUsersBar';
 import usePresenceRealtime from '../../hooks/usePresenceRealtime';
 import useBoardRealtime from '../../hooks/useBoardRealtime';
@@ -130,7 +130,7 @@ const customCollisionDetection = (args) => {
   return closestCenter(args);
 };
 
-const moveTaskInLists = (lists, activeTaskId, overData) => {
+const moveTaskInLists = (lists, activeTaskId, overData, filterState, user, matchesFilter) => {
   if (!activeTaskId || !overData) return lists;
 
   const activeLoc = findTaskLocation(lists, activeTaskId);
@@ -173,15 +173,29 @@ const moveTaskInLists = (lists, activeTaskId, overData) => {
     if (targetListIndex === -1) return lists;
 
     const targetList = lists[targetListIndex];
+    const visibleTasks = (filterState && matchesFilter)
+      ? targetList.tasks.filter((t) => matchesFilter(t, filterState, user))
+      : targetList.tasks;
+
+    let targetIndex = targetList.tasks.length - 1;
+    if (visibleTasks.length > 0) {
+      const lastVisibleTask = visibleTasks[visibleTasks.length - 1];
+      const foundIdx = targetList.tasks.findIndex((t) => t.id === lastVisibleTask.id);
+      if (foundIdx !== -1) {
+        targetIndex = foundIdx;
+      }
+    } else {
+      targetIndex = -1;
+    }
 
     if (activeLoc.listIndex === targetListIndex) {
-      const lastIndex = targetList.tasks.length - 1;
-      if (activeLoc.taskIndex === lastIndex) return lists;
+      if (targetIndex === -1) return lists;
+      if (activeLoc.taskIndex === targetIndex) return lists;
 
       const reorderedTasks = arrayMove(
         targetList.tasks,
         activeLoc.taskIndex,
-        lastIndex
+        targetIndex
       );
       const nextLists = lists.map((col, idx) =>
         idx === targetListIndex ? { ...col, tasks: reorderedTasks } : col
@@ -191,7 +205,8 @@ const moveTaskInLists = (lists, activeTaskId, overData) => {
 
     const nextLists = lists.map((col) => ({ ...col, tasks: [...col.tasks] }));
     const [movedTask] = nextLists[activeLoc.listIndex].tasks.splice(activeLoc.taskIndex, 1);
-    nextLists[targetListIndex].tasks.push({
+    const insertPosition = targetIndex === -1 ? 0 : targetIndex + 1;
+    nextLists[targetListIndex].tasks.splice(insertPosition, 0, {
       ...movedTask,
       listId: targetList.id
     });
@@ -295,6 +310,113 @@ const Board = () => {
     setIsBoardDetailOpen(false);
     setIsBoardLabelsOpen(false);
   }, [activeBoard?.id]);
+
+  const initialFilterState = useMemo(() => ({
+    search: '',
+    status: 'all',
+    labels: [],
+    assignees: [],
+    dueDate: 'all'
+  }), []);
+
+  const [filterState, setFilterState] = useState(initialFilterState);
+  const [showFilterBar, setShowFilterBar] = useState(false);
+
+  const handleClearFilters = useCallback(() => {
+    setFilterState(initialFilterState);
+  }, [initialFilterState]);
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filterState.search.trim() !== '') count++;
+    if (filterState.status !== 'all') count++;
+    if (filterState.labels.length > 0) count += filterState.labels.length;
+    if (filterState.assignees.length > 0) count += filterState.assignees.length;
+    if (filterState.dueDate !== 'all') count++;
+    return count;
+  }, [filterState]);
+
+  const availableAssignees = useMemo(() => {
+    const map = new Map();
+    data.forEach((col) => {
+      (col.tasks || []).forEach((task) => {
+        (task.assignments || []).forEach((assignment) => {
+          if (assignment.user && assignment.user.id) {
+            map.set(assignment.user.id, assignment.user);
+          }
+        });
+      });
+    });
+    return Array.from(map.values());
+  }, [data]);
+
+  const matchesFilter = useCallback((task, filters, currentUser) => {
+    if (filters.search.trim()) {
+      const query = filters.search.trim().toLowerCase();
+      const taskTitle = (task.name || task.title || '').toLowerCase();
+      const taskDesc = (task.description || '').toLowerCase();
+      if (!taskTitle.includes(query) && !taskDesc.includes(query)) {
+        return false;
+      }
+    }
+
+    if (filters.status === 'incomplete' && task.completedAt) {
+      return false;
+    }
+    if (filters.status === 'completed' && !task.completedAt) {
+      return false;
+    }
+
+    if (filters.labels.length > 0) {
+      const taskLabelIds = (task.labels || []).map((l) => l.id);
+      const hasLabelMatch = filters.labels.some((labelId) => taskLabelIds.includes(labelId));
+      if (!hasLabelMatch) return false;
+    }
+
+    if (filters.assignees.length > 0) {
+      const taskAssigneeIds = (task.assignments || []).map((a) => a.userId || a.user?.id);
+      const hasAssigneeMatch = filters.assignees.some((val) => {
+        if (val === 'unassigned') return taskAssigneeIds.length === 0;
+        if (val === 'me') return currentUser?.id && taskAssigneeIds.includes(currentUser.id);
+        return taskAssigneeIds.includes(val);
+      });
+      if (!hasAssigneeMatch) return false;
+    }
+
+    if (filters.dueDate !== 'all') {
+      if (filters.dueDate === 'no-date') {
+        if (task.dueDate) return false;
+      } else {
+        if (!task.dueDate) return false;
+      }
+
+      const taskDate = new Date(task.dueDate);
+      const now = new Date();
+      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+
+      if (filters.dueDate === 'today') {
+        if (taskDate < startOfToday || taskDate > endOfToday) return false;
+      } else if (filters.dueDate === 'overdue') {
+        if (taskDate >= startOfToday || !!task.completedAt) return false;
+      } else if (filters.dueDate === 'week') {
+        const endOfWeek = new Date(startOfToday);
+        endOfWeek.setDate(endOfWeek.getDate() + (7 - endOfWeek.getDay()));
+        endOfWeek.setHours(23, 59, 59, 999);
+        if (taskDate < startOfToday || taskDate > endOfWeek) return false;
+      }
+    }
+
+    return true;
+  }, []);
+
+  const filteredData = useMemo(() => {
+    if (activeFilterCount === 0) return data;
+    return data.map((col) => ({
+      ...col,
+      tasks: col.tasks.filter((task) => matchesFilter(task, filterState, user))
+    }));
+  }, [data, filterState, activeFilterCount, matchesFilter, user]);
 
   const [realtimeCommentPayload, setRealtimeCommentPayload] = useState(null);
   const pendingEventsRef = useRef([]);
@@ -678,7 +800,7 @@ const Board = () => {
     if (!activeTaskId || !overData) return;
 
     startTransition(() => {
-      setData((currentData) => moveTaskInLists(currentData, activeTaskId, overData));
+      setData((currentData) => moveTaskInLists(currentData, activeTaskId, overData, filterState, user, matchesFilter));
     });
   };
 
@@ -799,6 +921,22 @@ const Board = () => {
                 <div className="flex items-center gap-2">
                   <ActiveUsersBar users={activeUsers} />
                   <button
+                    onClick={() => setShowFilterBar((prev) => !prev)}
+                    className={`p-2 rounded-lg transition-colors relative flex items-center justify-center ${
+                      showFilterBar || activeFilterCount > 0
+                        ? 'bg-button/10 text-button font-medium'
+                        : 'hover:bg-bg-tertiary text-text-secondary'
+                    }`}
+                    title="Filter Tasks"
+                  >
+                    <Filter size={20} />
+                    {activeFilterCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-button text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                        {activeFilterCount}
+                      </span>
+                    )}
+                  </button>
+                  <button
                     onClick={openBoardLabels}
                     className="p-2 hover:bg-bg-tertiary rounded-lg text-text-secondary transition-colors"
                     title="Labels"
@@ -814,6 +952,16 @@ const Board = () => {
                   </button>
                 </div>
               </div>
+              {(showFilterBar || activeFilterCount > 0) && (
+                <BoardFilterBar
+                  filterState={filterState}
+                  setFilterState={setFilterState}
+                  boardLabels={boardLabels}
+                  availableAssignees={availableAssignees}
+                  activeFilterCount={activeFilterCount}
+                  onClearFilters={handleClearFilters}
+                />
+              )}
             <DndContext
               sensors={sensors}
               collisionDetection={customCollisionDetection}
@@ -829,12 +977,14 @@ const Board = () => {
               >
                 <LiveCursorsOverlay cursors={activeDragCursors} />
                 <SortableContext items={data.map((col) => listSortableId(col.id))} strategy={horizontalListSortingStrategy}>
-                  {data.map((col) => (
+                  {filteredData.map((col) => (
                     <ListColumn
                       key={col.id || col.title}
                       id={col.id}
                       title={col.title}
                       tasks={col.tasks}
+                      totalTaskCount={data.find(c => c.id === col.id)?.tasks?.length}
+                      isFiltered={activeFilterCount > 0}
                       listSortableId={listSortableId(col.id)}
                       taskSortableId={taskSortableId}
                       taskListDroppableId={taskListDroppableId(col.id)}

@@ -11,6 +11,8 @@ const ListColumn = ({
   id,
   title,
   tasks,
+  totalTaskCount,
+  isFiltered,
   listSortableId,
   taskSortableId,
   taskListDroppableId,
@@ -150,7 +152,11 @@ const ListColumn = ({
               {title}
             </h3>
           )}
-          <span className="text-[10px] font-medium text-text-secondary bg-bg-tertiary px-1.5 py-0.5 rounded-full flex-shrink-0">{tasks.length}</span>
+          <span className="text-[10px] font-medium text-text-secondary bg-bg-tertiary px-1.5 py-0.5 rounded-full flex-shrink-0">
+            {isFiltered && totalTaskCount !== undefined && totalTaskCount !== tasks.length
+              ? `${tasks.length} / ${totalTaskCount}`
+              : tasks.length}
+          </span>
         </div>
         <div className="flex gap-1">
           <button
@@ -167,6 +173,11 @@ const ListColumn = ({
         ref={setCombinedRef}
         className={`flex-1 flex flex-col gap-2 pt-3.5 rounded-md transition-colors overflow-y-auto overflow-x-hidden min-h-0 thin-scrollbar ${isOver ? 'bg-bg-tertiary/70' : ''}`}
       >
+        {isFiltered && tasks.length === 0 && (
+          <div className="text-[11px] text-text-secondary text-center py-4 italic">
+            No matching tasks
+          </div>
+        )}
         <SortableContext items={tasks.map((task) => taskSortableId(task.id))} strategy={verticalListSortingStrategy}>
           {tasks.map((task) => (
             <TaskCard
