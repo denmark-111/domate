@@ -7,6 +7,7 @@ A real-time collaboration platform that seamlessly connects your team's work, co
 - **Workspaces** — Create workspaces, invite members, and collaborate
 - **Live Kanban Boards** — Full drag-and-drop boards, lists, and tasks with real-time sync across clients
 - **Presence Tracking** — See who else is viewing a board in real time
+- **Live Cursors & Item Locking** — Real-time peer cursor movement tracking and item locking during drag-and-drop board operations
 - **Chat** — Workspace-scoped messaging with live updates and typing indicators
 - **Announcements** — Post and pin team-wide updates instantly
 - **Notifications** — Instant alerts for invitations, task assignments, and team updates
@@ -24,7 +25,7 @@ A real-time collaboration platform that seamlessly connects your team's work, co
 | Backend | Express 5, Prisma 7, Zod |
 | Database | PostgreSQL (via Supabase) |
 | Auth | Supabase Auth (JWT verified via JWKS) |
-| Real-time | Supabase Realtime (chat, presence, boards, announcements, notifications) |
+| Real-time | Supabase Realtime (chat, presence, live cursors, boards, announcements, notifications) |
 | Storage | Supabase Storage (avatars, covers, attachments) |
 | Drag & Drop | dnd-kit |
 
@@ -58,7 +59,7 @@ domate/
 │   │   │   ├── settings/      # User settings
 │   │   │   └── common/        # Shared UI components
 │   │   ├── context/           # Auth, theme, workspace providers
-│   │   ├── hooks/             # Real-time chat & presence hooks
+│   │   ├── hooks/             # Real-time chat, presence, & cursor hooks
 │   │   ├── services/          # API client modules
 │   │   └── lib/               # Supabase client
 │   └── ...
@@ -195,6 +196,7 @@ The database schema (managed via Prisma) includes these models:
 ## Real-time Features
 
 - **Boards**: Task moves, edits, comments, and list changes sync instantly across all clients
+- **Live Cursors & Item Locking**: Broadcast drag positions and view peer cursor movements with color-coded badges, alongside visual item locking to prevent simultaneous drag collisions
 - **Chat**: Workspace messaging with real-time delivery and typing indicators via Supabase Realtime
 - **Presence**: Active users on a board are tracked and displayed using Supabase Realtime presence
 - **Announcements**: Team-wide announcements are broadcast immediately
@@ -203,3 +205,4 @@ The database schema (managed via Prisma) includes these models:
 ## License
 
 MIT
+
