@@ -32,38 +32,58 @@ const formatFullWorkspace = (workspace) => {
 
 export const getWorkspaces = async (req, res, next) => {
     const userId = req.supabase.user.id;
+    const { page = 1, limit = 10 } = req.validated.query || {};
+    const skip = ((page ?? 1) - 1) * Number(limit);
 
-    const workspaces = await prisma.workspace.findMany({
-        where: {
-            memberships: {
-                some: {
-                    userId
+    const [workspaces, total] = await Promise.all([
+        prisma.workspace.findMany({
+            where: {
+                memberships: {
+                    some: { userId }
+                }
+            },
+            skip: Number(skip),
+            take: Number(limit),
+            orderBy: { createdAt: "desc" },
+            include: {
+                _count: {
+                    select: { memberships: true, boards: true }
+                },
+                memberships: {
+                    take: 3,
+                    include: { user: { select: { id: true, fullName: true, avatarUrl: true } } }
                 }
             }
-        },
-        include: {
-            _count: {
-                select: { memberships: true }
-            },
-            memberships: {
-                where: { userId },
-                select: { role: true }
+        }),
+        prisma.workspace.count({
+            where: {
+                memberships: {
+                    some: { userId }
+                }
             }
-        }
-    });
+        })
+    ]);
 
     const formattedWorkspaces = workspaces.map(ws => {
         const { _count, memberships, ...rest } = ws;
+        const type = getWorkspaceType(_count.memberships);
 
         return {
             ...rest,
-            role: memberships[0]?.role,
-            type: getWorkspaceType(_count.memberships)
+            _count,
+            type,
+            members: type === "team" ? memberships.map(m => m.user) : []
         };
     });
 
     res.status(200).json({
-        data: formattedWorkspaces
+        data: formattedWorkspaces,
+        pagination: {
+            page: Number(page),
+            limit: Number(limit),
+            total,
+            hasMore: skip + formattedWorkspaces.length < total
+        }
     });
 };
 

@@ -36,7 +36,13 @@ export const getRecent = async (req, res, next) => {
     recentWorkspaces.length
       ? prisma.workspace.findMany({
           where: { id: { in: recentWorkspaces } },
-          include: { _count: { select: { memberships: true } } },
+          include: { 
+            _count: { select: { memberships: true, boards: true } },
+            memberships: {
+              take: 3,
+              include: { user: { select: { id: true, fullName: true, avatarUrl: true } } }
+            }
+          },
         })
       : [],
     recentBoards.length
@@ -49,20 +55,32 @@ export const getRecent = async (req, res, next) => {
 
   // Map type field for workspaces
   const formattedWorkspaces = workspaces.map((ws) => {
-    const { _count, ...rest } = ws;
+    const { _count, memberships, ...rest } = ws;
     return {
       ...rest,
+      members: memberships.map(m => m.user),
+      _count,
       type: _count.memberships > 1 ? "team" : "personal",
     };
   });
 
-  // Preserve the order from the visits
+  // Preserve the order from the visits and attach visitedAt
   const orderedWorkspaces = recentWorkspaces
-    .map((id) => formattedWorkspaces.find((w) => w.id === id))
+    .map((id) => {
+      const w = formattedWorkspaces.find((w) => w.id === id);
+      if (!w) return null;
+      const visit = visits.find(v => v.entityType === 'workspace' && v.entityId === id);
+      return { ...w, visitedAt: visit?.visitedAt };
+    })
     .filter(Boolean);
 
   const orderedBoards = recentBoards
-    .map((id) => boards.find((b) => b.id === id))
+    .map((id) => {
+      const b = boards.find((b) => b.id === id);
+      if (!b) return null;
+      const visit = visits.find(v => v.entityType === 'board' && v.entityId === id);
+      return { ...b, visitedAt: visit?.visitedAt };
+    })
     .filter(Boolean);
 
   res.status(200).json({
