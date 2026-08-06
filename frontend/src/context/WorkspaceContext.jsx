@@ -11,6 +11,7 @@ export const WorkspaceProvider = ({ children }) => {
   const { isAuthenticated } = useAuth();
 
   const [workspaces, setWorkspaces] = useState([]);
+  const [workspacesPagination, setWorkspacesPagination] = useState(null);
   const [isLoadingWorkspaces, setIsLoadingWorkspaces] = useState(true);
   const [activeView, setActiveView] = useState('Overview');
   const [activeBoard, setActiveBoard] = useState(null);
@@ -21,25 +22,28 @@ export const WorkspaceProvider = ({ children }) => {
   const [myPendingInvitations, setMyPendingInvitations] = useState([]);
   const [isLoadingMyInvitations, setIsLoadingMyInvitations] = useState(false);
 
+  const fetchWorkspaces = useCallback(async (page = 1) => {
+    if (isAuthenticated) {
+      if (page === 1) setIsLoadingWorkspaces(true);
+      const res = await workspaceService.getWorkspaces({ page, limit: 10 });
+      if (res.success && Array.isArray(res.data)) {
+        setWorkspaces(prev => page === 1 ? res.data : [...prev, ...res.data]);
+        setWorkspacesPagination(res.pagination);
+      } else {
+        if (page === 1) setWorkspaces([]);
+      }
+      setIsLoadingWorkspaces(false);
+    } else {
+      setWorkspaces([]);
+      setWorkspacesPagination(null);
+      setIsLoadingWorkspaces(false);
+    }
+  }, [isAuthenticated]);
+
   // Fetch workspaces on load or when auth changes
   useEffect(() => {
-    const fetchWorkspaces = async () => {
-      if (isAuthenticated) {
-        setIsLoadingWorkspaces(true);
-        const res = await workspaceService.getWorkspaces();
-        if (res.success && Array.isArray(res.data)) {
-          setWorkspaces(res.data);
-        } else {
-          setWorkspaces([]);
-        }
-        setIsLoadingWorkspaces(false);
-      } else {
-        setWorkspaces([]);
-        setIsLoadingWorkspaces(false);
-      }
-    };
-    fetchWorkspaces();
-  }, [isAuthenticated]);
+    fetchWorkspaces(1);
+  }, [fetchWorkspaces]);
 
   // Find the active workspace object
   const activeWorkspace = workspaceId && Array.isArray(workspaces)
@@ -135,7 +139,8 @@ export const WorkspaceProvider = ({ children }) => {
   const createWorkspace = async (data) => {
     const res = await workspaceService.createWorkspace(data);
     if (res.success) {
-      setWorkspaces(prev => [...prev, res.data]);
+      setWorkspaces(prev => [res.data, ...prev]);
+      setWorkspacesPagination(prev => prev ? { ...prev, total: prev.total + 1 } : prev);
     }
     return res;
   };
@@ -177,6 +182,7 @@ export const WorkspaceProvider = ({ children }) => {
     const res = await workspaceService.deleteWorkspace(id);
     if (res.success) {
       setWorkspaces(prev => prev.filter(w => w.id !== id));
+      setWorkspacesPagination(prev => prev ? { ...prev, total: prev.total - 1 } : prev);
     }
     return res;
   };
@@ -238,6 +244,8 @@ export const WorkspaceProvider = ({ children }) => {
     <WorkspaceContext.Provider value={{
       activeWorkspace,
       workspaces,
+      workspacesPagination,
+      fetchWorkspaces,
       isLoadingWorkspaces,
       activeView,
       setActiveView,

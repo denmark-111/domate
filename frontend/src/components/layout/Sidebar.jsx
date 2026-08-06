@@ -16,6 +16,9 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
   const { 
     activeWorkspace, 
     workspaces, 
+    workspacesPagination,
+    fetchWorkspaces,
+    isLoadingWorkspaces,
     activeView, 
     setActiveView, 
     boards, 
@@ -30,7 +33,6 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
   const [deletingBoardId, setDeletingBoardId] = useState(null);
   const [isDeletingBoard, setIsDeletingBoard] = useState(false);
   const [deleteBoardError, setDeleteBoardError] = useState(null);
-  const [showAllWorkspaces, setShowAllWorkspaces] = useState(false);
   const [showAllBoards, setShowAllBoards] = useState(false);
 
   const handleDeleteBoard = async () => {
@@ -216,8 +218,7 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
         <div className="space-y-0.5">
           {(() => {
             const safeWorkspaces = Array.isArray(workspaces) ? workspaces : [];
-            const displayWorkspaces = showAllWorkspaces ? safeWorkspaces : safeWorkspaces.slice(0, 10);
-            return displayWorkspaces.map(ws => (
+            return safeWorkspaces.map(ws => (
               <button
                 key={ws.id}
                 onClick={() => handleWorkspaceChange(ws.id)}
@@ -236,12 +237,13 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
               </button>
             ));
           })()}
-          {!collapsed && Array.isArray(workspaces) && workspaces.length > 10 && (
+          {!collapsed && workspacesPagination?.hasMore && (
             <button
-              onClick={() => setShowAllWorkspaces(!showAllWorkspaces)}
-              className="w-full text-left px-3 py-1.5 text-xs text-text-secondary hover:text-text-accent transition-colors whitespace-nowrap overflow-hidden"
+              onClick={() => fetchWorkspaces(workspacesPagination.page + 1)}
+              disabled={isLoadingWorkspaces}
+              className="w-full text-left px-3 py-1.5 text-xs text-text-secondary hover:text-text-accent transition-colors whitespace-nowrap overflow-hidden disabled:opacity-50"
             >
-              {showAllWorkspaces ? 'Show less' : `Show more (${workspaces.length - 10})`}
+              {isLoadingWorkspaces ? 'Loading...' : `Show more (${workspacesPagination.total - workspaces.length})`}
             </button>
           )}
         </div>
