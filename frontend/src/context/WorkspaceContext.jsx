@@ -13,6 +13,7 @@ export const WorkspaceProvider = ({ children }) => {
   const [workspaces, setWorkspaces] = useState([]);
   const [workspacesPagination, setWorkspacesPagination] = useState(null);
   const [isLoadingWorkspaces, setIsLoadingWorkspaces] = useState(true);
+  const [isFetchingMoreWorkspaces, setIsFetchingMoreWorkspaces] = useState(false);
   const [activeWorkspace, setActiveWorkspace] = useState(null);
   const [failedWorkspaceId, setFailedWorkspaceId] = useState(null);
 
@@ -35,7 +36,11 @@ export const WorkspaceProvider = ({ children }) => {
 
   const fetchWorkspaces = useCallback(async (page = 1) => {
     if (isAuthenticated) {
-      if (page === 1) setIsLoadingWorkspaces(true);
+      if (page === 1) {
+        setIsLoadingWorkspaces(true);
+      } else {
+        setIsFetchingMoreWorkspaces(true);
+      }
       const res = await workspaceService.getWorkspaces({ page, limit: 10 });
       if (res.success && Array.isArray(res.data)) {
         setWorkspaces(prev => {
@@ -52,16 +57,25 @@ export const WorkspaceProvider = ({ children }) => {
         if (page === 1) setWorkspaces([]);
       }
       setIsLoadingWorkspaces(false);
+      setIsFetchingMoreWorkspaces(false);
     } else {
       setWorkspaces([]);
       setWorkspacesPagination(null);
       setIsLoadingWorkspaces(false);
+      setIsFetchingMoreWorkspaces(false);
     }
   }, [isAuthenticated]);
 
   // Fetch workspaces on load or when auth changes
   useEffect(() => {
-    fetchWorkspaces(1);
+    let isMounted = true;
+    const loadInitial = async () => {
+      if (isMounted) {
+        await fetchWorkspaces(1);
+      }
+    };
+    loadInitial();
+    return () => { isMounted = false; };
   }, [fetchWorkspaces]);
 
   // Update page title based on active workspace name or default 'Domate'
@@ -286,6 +300,7 @@ export const WorkspaceProvider = ({ children }) => {
       workspacesPagination,
       fetchWorkspaces,
       isLoadingWorkspaces,
+      isFetchingMoreWorkspaces,
       activeView,
       setActiveView,
       activeBoard,

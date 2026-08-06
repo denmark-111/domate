@@ -1,11 +1,9 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { taskService, listService, labelService, supabaseStorageService } from '../../services/index.js';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { taskService, listService, labelService } from '../../services/index.js';
 import TaskModal from '../board/TaskModal.jsx';
-import { Calendar, MessageSquare, Paperclip, Loader } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { Loader, CheckSquare, ChevronDown } from 'lucide-react';
 
 const Tasks = () => {
-  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('active');
   const [tasks, setTasks] = useState([]);
   const [completedTasks, setCompletedTasks] = useState([]);
@@ -14,17 +12,20 @@ const Tasks = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isCompletedLoading, setIsCompletedLoading] = useState(false);
   const [error, setError] = useState(null);
+
   const [selectedTask, setSelectedTask] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [boardLists, setBoardLists] = useState([]);
   const [boardLabels, setBoardLabels] = useState([]);
+  const [selectedWorkspaceFilter, setSelectedWorkspaceFilter] = useState('ALL');
+
   const scrollContainerRef = useRef(null);
   const sentinelRef = useRef(null);
 
   const fetchTasks = useCallback(async (page = 1) => {
     setIsLoading(true);
     setError(null);
-    const res = await taskService.getMyTasks({ status: 'active', page, limit: 15 });
+    const res = await taskService.getMyTasks({ status: 'active', page, limit: 20 });
     if (res.success) {
       if (page === 1) {
         setTasks(res.data);
@@ -41,7 +42,7 @@ const Tasks = () => {
   const fetchCompletedTasks = useCallback(async (page = 1) => {
     setIsCompletedLoading(true);
     setError(null);
-    const res = await taskService.getMyTasks({ status: 'completed', page, limit: 15, weeks: 12 });
+    const res = await taskService.getMyTasks({ status: 'completed', page, limit: 20, weeks: 12 });
     if (res.success) {
       if (page === 1) {
         setCompletedTasks(res.data);
@@ -56,17 +57,31 @@ const Tasks = () => {
   }, []);
 
   useEffect(() => {
-    fetchTasks(1);
-  }, [fetchTasks]);
+    let isMounted = true;
+    const loadInitialTasks = async () => {
+      setIsLoading(true);
+      setError(null);
+      const res = await taskService.getMyTasks({ status: 'active', page: 1, limit: 20 });
+      if (isMounted) {
+        if (res.success) {
+          setTasks(res.data);
+          setActivePagination(res.pagination);
+        } else {
+          setError(res.error);
+        }
+        setIsLoading(false);
+      }
+    };
+    loadInitialTasks();
+    return () => { isMounted = false; };
+  }, []);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setError(null);
-    if (tab === 'completed') {
-      setIsCompletedLoading(true);
+    if (tab === 'completed' && completedTasks.length === 0) {
       fetchCompletedTasks(1);
-    } else if (tab === 'active' && !activePagination) {
-      setIsLoading(true);
+    } else if (tab === 'active' && tasks.length === 0) {
       fetchTasks(1);
     }
   };
@@ -125,21 +140,25 @@ const Tasks = () => {
     setSelectedTask(null);
   };
 
-  const handleCommentChange = (taskId, delta) => {
-    setTasks(prev =>
-      prev.map(a =>
-        a.task.id === taskId
-          ? { ...a, task: { ...a.task, _count: { comments: (a.task._count?.comments ?? 0) + delta } } }
-          : a
-      )
-    );
-    setCompletedTasks(prev =>
-      prev.map(a =>
-        a.task.id === taskId
-          ? { ...a, task: { ...a.task, _count: { comments: (a.task._count?.comments ?? 0) + delta } } }
-          : a
-      )
-    );
+  const handleToggleComplete = async (e, assignment) => {
+    e.stopPropagation();
+    const task = assignment.task;
+    const newCompleted = activeTab === 'active';
+
+    if (activeTab === 'active') {
+      setTasks(prev => prev.filter(a => a.id !== assignment.id));
+      setCompletedTasks(prev => [{ ...assignment, task: { ...task, completedAt: new Date().toISOString() } }, ...prev]);
+    } else {
+      setCompletedTasks(prev => prev.filter(a => a.id !== assignment.id));
+      setTasks(prev => [{ ...assignment, task: { ...task, completedAt: null } }, ...prev]);
+    }
+
+    try {
+      await taskService.updateTask(task.id, { completed: newCompleted });
+    } catch {
+      fetchTasks(1);
+      fetchCompletedTasks(1);
+    }
   };
 
   const dueLabel = (dueDate) => {
@@ -147,208 +166,189 @@ const Tasks = () => {
     const due = new Date(dueDate);
     const now = new Date();
     const diffDays = Math.ceil((due - now) / (1000 * 60 * 60 * 24));
-    if (diffDays < 0) return { text: `Overdue by ${Math.abs(diffDays)}d`, urgent: true };
+    if (diffDays < 0) return { text: `Overdue (${Math.abs(diffDays)}d)`, urgent: true };
     if (diffDays === 0) return { text: 'Today', urgent: true };
     if (diffDays === 1) return { text: 'Tomorrow', urgent: false };
     if (diffDays <= 7) return { text: `In ${diffDays}d`, urgent: false };
-    return { text: due.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }), urgent: false };
-  };
-
-  const getInitials = (name) => {
-    if (!name) return '?';
-    return name.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2);
-  };
-
-  const renderTaskRow = (assignment, isCompleted) => {
-    const task = assignment.task;
-    const due = dueLabel(task.dueDate);
-    const commentCount = task._count?.comments ?? 0;
-    return (
-      <div
-        key={assignment.id}
-        className="bg-bg p-4 rounded-xl border border-border flex items-start justify-between group hover:bg-bg-tertiary/50 transition-colors cursor-pointer"
-        onClick={() => openModal(assignment)}
-      >
-        <div className="flex items-center gap-4 min-w-0 flex-1">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center justify-between gap-2">
-              <p className={`text-sm font-bold truncate ${isCompleted ? 'line-through text-text-secondary' : 'text-text'}`}>
-                {task.name}
-              </p>
-              {due && (
-                <span className={`inline-flex items-center gap-1 text-xs font-semibold whitespace-nowrap shrink-0 ${
-                  due.urgent ? 'text-red-500' : 'text-text-secondary'
-                }`}>
-                  <Calendar size={12} />
-                  {due.text}
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-2 mt-1 flex-wrap">
-              <span className="text-xs text-text-secondary">
-                {task.list?.board?.workspace?.name || 'Workspace'}
-              </span>
-              <span className="text-xs text-text-secondary">•</span>
-              <span className="text-xs text-text-secondary">
-                {task.list?.board?.name || 'Board'}
-              </span>
-            </div>
-            <div className="flex items-center gap-3 mt-1.5">
-              {task.assignments?.length > 0 && (
-                <div className="flex items-center" title={task.assignments.map(a => a.user?.fullName || a.user?.email || '?').join(', ')}>
-                  {[...task.assignments].sort((a, b) => {
-                    if (a.userId === user?.id) return -1;
-                    if (b.userId === user?.id) return 1;
-                    return 0;
-                  }).slice(0, 3).map((a, i, arr) => {
-                    const avatarUrl = a.user?.avatarUrl ? supabaseStorageService.getAvatarUrl(a.user.avatarUrl) : null;
-                    return (
-                      <div
-                        key={a.userId}
-                        className="w-6 h-6 rounded-full bg-button border-2 border-bg flex items-center justify-center text-[9px] text-white font-bold -ml-[6px] first:ml-0 overflow-hidden"
-                        style={{ zIndex: arr.length - i }}
-                      >
-                        {avatarUrl ? (
-                          <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          getInitials(a.user?.fullName || a.user?.email)
-                        )}
-                      </div>
-                    );
-                  })}
-                  {task.assignments.length > 3 && (
-                    <div className="w-6 h-6 rounded-full bg-bg-tertiary border-2 border-bg flex items-center justify-center text-[9px] text-text-secondary font-bold -ml-[6px]">
-                      +{task.assignments.length - 3}
-                    </div>
-                  )}
-                </div>
-              )}
-              {commentCount > 0 && (
-                <span className="flex items-center gap-1 text-xs text-text-secondary">
-                  <MessageSquare size={12} />
-                  {commentCount}
-                </span>
-              )}
-              {task.attachments?.length > 0 && (
-                <span className="flex items-center gap-1 text-xs text-text-secondary">
-                  <Paperclip size={12} />
-                  {task.attachments.length}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-
-      </div>
-    );
+    return { text: due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), urgent: false };
   };
 
   const listItems = activeTab === 'active' ? tasks : completedTasks;
-  const isEmpty = listItems.length === 0;
+
+  const availableWorkspaces = Array.from(
+    new Set(
+      listItems
+        .map(a => a.task?.list?.board?.workspace?.name)
+        .filter(Boolean)
+    )
+  );
+
+  const filteredItems = listItems.filter(a => {
+    if (selectedWorkspaceFilter === 'ALL') return true;
+    return a.task?.list?.board?.workspace?.name === selectedWorkspaceFilter;
+  });
 
   return (
-    <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 sm:p-8 lg:p-12 bg-bg-secondary">
-      <div className="max-w-4xl mx-auto w-full">
-        <div className="mb-8">
-          <h1 className="text-xl sm:text-2xl font-bold text-text">Tasks</h1>
-        </div>
-
-        <div className="flex gap-6 border-b border-border">
-          <button
-            onClick={() => handleTabChange('active')}
-            className={`pb-3 text-sm font-semibold transition-colors ${
-              activeTab === 'active'
-                ? 'text-text border-b-2 border-button'
-                : 'text-text-secondary hover:text-text border-b-2 border-transparent'
-            }`}
-          >
-            Active
-          </button>
-          <button
-            onClick={() => handleTabChange('completed')}
-            className={`pb-3 text-sm font-semibold transition-colors ${
-              activeTab === 'completed'
-                ? 'text-text border-b-2 border-button'
-                : 'text-text-secondary hover:text-text border-b-2 border-transparent'
-            }`}
-          >
-            Completed
-          </button>
-        </div>
-
-        {activeTab === 'active' && activePagination && (
-          <p className="text-xs text-text-secondary mt-6 mb-2">
-            {activePagination.total} active task{activePagination.total !== 1 ? 's' : ''}
-          </p>
-        )}
-
-        {activeTab === 'completed' && completedPagination && (
-          <p className="text-xs text-text-secondary mt-6 mb-2">
-            {completedPagination.total} completed task{completedPagination.total !== 1 ? 's' : ''}
-          </p>
-        )}
-
-        {activeTab === 'active' && isLoading && tasks.length === 0 && (
-          <div className="flex items-center justify-center py-20">
-            <Loader size={24} className="text-text-accent animate-spin" />
-          </div>
-        )}
-
-        {activeTab === 'completed' && isCompletedLoading && completedTasks.length === 0 && (
-          <div className="flex items-center justify-center py-20">
-            <Loader size={24} className="text-text-accent animate-spin" />
-          </div>
-        )}
-
-        {activeTab === 'active' && error && (
-          <div className="text-center py-20">
-            <p className="text-red-500">Failed to load tasks: {error}</p>
-            <button
-              onClick={() => fetchTasks(1)}
-              className="mt-4 px-4 py-2 bg-button text-white text-sm font-semibold rounded hover:bg-button-hover transition-colors"
-            >
-              Retry
-            </button>
-          </div>
-        )}
-
-        {activeTab === 'completed' && error && (
-          <div className="text-center py-20">
-            <p className="text-red-500">Failed to load completed tasks: {error}</p>
-            <button
-              onClick={() => fetchCompletedTasks(1)}
-              className="mt-4 px-4 py-2 bg-button text-white text-sm font-semibold rounded hover:bg-button-hover transition-colors"
-            >
-              Retry
-            </button>
-          </div>
-        )}
-
-        {(activeTab === 'active' ? !isLoading : !isCompletedLoading) && isEmpty && !error && (
-          <div className="text-center py-20">
-            <p className="text-text-secondary">
-              {activeTab === 'active' ? "No pending tasks. You're all caught up!" : 'No completed tasks in the last 12 weeks.'}
+    <div ref={scrollContainerRef} className="flex-1 overflow-y-auto bg-surface dark:bg-background">
+      <main className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-12 py-8 md:py-10 flex flex-col gap-8">
+        
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="font-display text-3xl sm:text-4xl font-semibold text-on-surface tracking-tight">
+              Global Tasks
+            </h1>
+            <p className="font-body-md text-sm sm:text-base text-secondary mt-1">
+              A consolidated view of all action items across active workspaces.
             </p>
           </div>
-        )}
+        </div>
 
-        {!isEmpty && !error && (
-          <div className="space-y-3">
-            {listItems.map((assignment) => renderTaskRow(assignment, activeTab === 'completed'))}
+        {/* Filters & Controls */}
+        <div className="flex flex-col sm:flex-row justify-between items-center bg-surface-container-lowest border border-outline-variant p-3 sm:p-4 rounded-DEFAULT gap-4">
+          <div className="flex gap-2 w-full sm:w-auto">
+            <button
+              onClick={() => handleTabChange('active')}
+              className={`px-4 py-1.5 rounded-DEFAULT text-xs font-label-caps tracking-wider uppercase font-bold transition-colors flex-1 sm:flex-none text-center ${
+                activeTab === 'active'
+                  ? 'bg-primary text-on-primary border border-primary'
+                  : 'bg-surface-container-lowest text-on-surface border border-outline-variant hover:border-primary'
+              }`}
+            >
+              Active
+            </button>
+            <button
+              onClick={() => handleTabChange('completed')}
+              className={`px-4 py-1.5 rounded-DEFAULT text-xs font-label-caps tracking-wider uppercase font-bold transition-colors flex-1 sm:flex-none text-center ${
+                activeTab === 'completed'
+                  ? 'bg-primary text-on-primary border border-primary'
+                  : 'bg-surface-container-lowest text-on-surface border border-outline-variant hover:border-primary'
+              }`}
+            >
+              Completed
+            </button>
           </div>
-        )}
 
-        {!isEmpty && !error && (
-          <div ref={sentinelRef} className="h-4" />
-        )}
-
-        {(activeTab === 'active' ? isLoading : isCompletedLoading) && !isEmpty && (
-          <div className="flex justify-center py-6">
-            <Loader size={20} className="animate-spin text-text-accent" />
+          <div className="flex gap-3 w-full sm:w-auto">
+            <div className="relative w-full sm:w-56">
+              <select
+                value={selectedWorkspaceFilter}
+                onChange={(e) => setSelectedWorkspaceFilter(e.target.value)}
+                className="w-full appearance-none bg-surface-container-lowest border border-outline-variant focus:border-primary focus:outline-none rounded-DEFAULT font-body-sm text-sm text-on-surface py-1.5 pl-3 pr-8 cursor-pointer"
+              >
+                <option value="ALL">All Workspaces</option>
+                {availableWorkspaces.map(wsName => (
+                  <option key={wsName} value={wsName}>{wsName}</option>
+                ))}
+              </select>
+              <ChevronDown size={16} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-secondary pointer-events-none" />
+            </div>
           </div>
-        )}
+        </div>
 
-      </div>
+        {/* Data Table (Task List) */}
+        <div className="bg-surface-container-lowest border border-outline-variant rounded-DEFAULT overflow-hidden">
+          {/* Table Header */}
+          <div className="grid grid-cols-12 gap-4 px-4 py-3 border-b-2 border-primary bg-surface-container-low font-label-caps text-xs text-on-surface uppercase font-bold items-center hidden md:grid">
+            <div className="col-span-1 flex justify-center">Status</div>
+            <div className="col-span-5">Task Name</div>
+            <div className="col-span-3">Workspace</div>
+            <div className="col-span-1">Board</div>
+            <div className="col-span-2 text-right">Due Date</div>
+          </div>
+
+          {/* Task Rows */}
+          {((activeTab === 'active' ? isLoading : isCompletedLoading) && filteredItems.length === 0) ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader size={24} className="text-primary animate-spin" />
+            </div>
+          ) : error ? (
+            <div className="text-center py-16">
+              <p className="text-error font-medium">Failed to load tasks: {error}</p>
+              <button
+                onClick={() => activeTab === 'active' ? fetchTasks(1) : fetchCompletedTasks(1)}
+                className="mt-3 px-4 py-1.5 bg-primary text-on-primary text-xs font-semibold rounded-DEFAULT"
+              >
+                Retry
+              </button>
+            </div>
+          ) : filteredItems.length === 0 ? (
+            <div className="text-center py-16 text-secondary font-body-sm text-sm">
+              {activeTab === 'active' ? "No active tasks assigned to you!" : "No completed tasks found."}
+            </div>
+          ) : (
+            <div className="divide-y divide-outline-variant">
+              {filteredItems.map((assignment) => {
+                const task = assignment.task;
+                const due = dueLabel(task.dueDate);
+                return (
+                  <div
+                    key={assignment.id}
+                    onClick={() => openModal(assignment)}
+                    className="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4 px-4 py-3.5 items-start md:items-center hover:bg-surface-container-low transition-colors group cursor-pointer"
+                  >
+                    {/* Status Checkbox */}
+                    <div className="md:col-span-1 flex items-center gap-3 md:justify-center">
+                      <button
+                        type="button"
+                        onClick={(e) => handleToggleComplete(e, assignment)}
+                        className="w-5 h-5 border border-primary rounded-xs flex items-center justify-center hover:bg-surface-container-high transition-colors text-primary shrink-0"
+                        title={activeTab === 'active' ? "Mark as complete" : "Mark as incomplete"}
+                      >
+                        {activeTab === 'completed' && <CheckSquare size={14} className="fill-primary text-on-primary" />}
+                      </button>
+                      <span className="md:hidden font-label-caps text-xs text-secondary uppercase font-bold">Status</span>
+                    </div>
+
+                    {/* Task Name */}
+                    <div className="md:col-span-5 min-w-0">
+                      <p className={`font-body-md text-sm font-medium ${
+                        activeTab === 'completed' ? 'line-through text-secondary' : 'text-on-surface group-hover:underline decoration-1 underline-offset-2'
+                      }`}>
+                        {task.name}
+                      </p>
+                    </div>
+
+                    {/* Workspace */}
+                    <div className="md:col-span-3 flex items-center gap-2">
+                      <span className="md:hidden font-label-caps text-xs text-secondary uppercase font-bold w-20">Workspace:</span>
+                      <span className="bg-surface-container-highest px-2 py-0.5 rounded font-mono-label text-xs text-on-surface border border-outline-variant truncate">
+                        {task.list?.board?.workspace?.name || 'Workspace'}
+                      </span>
+                    </div>
+
+                    {/* Board / Label */}
+                    <div className="md:col-span-1 flex items-center gap-2">
+                      <span className="md:hidden font-label-caps text-xs text-secondary uppercase font-bold w-20">Board:</span>
+                      <span className="text-xs text-secondary font-body-sm truncate">
+                        {task.list?.board?.name || 'Board'}
+                      </span>
+                    </div>
+
+                    {/* Due Date */}
+                    <div className="md:col-span-2 flex items-center gap-2 md:justify-end">
+                      <span className="md:hidden font-label-caps text-xs text-secondary uppercase font-bold w-20">Due:</span>
+                      {due ? (
+                        <span className={`font-body-sm text-xs font-medium px-2 py-0.5 rounded ${
+                          due.urgent ? 'bg-error-container text-on-error-container border border-error' : 'text-secondary'
+                        }`}>
+                          {due.text}
+                        </span>
+                      ) : (
+                        <span className="font-body-sm text-xs text-outline">—</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Sentinel for infinite scrolling */}
+        <div ref={sentinelRef} className="h-4" />
+
+      </main>
 
       <TaskModal
         task={selectedTask}
@@ -358,7 +358,6 @@ const Tasks = () => {
         lists={boardLists}
         boardLabels={boardLabels}
         workspaceId={selectedTask?.list?.board?.workspace?.id}
-        onCommentChange={handleCommentChange}
       />
     </div>
   );

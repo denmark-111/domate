@@ -14,6 +14,7 @@ import Topbar from './components/layout/Topbar';
 import HomeDashboard from './components/dashboard/HomeDashboard';
 import Tasks from './components/dashboard/Tasks';
 import Workspace from './components/workspace/Workspace';
+import WorkspacesList from './components/workspace/WorkspacesList';
 import AcceptInvitation from './components/invitation/AcceptInvitation';
 import Settings from './components/settings/Settings';
 import ErrorBoundary from './components/common/ErrorBoundary';
@@ -60,27 +61,27 @@ const AppContent = ({ viewType }) => {
             collapsed={sidebarCollapsed}
             mobileSidebarOpen={mobileSidebarOpen}
             onToggle={handleToggleSidebar}
-            hideSidebarToggle={viewType === 'settings'}
+            hideSidebarToggle={viewType !== 'workspace'}
           />
 
           <div className="flex flex-1 overflow-hidden relative">
             {/* Mobile backdrop */}
-            {mobileSidebarOpen && (
+            {mobileSidebarOpen && viewType === 'workspace' && (
               <div
                 className="fixed inset-0 bg-black/50 z-30 lg:hidden"
                 onClick={handleCloseMobileSidebar}
               />
             )}
 
-            {/* Desktop sidebar */}
-            {viewType !== 'settings' && (
+            {/* Desktop sidebar - only shown in specific workspace view */}
+            {viewType === 'workspace' && (
               <div className={`hidden lg:flex ${sidebarCollapsed ? 'w-16' : 'w-64'} shrink-0 transition-all duration-200`}>
                 <Sidebar collapsed={sidebarCollapsed} onToggle={handleToggleSidebar} />
               </div>
             )}
 
-            {/* Mobile sidebar drawer */}
-            {viewType !== 'settings' && (
+            {/* Mobile sidebar drawer - only shown in specific workspace view */}
+            {viewType === 'workspace' && (
               <div className={`lg:hidden fixed inset-y-0 left-0 z-40 transform transition-transform duration-200 ease-in-out ${
                 mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
               }`}>
@@ -97,6 +98,7 @@ const AppContent = ({ viewType }) => {
               <ErrorBoundary compact title="Failed to load page content" message="An unexpected error occurred while loading this view.">
                 {viewType === 'home' && <HomeDashboard />}
                 {viewType === 'tasks' && <Tasks />}
+                {viewType === 'workspaces' && <WorkspacesList />}
                 {viewType === 'workspace' && <Workspace />}
                 {viewType === 'settings' && <Settings />}
               </ErrorBoundary>
@@ -124,6 +126,7 @@ function App() {
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/dashboard" element={<RequireAuth><AppContent viewType="home" /></RequireAuth>} />
             <Route path="/tasks" element={<RequireAuth><AppContent viewType="tasks" /></RequireAuth>} />
+            <Route path="/workspaces" element={<RequireAuth><AppContent viewType="workspaces" /></RequireAuth>} />
             <Route path="/workspaces/:workspaceId" element={<RequireAuth><AppContent viewType="workspace" /></RequireAuth>} />
             <Route path="/settings" element={<RequireAuth><AppContent viewType="settings" /></RequireAuth>} />
             <Route path="/invitations/:invitationId" element={<AcceptInvitation />} />

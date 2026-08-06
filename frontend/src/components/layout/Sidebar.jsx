@@ -1,15 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import ConfirmModal from '../common/ConfirmModal';
 import WorkspaceIcon from '../workspace/WorkspaceIcon';
-import { Home, ListTodo, MessageSquare, Megaphone, Plus, Trash2, Users } from 'lucide-react';
+import { Home, ListTodo, MessageSquare, Megaphone, Plus, Trash2, Users, LayoutDashboard } from 'lucide-react';
 
-const boardIcon = (board) => ({
-  backgroundColor: board.color || 'var(--color-bg-tertiary)'
-});
-
-const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
+const Sidebar = ({ collapsed, mobile = false, onCloseMobile }) => {
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -24,7 +20,6 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
     boards, 
     activeBoard, 
     setActiveBoard,
-    showCreateBoard,
     setShowCreateBoard,
     deleteBoard
   } = useWorkspace();
@@ -59,6 +54,7 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
 
   const isHome = location.pathname === '/dashboard';
   const isTasks = location.pathname === '/tasks';
+  const isWorkspaces = location.pathname === '/workspaces';
 
   const renderWorkspaceSidebar = () => (
     <div className="px-2 space-y-3">
@@ -206,6 +202,18 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
             <ListTodo size={20} className="shrink-0" />
           </div>
           {!collapsed && <span className="truncate">Tasks</span>}
+        </button>
+        <button 
+          onClick={() => navigate('/workspaces')}
+          className={`w-full px-3 py-2 rounded-lg font-bold text-sm flex items-center gap-3 text-left transition-colors whitespace-nowrap overflow-hidden ${
+            isWorkspaces ? 'bg-button text-white' : 'text-text-tertiary hover:bg-bg-tertiary/50'
+          }`}
+          title={collapsed ? 'Workspaces' : undefined}
+        >
+          <div className="w-6 h-6 flex items-center justify-center shrink-0">
+            <LayoutDashboard size={20} className="shrink-0" />
+          </div>
+          {!collapsed && <span className="truncate">Workspaces</span>}
         </button>
       </nav>
 

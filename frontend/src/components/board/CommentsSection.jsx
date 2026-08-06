@@ -144,7 +144,7 @@ const CommentsSection = ({ taskId, onCommentChange, commentCount = 0, realtimeCo
     : (commentsPagination.hasMore ? Math.max(comments.length, commentsPagination.total) : comments.length);
 
   return (
-    <div ref={scrollContainerRef} className="sm:w-1/2 sm:overflow-y-auto p-4 sm:p-6 space-y-4 sm:thin-scrollbar">
+    <div ref={scrollContainerRef} className="sm:w-5/12 shrink-0 flex-1 sm:overflow-y-auto p-4 sm:p-6 space-y-4 sm:thin-scrollbar">
       <h3 className="text-sm font-semibold text-text">
         Comments <span className="text-text-secondary">({displayedCommentCount})</span>
       </h3>

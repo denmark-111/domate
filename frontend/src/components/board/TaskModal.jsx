@@ -421,7 +421,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
 
       {/* Modal */}
       <div
-        className="relative bg-bg rounded-t-xl sm:rounded-xl border border-border shadow-xl w-full sm:max-w-4xl lg:max-w-5xl sm:mx-4 max-h-[90vh] sm:max-h-[90vh] flex flex-col overflow-hidden"
+        className="relative bg-bg rounded-t-xl sm:rounded-xl border border-border shadow-xl w-[95vw] sm:w-[90vw] md:w-[85vw] max-w-5xl lg:max-w-6xl mx-auto max-h-[90vh] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border bg-bg shrink-0">
@@ -449,7 +449,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                     <span className="truncate max-w-[120px] sm:max-w-none">{lists.find(l => l.id === task.listId)?.title || lists.find(l => l.id === task.listId)?.name || 'Select list'}</span>
                     <ChevronDown size={14} className={`text-text-secondary transition-transform shrink-0 ${showListPicker ? 'rotate-180' : ''}`} />
                   </button>
-                  {showListPicker && listPickerRef.current && createPortal(
+                  {showListPicker && createPortal(
                     <div
                       ref={listDropdownRef}
                       className="bg-bg border border-border rounded-lg shadow-xl p-1.5 space-y-0.5"
@@ -492,7 +492,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
         {/* Body: responsive layout */}
         <div className="flex flex-1 min-h-0 flex-col sm:flex-row overflow-y-auto sm:overflow-hidden">
           {/* Left Column: Task Details */}
-          <div className="sm:w-1/2 sm:overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6 sm:border-r border-border sm:thin-scrollbar">
+          <div className="sm:w-7/12 shrink-0 sm:overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6 sm:border-r border-border sm:thin-scrollbar">
             {/* Task Title + checkbox */}
             <div className="flex flex-col sm:flex-row sm:gap-2 sm:items-start">
               {!readOnly && (
@@ -547,6 +547,8 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                     placeholder="Task name"
                   />
                 )}
+              </div>
+            </div>
 
               {/* Description */}
               <div className="mt-3 sm:mt-4">
@@ -609,7 +611,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                       >
                         + Add label
                       </button>
-                      {showLabelPicker && labelContainerRef.current && createPortal(
+                      {showLabelPicker && createPortal(
                         <div
                           ref={labelDropdownRef}
                           className="bg-bg border border-border rounded-lg shadow-xl p-3 space-y-2"
@@ -740,9 +742,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                   onRemoveAttachment={removeAttachment}
                 />
               </div>
-              </div>
             </div>
-          </div>
 
           <CommentsSection
             taskId={task?.id}

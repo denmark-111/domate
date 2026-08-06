@@ -4,11 +4,14 @@ import { useWorkspace } from '../../context/WorkspaceContext';
 import { supabaseStorageService } from '../../services/supabaseStorageService';
 import ColorPicker from '../common/ColorPicker';
 import { WORKSPACE_COLORS, autoAssignColor } from '../../data/colorPalette';
-import { Image, Loader, X } from 'lucide-react';
+import Input from '../common/Input';
+import Button from '../common/Button';
+import { Loader, X, UploadCloud } from 'lucide-react';
 
 const CreateWorkspaceForm = ({ onClose }) => {
   const navigate = useNavigate();
   const { createWorkspace, updateWorkspace } = useWorkspace();
+  const [coverType, setCoverType] = useState('color'); // 'color' | 'image'
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -71,7 +74,6 @@ const CreateWorkspaceForm = ({ onClose }) => {
       });
 
       if (result.success) {
-        // If a cover file was selected, upload it with the real workspace ID
         if (coverFile) {
           const coverImageUrl = await supabaseStorageService.uploadWorkspaceCoverUrl(result.data.id, coverFile);
           await updateWorkspace(result.data.id, { coverImageUrl });
@@ -91,148 +93,161 @@ const CreateWorkspaceForm = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-primary/40 backdrop-blur-[2px] p-4">
+      {/* Backdrop click handler */}
       <div
-        className="fixed inset-0 bg-black/50 transition-opacity"
+        className="fixed inset-0"
         onClick={onClose}
       />
+
+      {/* Modal Container */}
       <div
-        className="relative bg-bg rounded-t-xl sm:rounded-xl border border-border shadow-xl w-full sm:max-w-md sm:mx-4 max-h-[90vh] flex flex-col overflow-hidden"
+        className="relative bg-surface-container-lowest border border-outline-variant w-full max-w-[560px] rounded-DEFAULT shadow-xs flex flex-col z-10 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border shrink-0">
-          <h2 className="text-xl font-bold text-text">Create Workspace</h2>
+        <div className="p-6 border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest shrink-0">
+          <h2 className="font-headline-md text-xl font-semibold text-on-surface m-0 tracking-tight">
+            Create New Workspace
+          </h2>
           <button
             onClick={onClose}
-            className="p-1.5 text-text-secondary hover:text-text rounded-lg hover:bg-bg-tertiary transition-colors"
+            className="text-secondary hover:text-on-surface transition-colors p-1.5 rounded-DEFAULT hover:bg-surface-container-low"
+            aria-label="Close"
           >
             <X size={18} />
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
-          {/* Name */}
-          <div>
-            <label htmlFor="name" className="block text-sm font-semibold text-text-secondary mb-1.5">
-              Name *
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              placeholder="Enter workspace title"
-              className={`w-full px-4 py-2.5 rounded-lg border outline-none focus:border-input-border-focus transition-colors ${
-                errors.name ? 'border-error-border bg-error-bg' : 'border-border bg-bg'
-              }`}
-            />
-            {errors.name && (
-              <p className="text-error-text text-sm mt-1">{errors.name}</p>
-            )}
-          </div>
+        {/* Content Body */}
+        <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-6 overflow-y-auto max-h-[75vh]">
+          {/* Workspace Name */}
+          <Input
+            label="Workspace Name *"
+            id="workspaceName"
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
+            placeholder="e.g. Design Systems Team"
+            autoComplete="off"
+            error={errors.name}
+          />
 
-          {/* Color */}
-          <div>
-            <label className="block text-sm font-semibold text-text-secondary mb-1.5">
-              Color
-            </label>
-            <ColorPicker
-              colors={WORKSPACE_COLORS}
-              selectedColor={formData.color}
-              onChange={(color) => setFormData(prev => ({ ...prev, color }))}
-            />
-          </div>
-
-          {/* Cover Image */}
-          <div>
-            <label className="block text-sm font-semibold text-text-secondary mb-1.5">
-              Cover Image
-            </label>
-            <input
-              type="file"
-              id="coverImageUrl"
-              accept="image/*"
-              onChange={handleCoverSelect}
-              className="hidden"
-            />
-            {coverPreview ? (
-              <div className="relative w-full h-28 rounded-lg overflow-hidden border border-border mb-2">
-                <img
-                  src={coverPreview}
-                  alt="Cover preview"
-                  className="w-full h-full object-cover"
-                />
+          {/* Cover Picker (Color vs Image tabs) */}
+          <div className="flex flex-col gap-1.5">
+            <div className="flex justify-between items-baseline mb-1">
+              <label className="font-mono-label text-xs uppercase font-bold tracking-wider text-on-surface">
+                Cover
+              </label>
+              <div className="flex gap-4">
                 <button
                   type="button"
-                  onClick={handleRemoveCover}
-                  className="absolute top-2 right-2 w-6 h-6 bg-black/50 hover:bg-black/70 rounded-full text-white text-xs flex items-center justify-center transition-colors"
-                  title="Remove cover"
+                  onClick={() => setCoverType('color')}
+                  className={`font-mono-label text-xs pb-1 transition-colors cursor-pointer ${
+                    coverType === 'color'
+                      ? 'text-on-surface border-b-2 border-primary font-bold'
+                      : 'text-secondary hover:text-on-surface border-b-2 border-transparent'
+                  }`}
                 >
-                  ✕
+                  Color
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCoverType('image')}
+                  className={`font-mono-label text-xs pb-1 transition-colors cursor-pointer ${
+                    coverType === 'image'
+                      ? 'text-on-surface border-b-2 border-primary font-bold'
+                      : 'text-secondary hover:text-on-surface border-b-2 border-transparent'
+                  }`}
+                >
+                  Image
                 </button>
               </div>
+            </div>
+
+            {coverType === 'color' ? (
+              <div className="mt-2">
+                <ColorPicker
+                  colors={WORKSPACE_COLORS}
+                  selectedColor={formData.color}
+                  onChange={(color) => setFormData(prev => ({ ...prev, color }))}
+                />
+              </div>
             ) : (
-              <label
-                htmlFor="coverImageUrl"
-                className="flex flex-col items-center justify-center w-full h-28 rounded-lg border-2 border-dashed border-border bg-bg hover:bg-bg-secondary cursor-pointer transition-colors"
-              >
-                <Image size={24} className="text-text-secondary mb-1" />
-                <span className="text-sm text-text-secondary">Click to upload cover image</span>
-              </label>
+              <div className="mt-2">
+                <input
+                  type="file"
+                  id="coverImageUrl"
+                  accept="image/*"
+                  onChange={handleCoverSelect}
+                  className="hidden"
+                />
+                {coverPreview ? (
+                  <div className="relative w-full h-32 rounded-DEFAULT overflow-hidden border border-outline-variant">
+                    <img
+                      src={coverPreview}
+                      alt="Cover preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveCover}
+                      className="absolute top-2 right-2 p-1 bg-surface-container-lowest/80 hover:bg-surface-container-lowest rounded-full text-on-surface border border-outline-variant text-xs flex items-center justify-center transition-colors"
+                      title="Remove cover"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <label
+                    htmlFor="coverImageUrl"
+                    className="w-full h-32 border border-dashed border-outline-variant bg-surface-container-low hover:bg-surface-container transition-colors rounded-DEFAULT flex flex-col items-center justify-center cursor-pointer group"
+                  >
+                    <UploadCloud className="text-secondary group-hover:text-primary mb-2 transition-colors" size={24} />
+                    <span className="font-body-sm text-xs text-secondary group-hover:text-on-surface transition-colors">
+                      Click or drag image to upload
+                    </span>
+                    <span className="font-label-caps text-[10px] text-outline mt-1 uppercase font-bold">
+                      JPEG, PNG OR WEBP (MAX 5MB)
+                    </span>
+                  </label>
+                )}
+              </div>
             )}
           </div>
 
-          {/* Description */}
-          <div>
-            <label htmlFor="description" className="block text-sm font-semibold text-text-secondary mb-1.5">
-              Description
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              placeholder="Add a description..."
-              rows="3"
-              className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg outline-none focus:border-input-border-focus transition-colors resize-none"
-            />
-          </div>
-
-          {/* Error Message */}
+          {/* Submit Error */}
           {errors.submit && (
-            <div className="p-3 rounded-lg bg-error-bg border border-error-border">
-              <p className="text-error-text text-sm">{errors.submit}</p>
+            <div className="p-3 rounded-DEFAULT bg-error-container border border-error text-on-error-container text-xs font-medium">
+              {errors.submit}
             </div>
           )}
         </form>
 
-        {/* Actions */}
-        <div className="flex gap-3 p-6 border-t border-border shrink-0">
-          <button
+        {/* Footer Actions */}
+        <div className="p-4 sm:p-6 border-t border-outline-variant bg-surface-container-low flex justify-end gap-3 shrink-0">
+          <Button
             type="button"
+            variant="secondary"
             onClick={onClose}
-            className="flex-1 px-4 py-2 rounded-lg border border-border bg-bg hover:bg-bg-secondary transition-colors font-semibold text-text"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
+            variant="primary"
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="flex-1 px-4 py-2 rounded-lg bg-button hover:bg-button-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold text-white flex items-center justify-center gap-2"
           >
             {isSubmitting ? (
               <>
                 <Loader size={16} className="animate-spin" />
-                Creating...
+                <span>Creating...</span>
               </>
             ) : (
-              'Create'
+              'Create Workspace'
             )}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

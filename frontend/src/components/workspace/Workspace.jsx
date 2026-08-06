@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Board from '../board/Board';
 import CreateBoardForm from '../board/CreateBoardForm';
@@ -70,7 +70,7 @@ const Workspace = () => {
               <p className="text-text-secondary mb-6 text-sm">
                 This chat channel is private to the workspace.
               </p>
-              <div className="inline-block px-4 py-2 bg-input-bg text-label-feature-text rounded-full text-[10px] font-bold uppercase tracking-wider">
+              <div className="inline-block px-4 py-2 bg-surface-container-high text-primary rounded-full text-[10px] font-bold uppercase tracking-wider">
                 Coming Soon
               </div>
             </div>
