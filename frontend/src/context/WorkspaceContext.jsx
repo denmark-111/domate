@@ -8,11 +8,22 @@ const WorkspaceContext = createContext();
 export const WorkspaceProvider = ({ children }) => {
   const { workspaceId } = useParams();
   const location = useLocation();
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   const [workspaces, setWorkspaces] = useState([]);
   const [workspacesPagination, setWorkspacesPagination] = useState(null);
   const [isLoadingWorkspaces, setIsLoadingWorkspaces] = useState(true);
+  const [activeWorkspace, setActiveWorkspace] = useState(null);
+  const [failedWorkspaceId, setFailedWorkspaceId] = useState(null);
+
+  // Synchronously determine if the active workspace is loading for the current route param
+  const isWorkspaceLoading = Boolean(
+    workspaceId &&
+    isAuthenticated &&
+    activeWorkspace?.id !== workspaceId &&
+    failedWorkspaceId !== workspaceId
+  );
+
   const [activeView, setActiveView] = useState('Overview');
   const [activeBoard, setActiveBoard] = useState(null);
   const [boards, setBoards] = useState([]);
@@ -27,7 +38,15 @@ export const WorkspaceProvider = ({ children }) => {
       if (page === 1) setIsLoadingWorkspaces(true);
       const res = await workspaceService.getWorkspaces({ page, limit: 10 });
       if (res.success && Array.isArray(res.data)) {
-        setWorkspaces(prev => page === 1 ? res.data : [...prev, ...res.data]);
+        setWorkspaces(prev => {
+          const combined = page === 1 ? res.data : [...prev, ...res.data];
+          const seen = new Set();
+          return combined.filter(w => {
+            if (seen.has(w.id)) return false;
+            seen.add(w.id);
+            return true;
+          });
+        });
         setWorkspacesPagination(res.pagination);
       } else {
         if (page === 1) setWorkspaces([]);
@@ -45,11 +64,6 @@ export const WorkspaceProvider = ({ children }) => {
     fetchWorkspaces(1);
   }, [fetchWorkspaces]);
 
-  // Find the active workspace object
-  const activeWorkspace = workspaceId && Array.isArray(workspaces)
-    ? workspaces.find(w => w.id === workspaceId) 
-    : null;
-
   // Update page title based on active workspace name or default 'Domate'
   useEffect(() => {
     if (activeWorkspace?.name) {
@@ -66,56 +80,79 @@ export const WorkspaceProvider = ({ children }) => {
     }
   }, [activeBoard?.id, activeWorkspace]);
 
-  // Log workspace visit and reset local workspace state when the workspace itself changes
+  // Fetch active workspace by ID and workspace resources whenever workspaceId changes
   useEffect(() => {
-    if (workspaceId) {
-      setActiveView('Overview');
-      setActiveBoard(null);
-      setInvitations([]);
+    let cancelled = false;
+
+    if (workspaceId && isAuthenticated) {
+      if (activeWorkspace?.id !== workspaceId) {
+        setActiveView('Overview');
+        setActiveBoard(null);
+        setInvitations([]);
+      }
 
       // Log the workspace visit (fire-and-forget)
       activityService.logVisit('workspace', workspaceId);
 
       const controller = new AbortController();
 
-      const fetchBoards = async () => {
-        const res = await boardService.getWorkspaceBoards(workspaceId, { signal: controller.signal });
-        if (res.success && Array.isArray(res.data)) {
-          setBoards(res.data);
-          // Check if navigation state has a board to auto-select
-          const selectBoardId = location.state?.selectBoardId;
-          if (selectBoardId) {
-            const boardToSelect = res.data.find(b => b.id === selectBoardId);
-            if (boardToSelect) {
-              setActiveBoard(boardToSelect);
-              setActiveView('Board');
+      const loadWorkspaceAndDetails = async () => {
+        const wsRes = await workspaceService.getWorkspaceById(workspaceId);
+        if (cancelled) return;
+
+        if (wsRes.success && wsRes.data) {
+          setActiveWorkspace(wsRes.data);
+          setFailedWorkspaceId(null);
+
+          const isOwner =
+            wsRes.data.memberships?.some((m) => m.role === 'OWNER' && m.user?.id === user?.id) ||
+            wsRes.data.type === 'personal';
+
+          const boardsPromise = boardService.getWorkspaceBoards(workspaceId, { signal: controller.signal });
+          const invPromise = isOwner
+            ? invitationService.getWorkspaceInvitations(workspaceId)
+            : Promise.resolve({ success: true, data: [] });
+
+          const [boardsRes, invRes] = await Promise.all([boardsPromise, invPromise]);
+          if (cancelled) return;
+
+          if (boardsRes.success && Array.isArray(boardsRes.data)) {
+            setBoards(boardsRes.data);
+            const selectBoardId = location.state?.selectBoardId;
+            if (selectBoardId) {
+              const boardToSelect = boardsRes.data.find(b => b.id === selectBoardId);
+              if (boardToSelect) {
+                setActiveBoard(boardToSelect);
+                setActiveView('Board');
+              }
+              window.history.replaceState({}, document.title);
             }
-            // Clear the navigation state so it doesn't re-trigger
-            window.history.replaceState({}, document.title);
+          } else {
+            setBoards([]);
+          }
+
+          if (invRes.success && Array.isArray(invRes.data)) {
+            setInvitations(invRes.data);
+          } else {
+            setInvitations([]);
           }
         } else {
+          setActiveWorkspace(null);
+          setFailedWorkspaceId(workspaceId);
           setBoards([]);
-        }
-      };
-
-      const fetchInvitations = async () => {
-        setIsLoadingInvitations(true);
-        const res = await invitationService.getWorkspaceInvitations(workspaceId);
-        if (res.success && Array.isArray(res.data)) {
-          setInvitations(res.data);
-        } else {
           setInvitations([]);
         }
-        setIsLoadingInvitations(false);
       };
 
-      if (isAuthenticated) {
-        fetchBoards();
-        fetchInvitations();
-      }
+      loadWorkspaceAndDetails();
 
-      return () => controller.abort();
-    } else {
+      return () => {
+        cancelled = true;
+        controller.abort();
+      };
+    } else if (!workspaceId) {
+      setActiveWorkspace(null);
+      setFailedWorkspaceId(null);
       setActiveView('Home');
       setActiveBoard(null);
       setBoards([]);
@@ -148,8 +185,8 @@ export const WorkspaceProvider = ({ children }) => {
   const updateWorkspace = async (id, data) => {
     const res = await workspaceService.updateWorkspace(id, data);
     if (res.success) {
-      // API responds with the updated workspace inside res.data
       setWorkspaces(prev => prev.map(w => w.id === id ? { ...w, ...res.data } : w));
+      setActiveWorkspace(prev => prev?.id === id ? { ...prev, ...res.data } : prev);
     }
     return res;
   };
@@ -183,6 +220,7 @@ export const WorkspaceProvider = ({ children }) => {
     if (res.success) {
       setWorkspaces(prev => prev.filter(w => w.id !== id));
       setWorkspacesPagination(prev => prev ? { ...prev, total: prev.total - 1 } : prev);
+      setActiveWorkspace(prev => prev?.id === id ? null : prev);
     }
     return res;
   };
@@ -190,7 +228,6 @@ export const WorkspaceProvider = ({ children }) => {
   const createInvitation = async (workspaceId, emails) => {
     const res = await invitationService.createInvitations(workspaceId, emails);
     if (res.success) {
-      // Refresh invitations list
       const updated = await invitationService.getWorkspaceInvitations(workspaceId);
       if (updated.success) setInvitations(updated.data);
     }
@@ -243,6 +280,8 @@ export const WorkspaceProvider = ({ children }) => {
   return (
     <WorkspaceContext.Provider value={{
       activeWorkspace,
+      isWorkspaceLoading,
+      isLoadingActiveWorkspace: isWorkspaceLoading,
       workspaces,
       workspacesPagination,
       fetchWorkspaces,

@@ -51,7 +51,7 @@ const WorkspaceOverview = () => {
 
   const isOwner = displayWorkspace?.memberships?.some(
     (m) => m.role === 'OWNER' && m.user?.id === user?.id
-  ) || displayWorkspace?.role === 'OWNER' || displayWorkspace?.type === 'personal';
+  ) || displayWorkspace?.type === 'personal';
 
   useEffect(() => {
     if (displayWorkspace) {

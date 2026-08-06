@@ -31,9 +31,8 @@ const AnnouncementList = () => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const isOwner =
-    fullWorkspace?.memberships?.some((m) => m.role === 'OWNER' && m.user?.id === user?.id) ||
-    activeWorkspace?.role === 'OWNER' ||
-    activeWorkspace?.type === 'personal';
+    (fullWorkspace || activeWorkspace)?.memberships?.some((m) => m.role === 'OWNER' && m.user?.id === user?.id) ||
+    (fullWorkspace || activeWorkspace)?.type === 'personal';
 
   useEffect(() => {
     const loadWorkspaceDetails = async () => {
