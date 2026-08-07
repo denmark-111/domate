@@ -31,7 +31,7 @@ const HomeDashboard = () => {
 
   const handleBoardClick = (board) => {
     if (board.workspace?.id) {
-      navigate(`/workspaces/${board.workspace.id}`, { state: { selectBoardId: board.id } });
+      navigate(`/workspaces/${board.workspace.id}/boards/${board.id}`);
     }
   };
 

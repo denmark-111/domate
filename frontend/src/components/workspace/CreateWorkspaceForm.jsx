@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useWorkspace } from '../../context/WorkspaceContext';
-import { supabaseStorageService } from '../../services/supabaseStorageService';
+import { workspaceService, supabaseStorageService } from '../../services/index.js';
 import ColorPicker from '../common/ColorPicker';
 import { WORKSPACE_COLORS, autoAssignColor } from '../../data/colorPalette';
 import Input from '../common/Input';
@@ -10,7 +9,6 @@ import { Loader, X, UploadCloud } from 'lucide-react';
 
 const CreateWorkspaceForm = ({ onClose }) => {
   const navigate = useNavigate();
-  const { createWorkspace, updateWorkspace } = useWorkspace();
   const [coverType, setCoverType] = useState('color'); // 'color' | 'image'
   const [formData, setFormData] = useState({
     name: '',
@@ -67,7 +65,7 @@ const CreateWorkspaceForm = ({ onClose }) => {
     setIsSubmitting(true);
 
     try {
-      const result = await createWorkspace({
+      const result = await workspaceService.createWorkspace({
         name: formData.name,
         description: formData.description,
         color: formData.color
@@ -76,7 +74,7 @@ const CreateWorkspaceForm = ({ onClose }) => {
       if (result.success) {
         if (coverFile) {
           const coverImageUrl = await supabaseStorageService.uploadWorkspaceCoverUrl(result.data.id, coverFile);
-          await updateWorkspace(result.data.id, { coverImageUrl });
+          await workspaceService.updateWorkspace(result.data.id, { coverImageUrl });
         }
 
         navigate(`/workspaces/${result.data.id}`);
@@ -102,7 +100,7 @@ const CreateWorkspaceForm = ({ onClose }) => {
 
       {/* Modal Container */}
       <div
-        className="relative bg-surface-container-lowest border border-outline-variant w-full max-w-[560px] rounded-DEFAULT shadow-xs flex flex-col z-10 overflow-hidden"
+        className="relative bg-surface-container-lowest border border-outline-variant w-full max-w-lg rounded-xl shadow-lg flex flex-col z-10 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

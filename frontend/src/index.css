@@ -235,14 +235,7 @@ html[data-theme='dark'] {
   --radius-xl: 0.5rem;
   --radius-full: 9999px;
 
-  /* Spacing */
-  --spacing-unit: 4px;
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
-  --spacing-xl: 48px;
-  --spacing-xxl: 80px;
+  /* Spacing Tokens */
   --spacing-gutter: 24px;
   --spacing-margin-mobile: 16px;
   --spacing-margin-desktop: 48px;

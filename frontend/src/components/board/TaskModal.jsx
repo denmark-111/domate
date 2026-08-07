@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { X, Loader, ExternalLink, ChevronDown, Check } from 'lucide-react';
-import { useWorkspace } from '../../context/WorkspaceContext';
+import { useWorkspaceOptional } from '../../context/WorkspaceContext';
 import { taskService } from '../../services/taskService.js';
 import { labelService, supabaseStorageService } from '../../services/index.js';
 import MemberPicker from '../common/MemberPicker.jsx';
@@ -20,7 +20,7 @@ const LABEL_COLORS = [
 
 const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, onMoveTask, boardLabels, onBoardLabelCreated, workspaceId: propWorkspaceId, readOnly = false, realtimeCommentPayload = null }) => {
 
-  const { activeWorkspace, activeBoard } = useWorkspace();
+  const { activeWorkspace, activeBoard } = useWorkspaceOptional();
   const navigate = useNavigate();
   const workspaceIdRef = useRef(null);
 

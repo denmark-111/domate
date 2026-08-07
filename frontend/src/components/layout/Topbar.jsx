@@ -198,7 +198,7 @@ const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = fa
                         {searchResults.boards.map((board) => (
                           <button
                             key={board.id}
-                            onClick={() => { navigate(`/workspaces/${board.workspace.id}`, { state: { selectBoardId: board.id } }); setShowSearchDropdown(false); setSearchQuery(''); }}
+                            onClick={() => { navigate(`/workspaces/${board.workspace.id}/boards/${board.id}`); setShowSearchDropdown(false); setSearchQuery(''); }}
                             className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text hover:bg-bg-tertiary transition-colors text-left"
                           >
                             <div
@@ -356,8 +356,8 @@ const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = fa
                         <button
                           key={board.id}
                           type="button"
-                          onClick={() => { navigate(`/workspaces/${board.workspace.id}`, { state: { selectBoardId: board.id } }); setShowMobileSearch(false); setShowSearchDropdown(false); setSearchQuery(''); }}
-                          onTouchEnd={(e) => { e.preventDefault(); navigate(`/workspaces/${board.workspace.id}`, { state: { selectBoardId: board.id } }); setShowMobileSearch(false); setShowSearchDropdown(false); setSearchQuery(''); }}
+                          onClick={() => { navigate(`/workspaces/${board.workspace.id}/boards/${board.id}`); setShowMobileSearch(false); setShowSearchDropdown(false); setSearchQuery(''); }}
+                          onTouchEnd={(e) => { e.preventDefault(); navigate(`/workspaces/${board.workspace.id}/boards/${board.id}`); setShowMobileSearch(false); setShowSearchDropdown(false); setSearchQuery(''); }}
                           className="w-full flex items-center gap-3 px-4 py-3 text-sm text-text hover:bg-bg-tertiary transition-colors text-left border-b border-border-light"
                         >
                           <div

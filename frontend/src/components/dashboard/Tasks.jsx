@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { taskService, listService, labelService } from '../../services/index.js';
+import { taskService } from '../../services/index.js';
 import TaskModal from '../board/TaskModal.jsx';
 import { Loader, CheckSquare, ChevronDown } from 'lucide-react';
 
@@ -15,8 +15,6 @@ const Tasks = () => {
 
   const [selectedTask, setSelectedTask] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [boardLists, setBoardLists] = useState([]);
-  const [boardLabels, setBoardLabels] = useState([]);
   const [selectedWorkspaceFilter, setSelectedWorkspaceFilter] = useState('ALL');
 
   const scrollContainerRef = useRef(null);
@@ -118,21 +116,9 @@ const Tasks = () => {
     labels: (task.taskLabels || []).map(tl => tl.boardLabel)
   });
 
-  const openModal = async (assignment) => {
+  const openModal = (assignment) => {
     setSelectedTask(normalizeTask(assignment.task));
-    setBoardLists([]);
-    setBoardLabels([]);
     setIsModalOpen(true);
-
-    const boardId = assignment.task.list?.board?.id;
-    if (boardId) {
-      const [listsRes, labelsRes] = await Promise.all([
-        listService.getBoardLists(boardId),
-        labelService.getBoardLabels(boardId),
-      ]);
-      if (listsRes.success) setBoardLists(listsRes.data);
-      if (labelsRes.success) setBoardLabels(labelsRes.data);
-    }
   };
 
   const closeModal = () => {
@@ -355,8 +341,6 @@ const Tasks = () => {
         isOpen={isModalOpen}
         onClose={closeModal}
         readOnly
-        lists={boardLists}
-        boardLabels={boardLabels}
         workspaceId={selectedTask?.list?.board?.workspace?.id}
       />
     </div>

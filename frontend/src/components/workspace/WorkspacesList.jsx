@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useWorkspace } from '../../context/WorkspaceContext';
-import { supabaseStorageService } from '../../services/index.js';
+import { workspaceService, supabaseStorageService } from '../../services/index.js';
 import CreateWorkspaceForm from './CreateWorkspaceForm';
 import WorkspaceIcon from './WorkspaceIcon';
 import Button from '../common/Button';
@@ -9,7 +8,11 @@ import { Plus, LayoutGrid, List as ListIcon, ChevronDown, LayoutDashboard, Searc
 
 const WorkspacesList = () => {
   const navigate = useNavigate();
-  const { workspaces, fetchWorkspaces, isLoadingWorkspaces, isFetchingMoreWorkspaces, workspacesPagination } = useWorkspace();
+  const [workspaces, setWorkspaces] = useState([]);
+  const [workspacesPagination, setWorkspacesPagination] = useState(null);
+  const [isLoadingWorkspaces, setIsLoadingWorkspaces] = useState(true);
+  const [isFetchingMoreWorkspaces, setIsFetchingMoreWorkspaces] = useState(false);
+
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
   const [sortBy, setSortBy] = useState('recent'); // 'recent' (default backend order) | 'name' | 'activity'
@@ -18,6 +21,31 @@ const WorkspacesList = () => {
 
   const scrollContainerRef = useRef(null);
   const sentinelRef = useRef(null);
+
+  const fetchWorkspaces = useCallback(async (page = 1) => {
+    if (page === 1) {
+      setIsLoadingWorkspaces(true);
+    } else {
+      setIsFetchingMoreWorkspaces(true);
+    }
+    const res = await workspaceService.getWorkspaces({ page, limit: 10 });
+    if (res.success && Array.isArray(res.data)) {
+      setWorkspaces(prev => {
+        const combined = page === 1 ? res.data : [...prev, ...res.data];
+        const seen = new Set();
+        return combined.filter(w => {
+          if (seen.has(w.id)) return false;
+          seen.add(w.id);
+          return true;
+        });
+      });
+      setWorkspacesPagination(res.pagination);
+    } else if (page === 1) {
+      setWorkspaces([]);
+    }
+    setIsLoadingWorkspaces(false);
+    setIsFetchingMoreWorkspaces(false);
+  }, []);
 
   useEffect(() => {
     fetchWorkspaces(1);

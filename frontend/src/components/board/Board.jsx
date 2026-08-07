@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect, useCallback, useMemo, startTransition } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   closestCenter,
   pointerWithin,
@@ -36,6 +37,11 @@ import LiveCursorsOverlay from './LiveCursorsOverlay';
 const listSortableId = (listId) => `list:${listId}`;
 const taskSortableId = (taskId) => `task:${taskId}`;
 const taskListDroppableId = (listId) => `task-list:${listId}`;
+
+const normalizeTask = (task) => ({
+  ...task,
+  labels: (task?.taskLabels || []).map(tl => tl.boardLabel || tl)
+});
 
 const withPositions = (lists) =>
   lists.map((list, listIndex) => ({
@@ -237,7 +243,10 @@ const moveTaskToPosition = (lists, taskId, targetListId, targetPosition) => {
 };
 
 const Board = () => {
-  const { activeBoard, setActiveBoard, updateTask, deleteTask, moveTask, updateList, deleteList, updateBoard } = useWorkspace();
+  const { boardId } = useParams();
+  const navigate = useNavigate();
+  const { activeWorkspace, boards, updateTask, deleteTask, moveTask, updateList, deleteList, updateBoard } = useWorkspace();
+  const activeBoard = useMemo(() => boards.find((b) => b.id === boardId) || { id: boardId }, [boards, boardId]);
   const { user } = useAuth();
   const { activeUsers } = usePresenceRealtime(activeBoard?.id, user);
   const containerRef = useRef(null);
@@ -290,6 +299,9 @@ const Board = () => {
           } else {
             setData([]);
           }
+        } catch (err) {
+          console.error('Error fetching board details:', err);
+          setData([]);
         } finally {
           setIsLoading(false);
         }
@@ -427,13 +439,14 @@ const Board = () => {
 
     if (event === 'board:delete' || event === 'delete') {
       if (activeBoard?.id === payload.boardId) {
-        setActiveBoard(null);
+        if (activeWorkspace?.id) {
+          navigate(`/workspaces/${activeWorkspace.id}`);
+        }
       }
       return;
     }
 
     if (event === 'board:update' || event === 'update') {
-      setActiveBoard((prev) => (prev?.id === payload.id ? { ...prev, ...payload } : prev));
       return;
     }
 
@@ -601,7 +614,7 @@ const Board = () => {
       setRealtimeCommentPayload({ taskId, action, comment, commentId, timestamp: Date.now() });
       return;
     }
-  }, [activeBoard?.id, setActiveBoard]);
+  }, [activeBoard?.id]);
 
 
 
@@ -656,11 +669,6 @@ const Board = () => {
     setSelectedTask(task);
     setIsTaskModalOpen(true);
   };
-
-  const normalizeTask = (task) => ({
-    ...task,
-    labels: (task.taskLabels || []).map(tl => tl.boardLabel)
-  });
 
   const handleTaskUpdate = async (updatedTask) => {
     const payload = { 
@@ -892,11 +900,7 @@ const Board = () => {
   };
 
   const handleUpdateBoard = async (boardId, payload) => {
-    const res = await updateBoard(boardId, payload);
-    if (res.success) {
-      setActiveBoard(prev => prev?.id === boardId ? { ...prev, ...res.data } : prev);
-    }
-    return res;
+    return await updateBoard(boardId, payload);
   };
 
   return (

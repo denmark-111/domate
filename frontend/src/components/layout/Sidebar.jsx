@@ -3,23 +3,15 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import ConfirmModal from '../common/ConfirmModal';
 import WorkspaceIcon from '../workspace/WorkspaceIcon';
-import { Home, ListTodo, MessageSquare, Megaphone, Plus, Trash2, Users, LayoutDashboard } from 'lucide-react';
+import { MessageSquare, Megaphone, Plus, Trash2 } from 'lucide-react';
 
 const Sidebar = ({ collapsed, mobile = false, onCloseMobile }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  
-  const { 
-    activeWorkspace, 
-    workspaces, 
-    workspacesPagination,
-    fetchWorkspaces,
-    isLoadingWorkspaces,
-    activeView, 
-    setActiveView, 
-    boards, 
-    activeBoard, 
-    setActiveBoard,
+
+  const {
+    activeWorkspace,
+    boards,
     setShowCreateBoard,
     deleteBoard
   } = useWorkspace();
@@ -48,241 +40,11 @@ const Sidebar = ({ collapsed, mobile = false, onCloseMobile }) => {
     }
   };
 
-  const handleWorkspaceChange = (wsId) => {
-    navigate(`/workspaces/${wsId}`);
-  };
+  if (!activeWorkspace) return null;
 
-  const isHome = location.pathname === '/dashboard';
-  const isTasks = location.pathname === '/tasks';
-  const isWorkspaces = location.pathname === '/workspaces';
-
-  const renderWorkspaceSidebar = () => (
-    <div className="px-2 space-y-3">
-      <div className="pb-2.5 border-b border-border-light">
-        <button 
-          onClick={() => { setActiveView('Overview'); onCloseMobile?.(); }}
-          className={`w-full px-3 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-3 text-left whitespace-nowrap overflow-hidden ${
-            activeView === 'Overview' 
-              ? 'bg-input-bg text-text-accent font-bold' 
-              : 'text-text-secondary hover:bg-bg-tertiary/50 hover:text-button-secondary-text'
-          }`}
-          title={collapsed ? activeWorkspace.name : undefined}
-        >
-          <div className="w-6 h-6 flex items-center justify-center shrink-0">
-            <WorkspaceIcon
-              workspace={activeWorkspace}
-              containerClassName="w-6 h-6 rounded shrink-0"
-              className="rounded"
-            />
-          </div>
-          {!collapsed && (
-            <span className="truncate">
-              {activeWorkspace.name}
-            </span>
-          )}
-        </button>
-      </div>
-
-      {activeWorkspace.type?.toLowerCase() === 'team' && (
-        <nav className="space-y-0.5">
-          <button 
-            onClick={() => { setActiveView('Announcements'); onCloseMobile?.(); }}
-            className={`w-full px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-3 text-left transition-colors whitespace-nowrap overflow-hidden ${
-              activeView === 'Announcements' ? 'bg-button text-white' : 'text-text-tertiary hover:bg-bg-tertiary/50'
-            }`}
-            title={collapsed ? 'Announcements' : undefined}
-          >
-            <div className="w-6 h-6 flex items-center justify-center shrink-0">
-              <Megaphone size={20} className="shrink-0" />
-            </div>
-            {!collapsed && <span className="truncate">Announcements</span>}
-          </button>
-          <button 
-            onClick={() => { setActiveView('Chat'); onCloseMobile?.(); }}
-            className={`w-full px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-3 text-left transition-colors whitespace-nowrap overflow-hidden ${
-              activeView === 'Chat' ? 'bg-button text-white' : 'text-text-tertiary hover:bg-bg-tertiary/50'
-            }`}
-            title={collapsed ? 'Chat' : undefined}
-          >
-            <div className="w-6 h-6 flex items-center justify-center shrink-0">
-              <MessageSquare size={20} className="shrink-0" />
-            </div>
-            {!collapsed && <span className="truncate">Chat</span>}
-          </button>
-        </nav>
-      )}
-
-      <div>
-        {!collapsed && (
-          <div className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2 px-3 flex justify-between items-center whitespace-nowrap overflow-hidden">
-            <span>Boards</span>
-            <button 
-              onClick={() => setShowCreateBoard(true)}
-              className="text-text-secondary hover:text-text-accent hover:bg-input-bg w-6 h-6 flex items-center justify-center rounded transition-colors shrink-0"
-            >
-              <Plus size={16} />
-            </button>
-          </div>
-        )}
-        <div className="space-y-0.5">
-          {(showAllBoards ? boards : boards.slice(0, 10)).map((board) => (
-            <div key={board.id} className="group relative">
-              <button
-                onClick={() => {
-                  setActiveView('Board');
-                  setActiveBoard(board);
-                  onCloseMobile?.();
-                }}
-                className={`w-full px-3 ${collapsed ? '' : 'pr-8'} py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-3 text-left whitespace-nowrap overflow-hidden ${
-                  activeView === 'Board' && activeBoard?.id === board.id 
-                    ? 'text-text-accent bg-input-bg font-bold' 
-                    : 'text-text-secondary hover:bg-bg-tertiary/50 hover:text-button-secondary-text'
-                }`}
-                title={collapsed ? board.name : undefined}
-              >
-                <div className="w-6 h-6 flex items-center justify-center shrink-0">
-                  <span
-                    className="w-2.5 h-2.5 rounded-full shrink-0"
-                    style={{ backgroundColor: board.color || 'var(--color-text-tertiary)' }}
-                  />
-                </div>
-                {!collapsed && <span className="truncate">{board.name}</span>}
-              </button>
-              {!collapsed && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setDeletingBoardId(board.id);
-                    setShowDeleteBoard(true);
-                  }}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 text-red-500 hover:bg-red-50 rounded transition-colors"
-                  title="Delete board"
-                >
-                  <Trash2 size={14} />
-                </button>
-              )}
-            </div>
-          ))}
-          {!collapsed && boards.length > 10 && (
-            <button
-              onClick={() => setShowAllBoards(!showAllBoards)}
-              className="w-full text-left px-3 py-1.5 text-xs text-text-secondary hover:text-text-accent transition-colors whitespace-nowrap overflow-hidden"
-            >
-              {showAllBoards ? 'Show less' : `Show more (${boards.length - 10})`}
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderHomeSidebar = () => (
-    <div className="px-2 space-y-3">
-      <nav className="space-y-0.5">
-        <button 
-          onClick={() => navigate('/dashboard')}
-          className={`w-full px-3 py-2 rounded-lg font-bold text-sm flex items-center gap-3 text-left transition-colors whitespace-nowrap overflow-hidden ${
-            isHome ? 'bg-button text-white' : 'text-text-tertiary hover:bg-bg-tertiary/50'
-          }`}
-          title={collapsed ? 'Home' : undefined}
-        >
-          <div className="w-6 h-6 flex items-center justify-center shrink-0">
-            <Home size={20} className="shrink-0" />
-          </div>
-          {!collapsed && <span className="truncate">Home</span>}
-        </button>
-        <button 
-          onClick={() => navigate('/tasks')}
-          className={`w-full px-3 py-2 rounded-lg font-bold text-sm flex items-center gap-3 text-left transition-colors whitespace-nowrap overflow-hidden ${
-            isTasks ? 'bg-button text-white' : 'text-text-tertiary hover:bg-bg-tertiary/50'
-          }`}
-          title={collapsed ? 'Tasks' : undefined}
-        >
-          <div className="w-6 h-6 flex items-center justify-center shrink-0">
-            <ListTodo size={20} className="shrink-0" />
-          </div>
-          {!collapsed && <span className="truncate">Tasks</span>}
-        </button>
-        <button 
-          onClick={() => navigate('/workspaces')}
-          className={`w-full px-3 py-2 rounded-lg font-bold text-sm flex items-center gap-3 text-left transition-colors whitespace-nowrap overflow-hidden ${
-            isWorkspaces ? 'bg-button text-white' : 'text-text-tertiary hover:bg-bg-tertiary/50'
-          }`}
-          title={collapsed ? 'Workspaces' : undefined}
-        >
-          <div className="w-6 h-6 flex items-center justify-center shrink-0">
-            <LayoutDashboard size={20} className="shrink-0" />
-          </div>
-          {!collapsed && <span className="truncate">Workspaces</span>}
-        </button>
-      </nav>
-
-      <div>
-        {!collapsed && (
-          <div className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2 px-3 flex justify-between items-center whitespace-nowrap overflow-hidden">
-            <span>My Workspaces</span>
-          </div>
-        )}
-        <div className="space-y-0.5">
-          {(() => {
-            const safeWorkspaces = Array.isArray(workspaces) ? workspaces : [];
-            return safeWorkspaces.map(ws => (
-              <button
-                key={ws.id}
-                onClick={() => handleWorkspaceChange(ws.id)}
-                className="w-full px-3 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-3 text-left text-text-secondary hover:bg-bg-tertiary/50 hover:text-button-secondary-text whitespace-nowrap overflow-hidden"
-                title={collapsed ? ws.name : undefined}
-              >
-                <div className="w-6 h-6 flex items-center justify-center shrink-0">
-                  <WorkspaceIcon
-                    workspace={ws}
-                    containerClassName="w-6 h-6 rounded shrink-0"
-                    className="rounded"
-                  />
-                </div>
-                {!collapsed && <span className="truncate">{ws.name}</span>}
-                {!collapsed && ws.type === 'team' && <Users size={12} className="text-text-secondary shrink-0 ml-auto" />}
-              </button>
-            ));
-          })()}
-          {!collapsed && workspacesPagination?.hasMore && (
-            <button
-              onClick={() => fetchWorkspaces(workspacesPagination.page + 1)}
-              disabled={isLoadingWorkspaces}
-              className="w-full text-left px-3 py-1.5 text-xs text-text-secondary hover:text-text-accent transition-colors whitespace-nowrap overflow-hidden disabled:opacity-50"
-            >
-              {isLoadingWorkspaces ? 'Loading...' : `Show more (${workspacesPagination.total - workspaces.length})`}
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderWorkspaceSkeleton = () => (
-    <div className="px-2 space-y-3 animate-pulse">
-      <div className="pb-2.5 border-b border-border-light">
-        <div className="w-full px-3 py-2 rounded-lg flex items-center gap-3">
-          <div className="w-6 h-6 rounded bg-bg-tertiary shrink-0" />
-          {!collapsed && <div className="h-4 bg-bg-tertiary rounded w-32" />}
-        </div>
-      </div>
-      <div>
-        {!collapsed && (
-          <div className="px-3 mb-2 flex justify-between items-center">
-            <div className="h-3 bg-bg-tertiary rounded w-16" />
-          </div>
-        )}
-        <div className="space-y-1.5 px-3">
-          <div className="h-7 bg-bg-tertiary/60 rounded w-full" />
-          <div className="h-7 bg-bg-tertiary/60 rounded w-full" />
-          <div className="h-7 bg-bg-tertiary/60 rounded w-full" />
-        </div>
-      </div>
-    </div>
-  );
-
-  const isWorkspaceRoute = location.pathname.startsWith('/workspaces/');
+  const isOverviewActive = location.pathname === `/workspaces/${activeWorkspace.id}`;
+  const isAnnouncementsActive = location.pathname === `/workspaces/${activeWorkspace.id}/announcements`;
+  const isChatActive = location.pathname === `/workspaces/${activeWorkspace.id}/chat`;
 
   return (
     <aside className={`${mobile ? 'w-72' : collapsed ? 'w-16' : 'w-64'} bg-bg-secondary border-r border-border flex flex-col h-full shrink-0 transition-[width] duration-200 linear overflow-hidden`}>
@@ -302,12 +64,138 @@ const Sidebar = ({ collapsed, mobile = false, onCloseMobile }) => {
           </button>
         </div>
       )}
-      <div className="flex-1 overflow-y-auto py-4">
-        {activeWorkspace
-          ? renderWorkspaceSidebar()
-          : isWorkspaceRoute
-          ? renderWorkspaceSkeleton()
-          : renderHomeSidebar()}
+
+      <div className="flex-1 overflow-y-auto py-4 px-2 space-y-3">
+        {/* Active Workspace Header / Overview Link */}
+        <div className="pb-2.5 border-b border-border-light">
+          <button
+            onClick={() => {
+              navigate(`/workspaces/${activeWorkspace.id}`);
+              onCloseMobile?.();
+            }}
+            className={`w-full px-3 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-3 text-left whitespace-nowrap overflow-hidden cursor-pointer ${
+              isOverviewActive
+                ? 'bg-input-bg text-text-accent font-bold'
+                : 'text-text-secondary hover:bg-bg-tertiary/50 hover:text-button-secondary-text'
+            }`}
+            title={collapsed ? activeWorkspace.name : undefined}
+          >
+            <div className="w-6 h-6 flex items-center justify-center shrink-0">
+              <WorkspaceIcon
+                workspace={activeWorkspace}
+                containerClassName="w-6 h-6 rounded shrink-0"
+                className="rounded"
+              />
+            </div>
+            {!collapsed && (
+              <span className="truncate">
+                {activeWorkspace.name}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* Team Workspace Sub-Navigation (Announcements & Chat) */}
+        {activeWorkspace.type?.toLowerCase() === 'team' && (
+          <nav className="space-y-0.5">
+            <button
+              onClick={() => {
+                navigate(`/workspaces/${activeWorkspace.id}/announcements`);
+                onCloseMobile?.();
+              }}
+              className={`w-full px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-3 text-left transition-colors whitespace-nowrap overflow-hidden cursor-pointer ${
+                isAnnouncementsActive ? 'bg-button text-white' : 'text-text-tertiary hover:bg-bg-tertiary/50'
+              }`}
+              title={collapsed ? 'Announcements' : undefined}
+            >
+              <div className="w-6 h-6 flex items-center justify-center shrink-0">
+                <Megaphone size={20} className="shrink-0" />
+              </div>
+              {!collapsed && <span className="truncate">Announcements</span>}
+            </button>
+            <button
+              onClick={() => {
+                navigate(`/workspaces/${activeWorkspace.id}/chat`);
+                onCloseMobile?.();
+              }}
+              className={`w-full px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-3 text-left transition-colors whitespace-nowrap overflow-hidden cursor-pointer ${
+                isChatActive ? 'bg-button text-white' : 'text-text-tertiary hover:bg-bg-tertiary/50'
+              }`}
+              title={collapsed ? 'Chat' : undefined}
+            >
+              <div className="w-6 h-6 flex items-center justify-center shrink-0">
+                <MessageSquare size={20} className="shrink-0" />
+              </div>
+              {!collapsed && <span className="truncate">Chat</span>}
+            </button>
+          </nav>
+        )}
+
+        {/* Boards List Section */}
+        <div>
+          {!collapsed && (
+            <div className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2 px-3 flex justify-between items-center whitespace-nowrap overflow-hidden">
+              <span>Boards</span>
+              <button
+                onClick={() => setShowCreateBoard(true)}
+                className="text-text-secondary hover:text-text-accent hover:bg-input-bg w-6 h-6 flex items-center justify-center rounded transition-colors shrink-0 cursor-pointer"
+              >
+                <Plus size={16} />
+              </button>
+            </div>
+          )}
+          <div className="space-y-0.5">
+            {(showAllBoards ? boards : boards.slice(0, 10)).map((board) => {
+              const isBoardActive = location.pathname === `/workspaces/${activeWorkspace.id}/boards/${board.id}`;
+
+              return (
+                <div key={board.id} className="group relative">
+                  <button
+                    onClick={() => {
+                      navigate(`/workspaces/${activeWorkspace.id}/boards/${board.id}`);
+                      onCloseMobile?.();
+                    }}
+                    className={`w-full px-3 ${collapsed ? '' : 'pr-8'} py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-3 text-left whitespace-nowrap overflow-hidden cursor-pointer ${
+                      isBoardActive
+                        ? 'text-text-accent bg-input-bg font-bold'
+                        : 'text-text-secondary hover:bg-bg-tertiary/50 hover:text-button-secondary-text'
+                    }`}
+                    title={collapsed ? board.name : undefined}
+                  >
+                    <div className="w-6 h-6 flex items-center justify-center shrink-0">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full shrink-0"
+                        style={{ backgroundColor: board.color || 'var(--color-text-tertiary)' }}
+                      />
+                    </div>
+                    {!collapsed && <span className="truncate">{board.name}</span>}
+                  </button>
+                  {!collapsed && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeletingBoardId(board.id);
+                        setShowDeleteBoard(true);
+                      }}
+                      className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 text-red-500 hover:bg-red-50 rounded transition-colors cursor-pointer"
+                      title="Delete board"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+            {!collapsed && boards.length > 10 && (
+              <button
+                onClick={() => setShowAllBoards(!showAllBoards)}
+                className="w-full text-left px-3 py-1.5 text-xs text-text-secondary hover:text-text-accent transition-colors whitespace-nowrap overflow-hidden cursor-pointer"
+              >
+                {showAllBoards ? 'Show less' : `Show more (${boards.length - 10})`}
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       <ConfirmModal
