@@ -24,13 +24,13 @@ const TypingIndicator = ({ typingUsers = [] }) => {
               src={avatarUrl}
               alt={u.fullName || 'User'}
               title={u.fullName || 'User'}
-              className="w-8 h-8 rounded-full object-cover bg-bg-tertiary ring-2 ring-bg-secondary shrink-0"
+              className="w-8 h-8 rounded-full object-cover bg-surface-container-high ring-2 ring-surface-container-lowest shrink-0"
             />
           ) : (
             <div
               key={u.userId}
               title={u.fullName || 'User'}
-              className="w-8 h-8 rounded-full bg-button text-white text-xs font-bold flex items-center justify-center ring-2 ring-bg-secondary shrink-0"
+              className="w-8 h-8 rounded-full bg-primary text-on-primary text-xs font-bold flex items-center justify-center ring-2 ring-surface-container-lowest shrink-0"
             >
               {initials}
             </div>
@@ -39,17 +39,17 @@ const TypingIndicator = ({ typingUsers = [] }) => {
       </div>
 
       {/* Message bubble matching ChatMessage styling */}
-      <div className="px-3.5 py-2.5 rounded-lg bg-bg border border-border/40 text-text flex items-center gap-1.5 rounded-bl-sm shadow-xs">
+      <div className="px-3.5 py-2 rounded-DEFAULT bg-surface-container-low border border-outline-variant text-on-surface flex items-center gap-1.5 shadow-2xs">
         <span
-          className="w-1.5 h-1.5 rounded-full bg-text-tertiary animate-bounce"
+          className="w-1.5 h-1.5 rounded-full bg-outline animate-bounce"
           style={{ animationDelay: '0ms' }}
         />
         <span
-          className="w-1.5 h-1.5 rounded-full bg-text-tertiary animate-bounce"
+          className="w-1.5 h-1.5 rounded-full bg-outline animate-bounce"
           style={{ animationDelay: '150ms' }}
         />
         <span
-          className="w-1.5 h-1.5 rounded-full bg-text-tertiary animate-bounce"
+          className="w-1.5 h-1.5 rounded-full bg-outline animate-bounce"
           style={{ animationDelay: '300ms' }}
         />
       </div>

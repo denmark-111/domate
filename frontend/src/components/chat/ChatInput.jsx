@@ -81,7 +81,7 @@ const ChatInput = ({ onSend, isLoading, onTyping, onStopTyping }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="border-t border-border bg-bg-secondary px-4 sm:px-8 py-4">
+    <form onSubmit={handleSubmit} className="border-t border-outline-variant bg-surface-container-lowest px-4 sm:px-8 py-4">
       <div className="max-w-4xl mx-auto flex gap-3 items-end">
         <textarea
           ref={inputRef}
@@ -95,22 +95,22 @@ const ChatInput = ({ onSend, isLoading, onTyping, onStopTyping }) => {
             }
             onStopTyping?.();
           }}
-          placeholder="Type a message..."
+          placeholder="Type a message (Return to send, Shift+Return for new line)..."
           rows={1}
-          className="flex-1 px-4 py-2.5 bg-bg border border-border rounded-lg text-sm text-text placeholder-text-tertiary resize-none outline-none focus:border-input-border-focus transition-colors"
-          style={{ minHeight: '42px', maxHeight: '120px' }}
+          className="flex-1 px-4 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-DEFAULT text-sm font-body-md text-on-surface placeholder:text-outline resize-none outline-none focus:border-primary transition-colors"
+          style={{ minHeight: '44px', maxHeight: '140px' }}
           onInput={(e) => {
             e.target.style.height = 'auto';
             const border = e.target.offsetHeight - e.target.clientHeight;
-            e.target.style.height = Math.min(e.target.scrollHeight + border, 120) + 'px';
+            e.target.style.height = Math.min(e.target.scrollHeight + border, 140) + 'px';
           }}
           disabled={isLoading}
         />
         <button
           type="submit"
           disabled={!content.trim() || isLoading}
-          className="shrink-0 px-4 py-2.5 bg-button hover:bg-button-hover disabled:bg-button/50 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center gap-2 text-sm font-semibold"
-          style={{ minHeight: '42px' }}
+          className="shrink-0 px-4 py-2.5 bg-primary hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-on-primary rounded-DEFAULT transition-opacity flex items-center gap-2 font-label-caps text-xs font-bold uppercase"
+          style={{ minHeight: '44px' }}
         >
           {isLoading ? (
             <Loader size={16} className="animate-spin" />

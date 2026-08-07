@@ -189,40 +189,48 @@ const AnnouncementList = () => {
 
   if (isLoading) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-bg">
-        <div className="flex items-center gap-3 text-text-secondary">
-          <Loader size={24} className="animate-spin" />
-          <span className="text-sm font-medium">Loading announcements...</span>
+      <div className="flex-1 flex items-center justify-center bg-surface dark:bg-background">
+        <div className="flex items-center gap-3 text-secondary">
+          <Loader size={24} className="animate-spin text-primary" />
+          <span className="font-body-sm text-sm font-medium">Loading announcements...</span>
         </div>
       </div>
     );
   }
 
   return (
-      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto bg-bg-secondary p-4 sm:p-8 lg:p-12">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <header className="mb-6 sm:mb-8 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-text">Announcements</h1>
+    <div ref={scrollContainerRef} className="flex-1 overflow-y-auto bg-surface dark:bg-background">
+      <main className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-12 pt-3 pb-8 md:pt-4 md:pb-10 flex flex-col gap-6">
+        
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="font-display text-3xl sm:text-4xl font-semibold text-on-surface tracking-tight">
+              Workspace Announcements
+            </h1>
+            <p className="font-body-md text-sm sm:text-base text-secondary mt-1">
+              Official updates, guidelines, and changelogs for {activeWorkspace?.name || 'this workspace'}.
+            </p>
+          </div>
           {isOwner && (
             <button
               onClick={openCreateForm}
-              className="flex items-center gap-2 px-4 py-2 bg-button hover:bg-button-hover text-white rounded-lg text-sm font-semibold transition-colors"
+              className="shrink-0 self-start sm:self-auto px-4 py-2 bg-primary hover:opacity-90 text-on-primary font-label-caps text-xs font-bold uppercase rounded-DEFAULT flex items-center gap-2 transition-opacity cursor-pointer shadow-2xs"
             >
-              <Plus size={18} />
-              New
+              <Plus size={16} />
+              <span>Post Announcement</span>
             </button>
           )}
-        </header>
+        </div>
 
         {/* Error banner */}
         {error && (
-          <div className="mb-6 p-3 bg-error-bg border border-error-border rounded-lg flex items-center gap-2 text-sm text-error-text">
+          <div className="p-3 bg-error-container border border-error rounded-DEFAULT flex items-center gap-2 text-xs text-on-error-container font-medium">
             <AlertCircle size={16} className="shrink-0" />
             <span>{error}</span>
             <button
               onClick={() => setError('')}
-              className="ml-auto text-error-text/70 hover:text-error-text font-semibold"
+              className="ml-auto text-on-error-container/80 hover:text-on-error-container font-semibold"
             >
               Dismiss
             </button>
@@ -231,12 +239,12 @@ const AnnouncementList = () => {
 
         {/* Announcements list */}
         {announcements.length === 0 ? (
-          <div className="rounded-xl border border-border bg-bg p-12 text-center">
-            <div className="w-12 h-12 rounded-xl bg-bg-secondary flex items-center justify-center mx-auto mb-4">
-              <Megaphone size={24} className="text-text-secondary" />
+          <div className="bg-surface-container-lowest border border-outline-variant rounded-DEFAULT p-12 text-center flex flex-col items-center justify-center">
+            <div className="w-12 h-12 rounded-DEFAULT bg-surface-container-low border border-outline-variant flex items-center justify-center mb-4">
+              <Megaphone size={24} className="text-secondary" />
             </div>
-            <h3 className="text-base font-semibold text-text mb-1">No announcements yet</h3>
-            <p className="text-text-secondary text-sm max-w-md mx-auto">
+            <h3 className="font-headline-md text-base font-bold text-on-surface mb-1">No announcements yet</h3>
+            <p className="font-body-sm text-secondary text-xs max-w-md mb-6">
               {isOwner
                 ? 'Create your first announcement to keep your team informed.'
                 : 'Announcements will appear here when they are created.'}
@@ -244,15 +252,15 @@ const AnnouncementList = () => {
             {isOwner && (
               <button
                 onClick={openCreateForm}
-                className="mt-5 inline-flex items-center gap-2 px-4 py-2 bg-button hover:bg-button-hover text-white rounded-lg text-sm font-semibold transition-colors"
+                className="px-4 py-2 bg-primary hover:opacity-90 text-on-primary font-label-caps text-xs font-bold uppercase rounded-DEFAULT flex items-center gap-2 transition-opacity cursor-pointer"
               >
                 <Plus size={16} />
-                Create Announcement
+                <span>Create Announcement</span>
               </button>
             )}
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-6">
             {announcements.map((announcement) => (
               <AnnouncementCard
                 key={announcement.id}
@@ -267,16 +275,16 @@ const AnnouncementList = () => {
             {hasMore && (
               <div className="flex items-center justify-center py-6">
                 {isLoadingMore && (
-                  <div className="flex items-center gap-3 text-text-secondary">
-                    <Loader size={20} className="animate-spin" />
-                    <span className="text-sm font-medium">Loading more...</span>
+                  <div className="flex items-center gap-3 text-secondary">
+                    <Loader size={20} className="animate-spin text-primary" />
+                    <span className="font-body-sm text-xs font-medium">Loading more...</span>
                   </div>
                 )}
               </div>
             )}
           </div>
         )}
-      </div>
+      </main>
 
       {/* Create/Edit Form Modal */}
       <AnnouncementForm

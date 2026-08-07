@@ -103,8 +103,8 @@ const ListColumn = ({
         transition,
         borderColor: lockInfo ? lockInfo.color : undefined
       }}
-      className={`w-72 sm:w-80 flex-shrink-0 flex flex-col gap-2 max-h-full bg-bg border rounded-lg p-3 relative transition-all ${
-        lockInfo ? 'border-2 shadow-md z-10' : 'border-border'
+      className={`w-72 sm:w-80 flex-shrink-0 flex flex-col max-h-full bg-surface-container-low border rounded-DEFAULT overflow-hidden relative transition-all ${
+        lockInfo ? 'border-2 shadow-md z-10' : 'border-outline-variant'
       } ${isDragging ? 'opacity-50' : ''}`}
     >
       {lockInfo && (
@@ -115,18 +115,20 @@ const ListColumn = ({
           Moving List: {lockInfo.fullName}
         </div>
       )}
-      <div className="flex items-center justify-between group/list">
-        <div className="flex items-center gap-1.5 min-w-0">
+
+      {/* Column Header */}
+      <div className="flex items-center justify-between px-3 py-3 border-b-2 border-primary bg-surface-container-high group/list">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
           <button
             type="button"
-            className={`cursor-grab active:cursor-grabbing text-text-secondary hover:text-text transition-colors flex-shrink-0 ${
+            className={`cursor-grab active:cursor-grabbing text-secondary hover:text-on-surface transition-colors flex-shrink-0 ${
               isLockedByOther ? 'cursor-not-allowed opacity-50' : ''
             }`}
             title={isLockedByOther ? `Locked by ${lockInfo.fullName}` : 'Move list'}
             {...(isLockedByOther ? {} : attributes)}
             {...(isLockedByOther ? {} : listeners)}
           >
-            <GripVertical size={12} />
+            <GripVertical size={14} />
           </button>
           {isEditing ? (
             <input
@@ -139,11 +141,11 @@ const ListColumn = ({
                 if (e.key === 'Enter') handleSaveEdit();
                 if (e.key === 'Escape') handleCancelEdit();
               }}
-              className="text-xs font-bold text-text-tertiary uppercase tracking-wider bg-transparent border-none outline-none p-0 m-0 flex-1 min-w-0 break-words"
+              className="font-mono-label text-xs font-bold text-on-surface uppercase tracking-wider bg-surface-container-lowest border border-outline-variant rounded-DEFAULT px-2 py-0.5 outline-none flex-1 min-w-0"
             />
           ) : (
             <h3
-              className="text-xs font-bold text-text-tertiary uppercase tracking-wider cursor-pointer flex-1 min-w-0 break-words"
+              className="font-mono-label text-xs font-bold text-on-surface uppercase tracking-wider cursor-pointer flex-1 min-w-0 truncate"
               onClick={() => {
                 setEditValue(title);
                 setIsEditing(true);
@@ -152,29 +154,30 @@ const ListColumn = ({
               {title}
             </h3>
           )}
-          <span className="text-[10px] font-medium text-text-secondary bg-bg-tertiary px-1.5 py-0.5 rounded-full flex-shrink-0">
+          <span className="font-mono-label text-[10px] font-bold text-secondary bg-surface-container-lowest border border-outline-variant px-2 py-0.5 rounded-DEFAULT flex-shrink-0">
             {isFiltered && totalTaskCount !== undefined && totalTaskCount !== tasks.length
               ? `${tasks.length} / ${totalTaskCount}`
               : tasks.length}
           </span>
         </div>
-        <div className="flex gap-1">
+        <div className="flex gap-1 ml-1">
           <button
             onClick={() => setShowDeleteList(true)}
-            className="opacity-0 group-hover/list:opacity-100 p-0.5 text-red-500 hover:bg-red-50 rounded transition-all"
+            className="opacity-0 group-hover/list:opacity-100 p-1 text-secondary hover:text-error hover:bg-error-container rounded transition-all"
             title="Delete list"
           >
-            <Trash2 size={12} />
+            <Trash2 size={13} />
           </button>
         </div>
       </div>
 
+      {/* Task Cards Container */}
       <div
         ref={setCombinedRef}
-        className={`flex-1 flex flex-col gap-2 pt-3.5 rounded-md transition-colors overflow-y-auto overflow-x-hidden min-h-0 thin-scrollbar ${isOver ? 'bg-bg-tertiary/70' : ''}`}
+        className={`flex-1 flex flex-col gap-2.5 p-3 rounded-md transition-colors overflow-y-auto overflow-x-hidden min-h-0 thin-scrollbar ${isOver ? 'bg-surface-container-high/60' : ''}`}
       >
         {isFiltered && tasks.length === 0 && (
-          <div className="text-[11px] text-text-secondary text-center py-4 italic">
+          <div className="font-body-sm text-[11px] text-secondary text-center py-4 italic">
             No matching tasks
           </div>
         )}
@@ -191,11 +194,12 @@ const ListColumn = ({
             />
           ))}
         </SortableContext>
-        <div className="sticky bottom-0">
+
+        <div className="sticky bottom-0 pt-1">
           {!isAddingTask ? (
             <button
               onClick={() => onAddTask(id)}
-              className="w-full py-1.5 text-xs text-text-secondary hover:text-text bg-bg hover:bg-bg-tertiary rounded-lg transition-colors"
+              className="w-full py-2 text-xs font-label-caps font-bold uppercase text-secondary hover:text-on-surface bg-surface-container-lowest border border-dashed border-outline-variant hover:border-primary rounded-DEFAULT transition-all cursor-pointer"
             >
               + Add Task
             </button>

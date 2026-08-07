@@ -210,17 +210,17 @@ const AnnouncementForm = ({
         onClick={onClose}
       />
       <div
-        className="relative bg-bg rounded-t-xl sm:rounded-xl border border-border shadow-xl w-full sm:max-w-2xl sm:mx-4 max-h-[90vh] flex flex-col overflow-hidden"
+        className="relative bg-surface-container-lowest rounded-t-DEFAULT sm:rounded-DEFAULT border border-outline-variant shadow-xl w-full sm:max-w-2xl sm:mx-4 max-h-[90vh] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-          <h2 className="text-base font-semibold text-text">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-outline-variant">
+          <h2 className="font-headline-md text-base font-bold text-on-surface">
             {isEditing ? 'Edit Announcement' : 'New Announcement'}
           </h2>
           <button
             onClick={onClose}
-            className="p-1.5 text-text-secondary hover:text-text rounded-lg hover:bg-bg-tertiary transition-colors"
+            className="p-1.5 text-secondary hover:text-on-surface rounded-DEFAULT hover:bg-surface-container-low transition-colors"
           >
             <X size={18} />
           </button>
@@ -232,7 +232,7 @@ const AnnouncementForm = ({
           <div>
             <label
               htmlFor="announcement-title"
-              className="block text-sm font-semibold text-text-secondary mb-1.5"
+              className="block font-mono-label text-xs uppercase font-bold text-on-surface mb-1.5"
             >
               Title
             </label>
@@ -241,7 +241,7 @@ const AnnouncementForm = ({
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors"
+              className="w-full px-4 py-2.5 rounded-DEFAULT border border-outline-variant bg-surface-container-lowest text-on-surface font-body-md text-sm outline-none focus:border-primary transition-colors"
               placeholder="Announcement title"
               maxLength={255}
             />
@@ -251,7 +251,7 @@ const AnnouncementForm = ({
           <div>
             <label
               htmlFor="announcement-content"
-              className="block text-sm font-semibold text-text-secondary mb-1.5"
+              className="block font-mono-label text-xs uppercase font-bold text-on-surface mb-1.5"
             >
               Content
             </label>
@@ -260,11 +260,11 @@ const AnnouncementForm = ({
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows="6"
-              className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none"
+              className="w-full px-4 py-2.5 rounded-DEFAULT border border-outline-variant bg-surface-container-lowest text-on-surface font-body-md text-sm outline-none focus:border-primary transition-colors resize-none"
               placeholder="Write your announcement..."
               maxLength={5000}
             />
-            <div className="text-right text-xs text-text-secondary mt-1">
+            <div className="text-right font-body-sm text-xs text-secondary mt-1">
               {content.length}/5000
             </div>
           </div>
@@ -275,21 +275,21 @@ const AnnouncementForm = ({
               type="button"
               onClick={() => setPinned(!pinned)}
               className={`relative w-10 h-5 rounded-full transition-colors ${
-                pinned ? 'bg-accent' : 'bg-border'
+                pinned ? 'bg-primary' : 'bg-outline-variant'
               }`}
             >
               <span
-                className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
+                className={`absolute top-0.5 left-0.5 w-4 h-4 bg-surface-container-lowest rounded-full transition-transform ${
                   pinned ? 'translate-x-5' : ''
                 }`}
               />
             </button>
-            <span className="text-sm font-medium text-text">Pin this announcement</span>
+            <span className="font-body-sm text-sm font-semibold text-on-surface">Pin this announcement</span>
           </div>
 
           {/* Attachments */}
           <div>
-            <label className="block text-sm font-semibold text-text-secondary mb-1.5">
+            <label className="block font-mono-label text-xs uppercase font-bold text-on-surface mb-1.5">
               Attachments
             </label>
 
@@ -302,30 +302,30 @@ const AnnouncementForm = ({
                   return (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-2.5 bg-bg-secondary rounded-lg"
+                      className="flex items-center justify-between p-2.5 bg-surface-container-low border border-outline-variant rounded-DEFAULT"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
                         {isImage && previewUrl ? (
                           <img
                             src={previewUrl}
                             alt={attachment.fileName}
-                            className="w-8 h-8 rounded-md object-cover border border-border-light shrink-0"
+                            className="w-8 h-8 rounded-DEFAULT object-cover border border-outline-variant shrink-0"
                           />
                         ) : isImage ? (
-                          <div className="w-8 h-8 flex items-center justify-center bg-bg rounded-md border border-border-light shrink-0">
-                            <Image size={14} className="text-text-secondary" />
+                          <div className="w-8 h-8 flex items-center justify-center bg-surface-container-high rounded-DEFAULT border border-outline-variant shrink-0">
+                            <Image size={14} className="text-secondary" />
                           </div>
                         ) : (
-                          <File size={14} className="text-text-secondary shrink-0" />
+                          <File size={14} className="text-secondary shrink-0" />
                         )}
-                        <span className="text-sm text-text truncate">
+                        <span className="font-mono-label text-xs text-on-surface truncate">
                           {attachment.fileName}
                         </span>
                       </div>
                       <button
                         type="button"
                         onClick={() => removeAttachment(index)}
-                        className="p-1 text-text-secondary hover:text-red-500 hover:bg-red-50 rounded transition-colors shrink-0"
+                        className="p-1 text-secondary hover:text-error hover:bg-error-container rounded-DEFAULT transition-colors shrink-0"
                         title="Remove file"
                       >
                         <Trash2 size={13} />
@@ -342,25 +342,25 @@ const AnnouncementForm = ({
                 {loadingFiles.map((file) => (
                   <div
                     key={file.id}
-                    className="flex items-center gap-2 p-2.5 bg-bg-secondary rounded-lg"
+                    className="flex items-center gap-2 p-2.5 bg-surface-container-low border border-outline-variant rounded-DEFAULT"
                   >
-                    <Loader size={14} className="text-accent animate-spin shrink-0" />
-                    <span className="text-sm text-text-secondary">{file.name}</span>
-                    <span className="text-xs text-accent ml-auto">Uploading...</span>
+                    <Loader size={14} className="text-primary animate-spin shrink-0" />
+                    <span className="font-mono-label text-xs text-secondary">{file.name}</span>
+                    <span className="font-label-caps text-xs text-primary ml-auto font-bold">Uploading...</span>
                   </div>
                 ))}
               </div>
             )}
 
             {/* File picker */}
-            <label className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-dashed border-border bg-bg cursor-pointer hover:border-accent/50 transition-colors">
-              <Upload size={16} className="text-text-secondary" />
-              <span className="text-sm text-text-secondary">
+            <label className="flex items-center gap-2 px-4 py-2.5 rounded-DEFAULT border border-dashed border-outline-variant bg-surface-container-lowest cursor-pointer hover:border-primary transition-colors">
+              <Upload size={16} className="text-secondary" />
+              <span className="font-body-sm text-xs text-secondary">
                 {loadingFiles.length > 0
                   ? 'Add another file...'
                   : 'Click to upload files'}
               </span>
-              <span className="text-xs text-text-secondary ml-auto">Max 10 MB per file</span>
+              <span className="font-mono-label text-xs text-outline ml-auto">Max 10 MB per file</span>
               <input
                 type="file"
                 multiple
@@ -373,19 +373,19 @@ const AnnouncementForm = ({
 
           {/* Error */}
           {error && (
-            <div className="p-3 bg-error-bg border border-error-border rounded-lg text-sm text-error-text">
+            <div className="p-3 bg-error-container border border-error rounded-DEFAULT text-xs text-on-error-container font-medium">
               {error}
             </div>
           )}
         </form>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-outline-variant">
           <button
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="px-5 py-2 rounded-lg font-semibold text-text-secondary hover:bg-bg-tertiary transition-colors disabled:opacity-50"
+            className="px-4 py-2 rounded-DEFAULT font-label-caps text-xs font-bold uppercase text-secondary hover:bg-surface-container-low transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
@@ -393,7 +393,7 @@ const AnnouncementForm = ({
             type="submit"
             onClick={handleSubmit}
             disabled={isSubmitting || loadingFiles.length > 0}
-            className="px-5 py-2 rounded-lg font-semibold bg-button hover:bg-button-hover text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-4 py-2 rounded-DEFAULT font-label-caps text-xs font-bold uppercase bg-primary text-on-primary hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isSubmitting && <Loader size={16} className="animate-spin" />}
             {isSubmitting

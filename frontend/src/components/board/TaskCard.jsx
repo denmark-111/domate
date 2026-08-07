@@ -49,8 +49,8 @@ const TaskCard = ({ task, sortableId, onClick, onDelete, onToggleComplete, lockI
         borderColor: lockInfo ? lockInfo.color : undefined
       }}
       onClick={onClick}
-      className={`bg-bg p-3 rounded-lg border cursor-pointer group relative transition-all ${
-        lockInfo ? 'border-2 shadow-md z-10' : 'border-border'
+      className={`bg-surface-container-lowest p-3.5 rounded-DEFAULT border cursor-pointer group relative transition-all shadow-2xs hover:border-primary ${
+        lockInfo ? 'border-2 shadow-md z-10' : 'border-outline-variant'
       } ${isDragging ? 'opacity-50 z-50' : ''} ${isCompleted ? 'opacity-60' : ''} ${
         isLockedByOther ? 'select-none opacity-80' : ''
       }`}
@@ -70,15 +70,15 @@ const TaskCard = ({ task, sortableId, onClick, onDelete, onToggleComplete, lockI
           e.stopPropagation();
           setShowDeleteTask(true);
         }}
-        className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 p-0.5 text-text-secondary hover:text-red-500 rounded transition-all"
+        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 text-secondary hover:text-error hover:bg-error-container rounded-DEFAULT transition-all"
         title="Delete task"
       >
         <Trash2 size={12} />
       </button>
-      <div className="flex items-start gap-1.5">
+      <div className="flex items-start gap-2">
         <label
           onClick={(e) => e.stopPropagation()}
-          className="shrink-0"
+          className="shrink-0 mt-0.5"
         >
           <input
             type="checkbox"
@@ -87,45 +87,45 @@ const TaskCard = ({ task, sortableId, onClick, onDelete, onToggleComplete, lockI
               e.stopPropagation();
               onToggleComplete?.(task.id, isCompleted ? null : new Date().toISOString());
             }}
-            className="w-3.5 h-3.5 rounded border-text-secondary accent-button cursor-pointer"
+            className="w-3.5 h-3.5 rounded border-outline-variant accent-primary cursor-pointer"
           />
         </label>
         <div className="flex-1 min-w-0">
-          <p className={`text-xs font-medium transition-colors ${isCompleted ? 'text-text-secondary line-through' : 'text-text group-hover:text-text-accent'}`}>
+          <p className={`font-body-md text-xs font-bold transition-colors ${isCompleted ? 'text-secondary line-through' : 'text-on-surface group-hover:underline'}`}>
             {task.name || task.title}
           </p>
-          <div className="flex gap-1.5 flex-wrap mt-1 min-h-[16px]">
+          <div className="flex gap-1.5 flex-wrap mt-1.5 min-h-[16px]">
             {task.labels?.map((label) => (
               <span
                 key={label.id}
-                className="px-1.5 py-0.5 text-[9px] font-bold rounded text-white"
+                className="px-1.5 py-0.5 font-mono-label text-[9px] font-bold uppercase rounded text-white shadow-2xs"
                 style={{ backgroundColor: label.color }}
               >
                 {label.name}
               </span>
             ))}
           </div>
-          <div className="flex items-center justify-between mt-2">
-            <div className="flex items-center gap-1.5 text-text-secondary">
+          <div className="flex items-center justify-between mt-2.5 pt-1">
+            <div className="flex items-center gap-2 font-mono-label text-[10px] text-secondary">
               {task.dueDate && (
-                <span className={`flex items-center gap-0.5 text-[10px] ${new Date(task.dueDate) < new Date() ? 'text-red-500' : ''}`}>
+                <span className={`flex items-center gap-1 ${new Date(task.dueDate) < new Date() ? 'text-error font-bold' : ''}`}>
                   <Calendar size={10} />
                   {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                 </span>
               )}
               {task.description && (
-                <span className="flex items-center gap-0.5 text-[10px]">
+                <span className="flex items-center gap-0.5" title="Has description">
                   <AlignLeft size={10} />
                 </span>
               )}
               {commentCount > 0 && (
-                <span className="flex items-center gap-0.5 text-[10px]">
+                <span className="flex items-center gap-1">
                   <MessageSquare size={10} />
                   {commentCount}
                 </span>
               )}
               {task.attachments?.length > 0 && (
-                <span className="flex items-center gap-0.5 text-[10px]">
+                <span className="flex items-center gap-1">
                   <Paperclip size={10} />
                   {task.attachments.length}
                 </span>
@@ -137,7 +137,7 @@ const TaskCard = ({ task, sortableId, onClick, onDelete, onToggleComplete, lockI
                 return (
                   <div
                     key={a.userId}
-                    className="w-5 h-5 rounded-full bg-button border-2 border-bg flex items-center justify-center text-[7px] text-white font-bold -ml-[5px] first:ml-0 overflow-hidden"
+                    className="w-5 h-5 rounded-full bg-primary text-on-primary border-2 border-surface-container-lowest flex items-center justify-center text-[7px] font-bold -ml-[5px] first:ml-0 overflow-hidden shrink-0"
                     style={{ zIndex: 3 - i }}
                   >
                     {avatarUrl ? (
@@ -149,7 +149,7 @@ const TaskCard = ({ task, sortableId, onClick, onDelete, onToggleComplete, lockI
                 );
               })}
               {task.assignments && task.assignments.length > 3 && (
-                <div className="w-5 h-5 rounded-full bg-bg-tertiary border-2 border-bg flex items-center justify-center text-[7px] text-text-secondary font-bold -ml-[5px]">
+                <div className="w-5 h-5 rounded-full bg-surface-container-high border-2 border-surface-container-lowest flex items-center justify-center text-[7px] font-bold text-secondary -ml-[5px] shrink-0">
                   +{task.assignments.length - 3}
                 </div>
               )}

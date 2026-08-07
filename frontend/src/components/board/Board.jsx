@@ -905,14 +905,14 @@ const Board = () => {
 
   return (
     <>
-      <section className="flex-1 min-h-0 flex flex-col bg-bg-secondary">
+      <section className="flex-1 min-h-0 flex flex-col bg-surface dark:bg-background">
         {isLoading ? (
           <div className="flex-1 flex items-center justify-center text-text-secondary">
             Loading board...
           </div>
         ) : (
           <>
-              <div className="flex items-center justify-between px-3 sm:px-6 py-2.5 border-b border-border flex-shrink-0">
+              <div className="flex items-center justify-between px-3 sm:px-6 py-2.5 border-b border-outline-variant flex-shrink-0 bg-surface dark:bg-background">
                 <div className="flex items-center gap-3">
                   {activeBoard?.color && (
                     <span
@@ -920,7 +920,7 @@ const Board = () => {
                       style={{ backgroundColor: activeBoard.color }}
                     />
                   )}
-                  <h1 className="text-base sm:text-lg font-bold text-text truncate">{activeBoard?.name}</h1>
+                  <h1 className="text-base sm:text-lg font-bold text-on-surface truncate">{activeBoard?.name}</h1>
                 </div>
                 <div className="flex items-center gap-2">
                   <ActiveUsersBar users={activeUsers} />
@@ -928,21 +928,21 @@ const Board = () => {
                     onClick={() => setShowFilterBar((prev) => !prev)}
                     className={`p-2 rounded-lg transition-colors relative flex items-center justify-center ${
                       showFilterBar || activeFilterCount > 0
-                        ? 'bg-button/10 text-button font-medium'
-                        : 'hover:bg-bg-tertiary text-text-secondary'
+                        ? 'bg-primary text-on-primary font-medium'
+                        : 'hover:bg-surface-container-high text-secondary'
                     }`}
                     title="Filter Tasks"
                   >
                     <Filter size={20} />
                     {activeFilterCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-button text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                      <span className="absolute -top-1 -right-1 bg-primary text-on-primary text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                         {activeFilterCount}
                       </span>
                     )}
                   </button>
                   <button
                     onClick={openBoardLabels}
-                    className="p-2 hover:bg-bg-tertiary rounded-lg text-text-secondary transition-colors"
+                    className="p-2 hover:bg-surface-container-high rounded-lg text-secondary transition-colors"
                     title="Labels"
                   >
                     <Tag size={20} />

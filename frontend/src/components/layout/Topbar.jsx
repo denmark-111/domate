@@ -258,7 +258,7 @@ const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = fa
               className="flex items-center cursor-pointer"
             >
               <div
-                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-button flex items-center justify-center text-white text-xs font-bold border-2 border-white overflow-hidden shrink-0"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-primary text-on-primary flex items-center justify-center text-xs font-bold overflow-hidden shrink-0"
               >
                 {avatarUrl ? (
                   <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />

@@ -198,22 +198,27 @@ const ChatList = () => {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-bg-secondary min-h-0">
+    <div className="flex-1 flex flex-col bg-surface dark:bg-background min-h-0">
       {/* Header */}
-      <header className="shrink-0 px-4 sm:px-8 py-4">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-2xl font-bold text-text">Chat</h1>
+      <header className="shrink-0 px-4 sm:px-8 py-4 border-b border-outline-variant bg-surface dark:bg-background">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="font-headline-md text-xl font-bold text-on-surface">Chat</h1>
+            <p className="font-body-sm text-xs text-secondary mt-0.5">
+              {activeWorkspace?.name || 'Workspace'} discussion
+            </p>
+          </div>
         </div>
       </header>
 
       {/* Error banner */}
       {error && (
-        <div className="shrink-0 mx-4 sm:mx-8 mb-2 p-3 bg-error-bg border border-error-border rounded-lg flex items-center gap-2 text-sm text-error-text">
+        <div className="shrink-0 mx-4 sm:mx-8 my-2 p-3 bg-error-container border border-error rounded-DEFAULT flex items-center gap-2 text-xs text-on-error-container font-medium">
           <AlertCircle size={14} className="shrink-0" />
           <span>{error}</span>
           <button
             onClick={() => setError('')}
-            className="ml-auto text-error-text/70 hover:text-error-text font-semibold"
+            className="ml-auto text-on-error-container/80 hover:text-on-error-container font-semibold"
           >
             Dismiss
           </button>
@@ -223,36 +228,39 @@ const ChatList = () => {
       {/* Messages area */}
       <div
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-8 py-4 min-h-0"
+        className="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-8 py-4 min-h-0 bg-surface dark:bg-background"
       >
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto space-y-6">
           {/* Loading more indicator */}
           {isLoadingMore && (
             <div className="flex items-center justify-center py-3">
-              <div className="flex items-center gap-2 text-text-secondary">
-                <Loader size={14} className="animate-spin" />
-                <span className="text-xs font-medium">Loading older messages...</span>
+              <div className="flex items-center gap-2 text-secondary">
+                <Loader size={14} className="animate-spin text-primary" />
+                <span className="font-mono-label text-xs font-medium">Loading older messages...</span>
               </div>
             </div>
           )}
 
-          {/* Has more indicator */}
+          {/* Date Separator / Beginning of conversation */}
           {!hasMore && messages.length > 0 && (
-            <div className="text-center py-3">
-              <span className="text-[10px] font-medium text-text-tertiary">
-                Beginning of conversation
-              </span>
+            <div className="flex items-center justify-center relative w-full my-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-b border-outline-variant"></div>
+              </div>
+              <div className="relative bg-surface-container-lowest px-4 font-mono-label text-[11px] font-bold uppercase tracking-wider text-secondary">
+                BEGINNING OF CHAT
+              </div>
             </div>
           )}
 
           {/* Messages list */}
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-12 h-12 rounded-xl bg-bg flex items-center justify-center mb-4 border border-border">
-                <MessageSquare size={22} className="text-text-secondary" />
+              <div className="w-12 h-12 rounded-DEFAULT bg-surface-container-low flex items-center justify-center mb-4 border border-outline-variant">
+                <MessageSquare size={22} className="text-secondary" />
               </div>
-              <h3 className="text-base font-semibold text-text mb-1">No messages yet</h3>
-              <p className="text-text-secondary text-sm max-w-md">
+              <h3 className="font-headline-md text-base font-bold text-on-surface mb-1">No messages yet</h3>
+              <p className="font-body-sm text-secondary text-sm max-w-md">
                 Start the conversation by sending a message below.
               </p>
               <TypingIndicator typingUsers={typingUsers} />

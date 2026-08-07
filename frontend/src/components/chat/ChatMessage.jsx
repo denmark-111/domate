@@ -1,4 +1,3 @@
-import React from 'react';
 import { Trash2 } from 'lucide-react';
 import { supabaseStorageService } from '../../services/index.js';
 
@@ -20,38 +19,38 @@ const ChatMessage = ({ message, isOwnMessage, onDelete }) => {
   return (
     <div className={`flex gap-3 group ${isOwnMessage ? 'flex-row-reverse' : ''}`}>
       {/* Avatar */}
-      <div className="shrink-0">
+      <div className="shrink-0 mt-0.5">
         {avatarUrl ? (
           <img
             src={avatarUrl}
             alt={message.author?.fullName || 'User'}
-            className="w-8 h-8 rounded-full object-cover bg-bg-tertiary"
+            className="w-9 h-9 rounded-full object-cover bg-surface-container-high shrink-0"
           />
         ) : (
-          <div className="w-8 h-8 rounded-full bg-button flex items-center justify-center text-white text-xs font-bold">
+          <div className="w-9 h-9 rounded-full bg-primary text-on-primary flex items-center justify-center text-xs font-bold shrink-0">
             {(message.author?.fullName || message.author?.email || 'U').split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)}
           </div>
         )}
       </div>
 
       {/* Message content */}
-      <div className={`flex flex-col min-w-0 max-w-[75%] ${isOwnMessage ? 'items-end' : 'items-start'}`}>
+      <div className={`flex flex-col min-w-0 max-w-[80%] ${isOwnMessage ? 'items-end' : 'items-start'}`}>
         {/* Author name + timestamp */}
-        <div className={`flex items-center gap-2 mb-0.5 ${isOwnMessage ? 'flex-row-reverse' : ''}`}>
-          <span className="text-[11px] font-medium text-text-secondary">
+        <div className={`flex items-baseline gap-2 mb-1 ${isOwnMessage ? 'flex-row-reverse' : ''}`}>
+          <span className="font-mono-label text-xs font-semibold text-on-surface">
             {message.author?.fullName || message.author?.email || 'Unknown'}
           </span>
-          <span className="text-[10px] text-text-tertiary">
+          <span className="font-body-sm text-[11px] text-secondary">
             {formattedDate} {formattedTime}
           </span>
         </div>
 
         {/* Bubble */}
         <div
-          className={`px-3.5 py-2 rounded-lg text-sm leading-relaxed max-w-full ${
+          className={`px-4 py-2.5 rounded-DEFAULT text-sm font-body-md leading-relaxed max-w-full ${
             isOwnMessage
-              ? 'bg-button text-white rounded-br-sm'
-              : 'bg-bg text-text rounded-bl-sm'
+              ? 'bg-primary text-on-primary'
+              : 'bg-surface-container-low border border-outline-variant text-on-surface'
           }`}
         >
           <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere] [word-break:break-word]">{message.content}</p>
@@ -61,9 +60,9 @@ const ChatMessage = ({ message, isOwnMessage, onDelete }) => {
         {isOwnMessage && (
           <button
             onClick={() => onDelete?.(message.id)}
-            className="mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-[10px] text-text-tertiary hover:text-red-500"
+            className="mt-1 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 font-mono-label text-[11px] text-secondary hover:text-error cursor-pointer"
           >
-            <Trash2 size={11} />
+            <Trash2 size={12} />
             Delete
           </button>
         )}
