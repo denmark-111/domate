@@ -19,6 +19,7 @@ import Board from './components/board/Board';
 import AcceptInvitation from './components/invitation/AcceptInvitation';
 import Settings from './components/settings/Settings';
 import ConfigErrorFallback from './components/common/ConfigErrorFallback';
+import NotFound from './components/common/NotFound';
 import { envConfig } from './lib/envConfig';
 
 function App() {
@@ -53,6 +54,9 @@ function App() {
                 <Route path="announcements" element={<AnnouncementList />} />
                 <Route path="boards/:boardId" element={<Board />} />
               </Route>
+
+              {/* Catch-all 404 route */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </NotificationProvider>
         </ThemeContextProvider>
