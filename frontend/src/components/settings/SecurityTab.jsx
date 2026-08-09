@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Info, Loader } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import Button from '../common/Button';
+import Input from '../common/Input';
 
 const SecurityTab = () => {
   const { updatePassword } = useAuth();
@@ -56,93 +58,81 @@ const SecurityTab = () => {
 
   return (
     <div>
-      <h2 className="text-base font-semibold text-text mb-1">Security</h2>
-      <p className="text-sm text-text-secondary mb-6">
-        Update your password to keep your account secure.
-      </p>
+      <div className="mb-6">
+        <h2 className="font-headline-md text-lg font-semibold text-on-surface mb-1">
+          Security & Password
+        </h2>
+        <p className="font-body-sm text-sm text-secondary">
+          Update your password to keep your account safe and secure.
+        </p>
+      </div>
 
       {reauthRequired && (
-        <div className="p-4 rounded-lg bg-error-bg border border-error-border mb-4">
-          <div className="flex gap-3">
-            <Info size={18} className="text-error-text shrink-0 mt-0.5" />
-            <div>
-              <p className="text-error-text text-sm font-semibold mb-1">Reauthentication required</p>
-              <p className="text-error-text text-sm leading-relaxed">
-                For security reasons, please sign out and use the &quot;Forgot Password&quot; option on the login page to reset your password.
-              </p>
-            </div>
+        <div className="p-4 rounded-DEFAULT bg-error-container border border-error/30 text-on-error-container mb-6 flex gap-3.5 items-start">
+          <Info size={18} className="text-error shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <h3 className="font-headline-md text-sm font-semibold text-on-error-container">
+              Reauthentication required
+            </h3>
+            <p className="font-body-sm text-xs leading-relaxed text-on-error-container/90">
+              For security reasons, please sign out and use the &quot;Forgot Password&quot; link on the login page to reset your credentials.
+            </p>
           </div>
         </div>
       )}
 
       {success && (
-        <div className="p-3 rounded-lg bg-label-done-bg border border-label-done-text mb-4">
-          <p className="text-label-done-text text-sm font-medium">{success}</p>
+        <div className="p-3.5 rounded-DEFAULT bg-surface-container-high border border-outline-variant text-on-surface text-sm font-medium mb-6">
+          {success}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="max-w-sm space-y-3">
-          <div>
-            <label htmlFor="newPassword" className="block text-sm font-semibold text-text mb-1.5">
-              New password
-            </label>
-            <input
-              type="password"
-              id="newPassword"
-              value={newPassword}
-              onChange={(e) => { setNewPassword(e.target.value); setError(''); setReauthRequired(false); }}
-              placeholder="At least 6 characters"
-              className={`w-full px-4 py-2.5 rounded-lg border text-sm outline-none transition-colors ${
-                error
-                  ? 'border-error-border bg-error-bg focus:border-error-border'
-                  : 'border-border bg-bg focus:border-input-border-focus'
-              }`}
-            />
-          </div>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="max-w-md space-y-4">
+          <Input
+            id="newPassword"
+            label="New password"
+            type="password"
+            value={newPassword}
+            onChange={(e) => { setNewPassword(e.target.value); setError(''); setReauthRequired(false); }}
+            placeholder="At least 6 characters"
+            error={error && !newPassword ? error : undefined}
+          />
 
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-semibold text-text mb-1.5">
-              Confirm new password
-            </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              value={confirmPassword}
-              onChange={(e) => { setConfirmPassword(e.target.value); setError(''); setReauthRequired(false); }}
-              placeholder="Re-enter your password"
-              className={`w-full px-4 py-2.5 rounded-lg border text-sm outline-none transition-colors ${
-                error
-                  ? 'border-error-border bg-error-bg focus:border-error-border'
-                  : 'border-border bg-bg focus:border-input-border-focus'
-              }`}
-            />
-          </div>
+          <Input
+            id="confirmPassword"
+            label="Confirm new password"
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => { setConfirmPassword(e.target.value); setError(''); setReauthRequired(false); }}
+            placeholder="Re-enter your password"
+            error={error && newPassword && confirmPassword !== newPassword ? error : undefined}
+          />
         </div>
 
         {error && (
-          <div className="p-3 rounded-lg bg-error-bg border border-error-border max-w-sm">
-            <p className="text-error-text text-sm">{error}</p>
+          <div className="p-3.5 rounded-DEFAULT bg-error-container border border-error/30 max-w-md text-on-error-container text-xs font-medium">
+            {error}
           </div>
         )}
 
         {isDirty && (
-          <div className="flex items-center gap-3">
-            <button
+          <div className="flex items-center gap-3 pt-2">
+            <Button
               type="submit"
+              variant="primary"
               disabled={isSubmitting}
-              className="px-5 py-2 rounded-lg text-sm font-semibold bg-button hover:bg-button-hover disabled:opacity-50 text-white transition-colors disabled:cursor-not-allowed flex items-center gap-2"
             >
               {isSubmitting && <Loader size={14} className="animate-spin" />}
               Update password
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="subtle"
               onClick={() => { setNewPassword(''); setConfirmPassword(''); setError(''); }}
-              className="px-5 py-2 rounded-lg text-sm font-semibold text-text-secondary hover:text-text hover:bg-bg-tertiary transition-colors"
             >
               Cancel
-            </button>
+            </Button>
           </div>
         )}
       </form>
@@ -151,3 +141,4 @@ const SecurityTab = () => {
 };
 
 export default SecurityTab;
+

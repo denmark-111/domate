@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { Loader, Check, Camera } from 'lucide-react';
+import { Loader, Check, Pencil } from 'lucide-react';
 import { supabaseStorageService, profileService } from '../../services/index.js';
 import { useAuth } from '../../context/AuthContext';
+import Button from '../common/Button';
+import Input from '../common/Input';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
@@ -9,9 +11,13 @@ const ProfileTab = () => {
   const { user, setUser } = useAuth();
   const fileInputRef = useRef(null);
 
-  const [fullName, setFullName] = useState('');
-  const [initialFullName, setInitialFullName] = useState('');
-  const [avatarPreview, setAvatarPreview] = useState(null);
+  const currentAvatarUrl = user?.avatarUrl
+    ? supabaseStorageService.getAvatarUrl(user.avatarUrl)
+    : null;
+
+  const [fullName, setFullName] = useState(user?.fullName || '');
+  const [initialFullName, setInitialFullName] = useState(user?.fullName || '');
+  const [avatarPreview, setAvatarPreview] = useState(currentAvatarUrl);
   const [selectedFile, setSelectedFile] = useState(null);
   const [localPreview, setLocalPreview] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -19,21 +25,15 @@ const ProfileTab = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const currentAvatarUrl = user?.avatarUrl
-    ? supabaseStorageService.getAvatarUrl(user.avatarUrl)
-    : null;
-
+  const prevUserIdRef = useRef(user?.id);
   useEffect(() => {
-    if (user) {
+    if (user?.id && user.id !== prevUserIdRef.current) {
+      prevUserIdRef.current = user.id;
       setFullName(user.fullName || '');
       setInitialFullName(user.fullName || '');
       setAvatarPreview(currentAvatarUrl);
-      setSelectedFile(null);
-      setLocalPreview(null);
-      setError('');
-      setSuccess('');
     }
-  }, [user]);
+  }, [user?.id, user?.fullName, currentAvatarUrl]);
 
   useEffect(() => {
     return () => {
@@ -122,27 +122,41 @@ const ProfileTab = () => {
 
   return (
     <div>
-      <h2 className="text-base font-semibold text-text mb-1">Profile</h2>
-      <p className="text-sm text-text-secondary mb-6">Update your personal information.</p>
+      <div className="mb-6">
+        <h2 className="font-headline-md text-lg font-semibold text-on-surface mb-1">
+          Profile Settings
+        </h2>
+        <p className="font-body-sm text-sm text-secondary">
+          Update your public avatar and display information.
+        </p>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={handleAvatarClick}
-            className="relative group w-20 h-20 rounded-full overflow-hidden border-2 border-border bg-bg-secondary flex items-center justify-center shrink-0 cursor-pointer"
-          >
-            {displayUrl ? (
-              <img src={displayUrl} alt="Avatar" className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-xl font-bold text-text-secondary">
-                {(user?.fullName || user?.email || 'U').split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-              </span>
-            )}
-            <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <Camera size={18} className="text-white" />
-            </div>
-          </button>
+          <div className="relative inline-block group">
+            <button
+              type="button"
+              onClick={handleAvatarClick}
+              title="Change profile photo"
+              className="relative w-20 h-20 rounded-full border-2 border-outline-variant hover:border-primary bg-surface-container-high transition-colors cursor-pointer block overflow-hidden"
+            >
+              {displayUrl ? (
+                <img src={displayUrl} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <span className="font-headline-md text-xl font-bold text-on-surface flex items-center justify-center h-full">
+                  {(user?.fullName || user?.email || 'U').split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                </span>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={handleAvatarClick}
+              title="Change profile photo"
+              className="absolute bottom-0 right-0 p-1.5 rounded-full bg-primary text-on-primary border-2 border-surface-container-lowest hover:scale-110 transition-transform cursor-pointer shadow-xs"
+            >
+              <Pencil size={12} />
+            </button>
+          </div>
           <input
             ref={fileInputRef}
             type="file"
@@ -152,67 +166,53 @@ const ProfileTab = () => {
           />
         </div>
 
-        <div className="space-y-4">
-          <div>
-            <label
-              htmlFor="profile-fullName"
-              className="block text-sm font-semibold text-text mb-1.5"
-            >
-              Full name
-            </label>
-            <input
-              id="profile-fullName"
-              type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg text-text text-sm outline-none focus:border-input-border-focus transition-colors"
-              placeholder="Your full name"
-              maxLength={255}
-            />
-          </div>
+        <div className="space-y-4 max-w-xl">
+          <Input
+            id="profile-fullName"
+            label="Full name"
+            type="text"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            placeholder="Your full name"
+            maxLength={255}
+          />
 
-          <div>
-            <label
-              htmlFor="profile-email"
-              className="block text-sm font-semibold text-text mb-1.5"
-            >
-              Email
-            </label>
-            <input
-              id="profile-email"
-              type="email"
-              value={user?.email || ''}
-              disabled
-              className="w-full px-3 py-2 rounded-lg border border-border bg-bg-tertiary text-text-secondary text-sm outline-none cursor-not-allowed"
-            />
-          </div>
+          <Input
+            id="profile-email"
+            label="Email Address"
+            type="email"
+            value={user?.email || ''}
+            disabled
+            helperText="Email address cannot be changed."
+          />
         </div>
 
         {error && (
-          <div className="p-3 bg-error-bg border border-error-border rounded-lg text-sm text-error-text">
+          <div className="p-3.5 bg-error-container text-on-error-container border border-error/30 rounded-DEFAULT text-sm font-medium">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="p-3 bg-label-done-bg border border-label-done-text rounded-lg text-sm text-label-done-text font-medium flex items-center gap-2">
-            <Check size={16} />
+          <div className="p-3.5 bg-surface-container-high text-on-surface border border-outline-variant rounded-DEFAULT text-sm font-medium flex items-center gap-2">
+            <Check size={16} className="text-primary" />
             {success}
           </div>
         )}
 
         {isDirty && (
-          <div className="flex items-center gap-3">
-            <button
+          <div className="flex items-center gap-3 pt-2">
+            <Button
               type="submit"
+              variant="primary"
               disabled={isSubmitting || isUploading}
-              className="px-5 py-2 rounded-lg text-sm font-semibold bg-button hover:bg-button-hover text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {(isSubmitting || isUploading) && <Loader size={14} className="animate-spin" />}
               Save changes
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="subtle"
               onClick={() => {
                 setFullName(initialFullName);
                 setAvatarPreview(currentAvatarUrl);
@@ -222,10 +222,9 @@ const ProfileTab = () => {
                 setError('');
                 setSuccess('');
               }}
-              className="px-5 py-2 rounded-lg text-sm font-semibold text-text-secondary hover:text-text hover:bg-bg-tertiary transition-colors"
             >
               Cancel
-            </button>
+            </Button>
           </div>
         )}
       </form>
@@ -234,3 +233,5 @@ const ProfileTab = () => {
 };
 
 export default ProfileTab;
+
+

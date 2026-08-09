@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Loader, Check, X, ExternalLink } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Loader, Check, X, ExternalLink, Mail } from 'lucide-react';
 import { invitationService } from '../../services/index.js';
+import Button from '../common/Button';
 
 const InvitationsTab = () => {
   const [invitations, setInvitations] = useState([]);
@@ -9,22 +10,21 @@ const InvitationsTab = () => {
   const [actionLoading, setActionLoading] = useState(null);
   const [statuses, setStatuses] = useState({});
 
-  const fetchInvitations = useCallback(async () => {
-    setIsLoading(true);
-    setError('');
-
-    const result = await invitationService.getMyInvitations();
-    if (result.success) {
-      setInvitations(result.data || []);
-    } else {
-      setError(result.error || 'Failed to load invitations');
-    }
-    setIsLoading(false);
-  }, []);
-
   useEffect(() => {
-    fetchInvitations();
-  }, [fetchInvitations]);
+    let active = true;
+    invitationService.getMyInvitations().then((result) => {
+      if (!active) return;
+      if (result.success) {
+        setInvitations(result.data || []);
+      } else {
+        setError(result.error || 'Failed to load invitations');
+      }
+      setIsLoading(false);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleAccept = async (id) => {
     setActionLoading(id);
@@ -67,88 +67,91 @@ const InvitationsTab = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader size={20} className="animate-spin text-text-secondary" />
+        <Loader size={20} className="animate-spin text-secondary" />
       </div>
     );
   }
 
   return (
     <div>
-      <h2 className="text-base font-semibold text-text mb-1">Invitations</h2>
-      <p className="text-sm text-text-secondary mb-6">
-        View and manage your pending workspace invitations.
-      </p>
+      <div className="mb-6">
+        <h2 className="font-headline-md text-lg font-semibold text-on-surface mb-1">
+          Workspace Invitations
+        </h2>
+        <p className="font-body-sm text-sm text-secondary">
+          View and manage pending invitations to join workspaces.
+        </p>
+      </div>
 
       {error && (
-        <div className="p-3 bg-error-bg border border-error-border rounded-lg text-sm text-error-text mb-4">
+        <div className="p-3.5 bg-error-container text-on-error-container border border-error/30 rounded-DEFAULT text-sm font-medium mb-4">
           {error}
         </div>
       )}
 
       {invitations.length === 0 ? (
-        <div className="text-center py-12 border border-dashed border-border rounded-xl">
-          <p className="text-sm text-text-secondary font-medium">No pending invitations</p>
-          <p className="text-xs text-text-tertiary mt-1">
-            Invitations to join workspaces will appear here.
+        <div className="border border-dashed border-outline-variant bg-surface-container-low/40 rounded-DEFAULT p-10 text-center flex flex-col items-center justify-center gap-2">
+          <Mail size={32} className="text-secondary opacity-50 mb-1" />
+          <p className="font-body-md text-sm font-medium text-on-surface">No pending invitations</p>
+          <p className="font-body-sm text-xs text-secondary max-w-sm">
+            When colleagues or team members invite you to collaborate on workspaces, your pending invites will appear here.
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {invitations.map((inv) => {
             const status = statuses[inv.id];
 
             return (
               <div
                 key={inv.id}
-                className="flex items-center justify-between p-3.5 rounded-lg bg-bg-secondary"
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-DEFAULT bg-surface-container-low border border-outline-variant transition-all hover:border-outline shadow-2xs"
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-text truncate">
+                  <h3 className="font-headline-md text-sm font-semibold text-on-surface truncate">
                     {inv.workspace?.name || 'Unknown Workspace'}
-                  </p>
-                  <p className="text-xs text-text-secondary">
-                    Invited by {inv.invitedBy?.fullName || inv.invitedBy?.email || 'someone'} on{' '}
-                    {formatDate(inv.createdAt)}
+                  </h3>
+                  <p className="font-body-sm text-xs text-secondary mt-0.5">
+                    Invited by <span className="font-medium text-on-surface">{inv.invitedBy?.fullName || inv.invitedBy?.email || 'someone'}</span> on {formatDate(inv.createdAt)}
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2 ml-4 shrink-0">
+                <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
                   {status?.state === 'accepted' ? (
-                    <a
-                      href={`/workspaces/${status.workspaceId}`}
-                      className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-button hover:bg-button-hover text-white transition-colors flex items-center gap-1.5"
-                    >
-                      <ExternalLink size={13} />
-                      Visit
+                    <a href={`/workspaces/${status.workspaceId}`}>
+                      <Button variant="primary" size="sm">
+                        <ExternalLink size={13} />
+                        Visit Workspace
+                      </Button>
                     </a>
                   ) : status?.state === 'declined' ? (
-                    <span className="px-3 py-1.5 rounded-lg text-sm font-medium text-text-tertiary border border-border">
-                    Declined
+                    <span className="font-label-caps text-xs px-3 py-1.5 border border-outline-variant text-secondary rounded-DEFAULT font-bold uppercase">
+                      Declined
                     </span>
                   ) : (
                     <>
-                      <button
+                      <Button
+                        variant="primary"
+                        size="sm"
                         onClick={() => handleAccept(inv.id)}
                         disabled={actionLoading === inv.id}
-                        className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-button hover:bg-button-hover text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
                       >
-                        <span className="sm:hidden">Accept</span>
                         {actionLoading === inv.id ? (
-                          <Loader size={13} className="hidden sm:inline animate-spin" />
+                          <Loader size={13} className="animate-spin" />
                         ) : (
-                          <Check size={13} className="hidden sm:inline" />
+                          <Check size={13} />
                         )}
-                        <span className="hidden sm:inline">Accept</span>
-                      </button>
-                      <button
+                        Accept
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
                         onClick={() => handleDecline(inv.id)}
                         disabled={actionLoading === inv.id}
-                        className="px-3 py-1.5 rounded-lg text-sm font-semibold text-text-secondary hover:bg-bg-tertiary border border-border transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
                       >
-                        <span className="sm:hidden">Decline</span>
-                        <X size={13} className="hidden sm:inline" />
-                        <span className="hidden sm:inline">Decline</span>
-                      </button>
+                        <X size={13} />
+                        Decline
+                      </Button>
                     </>
                   )}
                 </div>
@@ -162,3 +165,4 @@ const InvitationsTab = () => {
 };
 
 export default InvitationsTab;
+
