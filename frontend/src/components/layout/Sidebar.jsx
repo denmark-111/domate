@@ -20,7 +20,6 @@ import {
   X,
   Sun,
   Moon,
-  User,
   Settings,
   LogOut,
   Bell,
@@ -367,14 +366,18 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
             className="w-full flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-xs font-body-sm font-medium transition-colors text-left cursor-pointer overflow-hidden text-secondary hover:text-on-surface hover:bg-surface-container-high"
             title={collapsed ? (user?.fullName || user?.email || 'Profile') : undefined}
           >
-            <div className="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center text-xs font-bold overflow-hidden shrink-0 relative">
-              {avatarUrl ? (
-                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-              ) : (
-                (user?.fullName || user?.email || 'G').split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)
-              )}
-              {unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-error rounded-full ring-2 ring-surface" />
+            <div className="relative shrink-0">
+              <div className="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center text-xs font-bold overflow-hidden">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  (user?.fullName || user?.email || 'G').split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                )}
+              </div>
+              {collapsed && unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] flex items-center justify-center bg-error text-on-error text-[10px] font-bold rounded-full px-1 leading-none border-2 border-surface-container-low pointer-events-none">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
               )}
             </div>
             {!collapsed && (
@@ -383,8 +386,8 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
                   {user?.fullName || user?.email?.split('@')[0] || 'User'}
                 </span>
                 {unreadCount > 0 && (
-                  <span className="px-1.5 py-0.5 bg-error text-on-error text-[10px] font-bold rounded-full leading-none">
-                    {unreadCount}
+                  <span className="min-w-[16px] h-[16px] flex items-center justify-center bg-error text-on-error text-[10px] font-bold rounded-full px-1 leading-none">
+                    {unreadCount > 99 ? '99+' : unreadCount}
                   </span>
                 )}
               </div>
