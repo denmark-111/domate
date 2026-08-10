@@ -54,7 +54,7 @@ const HeroInteractivePreview = () => {
         {/* CTAs */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
           <button
-            onClick={() => navigate('/auth?action=register')}
+            onClick={() => navigate('/signup')}
             className="w-full sm:w-auto px-8 py-3.5 bg-button hover:bg-button-hover text-white font-semibold rounded-xl shadow-lg shadow-button/25 hover:shadow-button/40 hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 group"
           >
             Get Started

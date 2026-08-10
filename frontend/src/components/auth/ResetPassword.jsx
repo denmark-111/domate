@@ -3,7 +3,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import { useAuth } from '../../context/AuthContext';
 import { Lock, ArrowLeft, Loader, CheckCircle } from 'lucide-react';
-import AppLogo from '../common/AppLogo';
+import AuthCard from './AuthCard';
+import Input from '../common/Input';
+import Button from '../common/Button';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -80,7 +82,7 @@ const ResetPassword = () => {
     if (result.success) {
       setIsSuccess(true);
       await supabase.auth.signOut();
-      setTimeout(() => navigate('/auth'), 3000);
+      setTimeout(() => navigate('/login'), 3000);
     } else {
       setError(result.error || 'Failed to reset password. Please try again.');
     }
@@ -88,155 +90,116 @@ const ResetPassword = () => {
 
   if (isExpired) {
     return (
-      <div className="min-h-screen bg-bg flex items-center justify-center p-4">
-        <div className="w-full max-w-md text-center">
-          <AppLogo className="mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-text mb-2">Link Expired</h1>
-          <p className="text-text-secondary mb-6">
-            This password reset link has expired or is invalid. Please request a new one.
-          </p>
+      <AuthCard
+        subtitle="Link Expired"
+        footer={
           <Link
-            to="/forgot-password"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-button hover:bg-button-hover text-white font-semibold rounded-lg transition-colors"
+            to="/login"
+            className="inline-flex items-center gap-1.5 font-body-sm text-xs text-secondary hover:text-on-surface transition-colors"
+          >
+            <ArrowLeft size={14} />
+            Back to Login
+          </Link>
+        }
+      >
+        <div className="text-center space-y-4 py-2">
+          <p className="font-body-sm text-xs text-secondary">
+            This password reset link has expired or is invalid. Please request a new link.
+          </p>
+          <Button
+            type="button"
+            variant="primary"
+            size="lg"
+            className="w-full"
+            onClick={() => navigate('/forgot-password')}
           >
             Request New Link
-          </Link>
-          <div className="mt-4">
-            <Link
-              to="/auth"
-              className="inline-flex items-center gap-2 text-text-secondary hover:text-text font-medium transition-colors"
-            >
-              <ArrowLeft size={18} />
-              Back to Login
-            </Link>
-          </div>
+          </Button>
         </div>
-      </div>
+      </AuthCard>
     );
   }
 
   if (!isSessionReady) {
     return (
-      <div className="min-h-screen bg-bg flex items-center justify-center p-4">
-        <div className="w-full max-w-md text-center">
-          <AppLogo className="mx-auto mb-4" />
-          <Loader size={24} className="animate-spin mx-auto text-text-secondary" />
-          <p className="text-text-secondary mt-4">Verifying your reset link...</p>
+      <AuthCard subtitle="Verifying Reset Link">
+        <div className="text-center py-8 space-y-3">
+          <Loader size={24} className="animate-spin mx-auto text-secondary" />
+          <p className="font-body-sm text-xs text-secondary">Verifying your reset link...</p>
         </div>
-      </div>
+      </AuthCard>
     );
   }
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-bg flex items-center justify-center p-4">
-        <div className="w-full max-w-md text-center">
-          <AppLogo className="mx-auto mb-4" />
-          <CheckCircle size={48} className="mx-auto text-label-done-text mb-4" />
-          <h1 className="text-2xl font-bold text-text mb-2">Password Reset</h1>
-          <p className="text-text-secondary mb-2">
-            Your password has been successfully reset.
-          </p>
-          <p className="text-text-secondary text-sm">
-            Redirecting you to login...
+      <AuthCard subtitle="Password Reset Complete">
+        <div className="text-center py-6 space-y-3">
+          <CheckCircle size={40} className="mx-auto text-on-surface mb-2" />
+          <h2 className="font-headline-md text-lg font-bold text-on-surface">Password Reset</h2>
+          <p className="font-body-sm text-xs text-secondary">
+            Your password has been successfully reset. Redirecting you to login...
           </p>
         </div>
-      </div>
+      </AuthCard>
     );
   }
 
   return (
-    <div className="min-h-screen bg-bg flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
-          <AppLogo className="mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-text mb-2">Set New Password</h1>
-          <p className="text-text-secondary">
-            Enter your new password below.
-          </p>
-        </div>
+    <AuthCard
+      subtitle="Enter your new password below."
+      footer={
+        <Link
+          to="/login"
+          className="inline-flex items-center gap-1.5 font-body-sm text-xs text-secondary hover:text-on-surface transition-colors"
+        >
+          <ArrowLeft size={14} />
+          Back to Login
+        </Link>
+      }
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <Input
+          label="New Password"
+          id="newPassword"
+          type="password"
+          value={newPassword}
+          onChange={(e) => { setNewPassword(e.target.value); setError(''); }}
+          placeholder="••••••••"
+          icon={Lock}
+        />
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="newPassword" className="block text-sm font-semibold text-text-secondary mb-1.5">
-              New Password *
-            </label>
-            <div className="relative">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary">
-                <Lock size={18} />
-              </div>
-              <input
-                type="password"
-                id="newPassword"
-                value={newPassword}
-                onChange={(e) => { setNewPassword(e.target.value); setError(''); }}
-                placeholder="••••••••"
-                className={`w-full pl-10 pr-4 py-2.5 rounded-lg border outline-none transition-colors ${
-                  error
-                    ? 'border-error-border bg-error-bg focus:border-error-border'
-                    : 'border-border bg-bg focus:border-input-border-focus'
-                }`}
-              />
-            </div>
-          </div>
+        <Input
+          label="Confirm New Password"
+          id="confirmPassword"
+          type="password"
+          value={confirmPassword}
+          onChange={(e) => { setConfirmPassword(e.target.value); setError(''); }}
+          placeholder="••••••••"
+          icon={Lock}
+          error={error}
+        />
 
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-semibold text-text-secondary mb-1.5">
-              Confirm New Password *
-            </label>
-            <div className="relative">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary">
-                <Lock size={18} />
-              </div>
-              <input
-                type="password"
-                id="confirmPassword"
-                value={confirmPassword}
-                onChange={(e) => { setConfirmPassword(e.target.value); setError(''); }}
-                placeholder="••••••••"
-                className={`w-full pl-10 pr-4 py-2.5 rounded-lg border outline-none transition-colors ${
-                  error
-                    ? 'border-error-border bg-error-bg focus:border-error-border'
-                    : 'border-border bg-bg focus:border-input-border-focus'
-                }`}
-              />
-            </div>
-          </div>
-
-          {error && (
-            <div className="p-3 rounded-lg bg-error-bg border border-error-border">
-              <p className="text-error-text text-sm">{error}</p>
-            </div>
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          className="w-full mt-2"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <>
+              <Loader size={16} className="animate-spin" />
+              Resetting...
+            </>
+          ) : (
+            'Reset Password'
           )}
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-button hover:bg-button-hover disabled:opacity-50 text-white font-semibold rounded-lg transition-colors disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader size={20} className="animate-spin" />
-                Resetting...
-              </>
-            ) : (
-              'Reset Password'
-            )}
-          </button>
-        </form>
-
-        <div className="text-center mt-6">
-          <Link
-            to="/auth"
-            className="inline-flex items-center gap-2 text-text-secondary hover:text-text font-medium transition-colors"
-          >
-            <ArrowLeft size={18} />
-            Back to Login
-          </Link>
-        </div>
-      </div>
-    </div>
+        </Button>
+      </form>
+    </AuthCard>
   );
 };
 
 export default ResetPassword;
+

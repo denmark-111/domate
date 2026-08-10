@@ -17,10 +17,10 @@ const LandingFooter = () => {
           </div>
 
           <div className="flex items-center gap-6 text-sm text-text-secondary">
-            <button onClick={() => navigate('/auth')} className="hover:text-text transition">
+            <button onClick={() => navigate('/login')} className="hover:text-text transition">
               Sign In
             </button>
-            <button onClick={() => navigate('/auth?action=register')} className="hover:text-text transition">
+            <button onClick={() => navigate('/signup')} className="hover:text-text transition">
               Register
             </button>
             <a 

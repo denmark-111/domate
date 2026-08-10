@@ -17,7 +17,7 @@ const LandingCTASection = () => {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <button
-            onClick={() => navigate('/auth?action=register')}
+            onClick={() => navigate('/signup')}
             className="w-full sm:w-auto px-8 py-4 bg-button hover:bg-button-hover text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 group text-base"
           >
             Create Workspace Now

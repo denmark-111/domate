@@ -105,7 +105,7 @@ const AcceptInvitation = () => {
               Sign in or create an account to accept this invitation.
             </p>
             <Link
-              to={`/auth?redirect=/invitations/${invitationId}`}
+              to={`/login?redirect=/invitations/${invitationId}`}
               className="inline-block px-6 py-2 rounded-lg font-semibold bg-button hover:bg-button-hover text-white transition-colors shadow-sm"
             >
               Sign In

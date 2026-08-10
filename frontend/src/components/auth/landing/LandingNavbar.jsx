@@ -41,14 +41,14 @@ const LandingNavbar = () => {
           </button>
 
           <button
-            onClick={() => navigate('/auth')}
+            onClick={() => navigate('/login')}
             className="hidden sm:inline-flex px-4 py-2 rounded-xl border border-border text-text font-medium hover:bg-bg-secondary transition-all duration-200"
           >
             Sign In
           </button>
 
           <button
-            onClick={() => navigate('/auth?action=register')}
+            onClick={() => navigate('/signup')}
             className="px-4 py-2 rounded-xl bg-button hover:bg-button-hover text-white font-medium shadow-md shadow-button/20 hover:shadow-button/40 transition-all duration-200"
           >
             Get Started

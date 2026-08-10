@@ -1,9 +1,10 @@
 import { apiCall } from './apiConfig.js';
 
 export const profileService = {
-  getProfile: async () => {
+  getProfile: async (token) => {
     try {
-      const data = await apiCall('/users/me');
+      const options = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+      const data = await apiCall('/users/me', options);
       return { success: true, data };
     } catch (error) {
       console.error('Error in getProfile:', error);

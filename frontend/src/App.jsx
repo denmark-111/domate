@@ -3,7 +3,8 @@ import { ThemeContextProvider } from './context/ThemeContext';
 import { AuthContextProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import Landing from './components/auth/Landing';
-import Auth from './components/auth/Auth';
+import Login from './components/auth/Login';
+import Signup from './components/auth/Signup';
 import ForgotPassword from './components/auth/ForgotPassword';
 import ResetPassword from './components/auth/ResetPassword';
 import RequireAuth from './components/auth/RequireAuth';
@@ -34,7 +35,8 @@ function App() {
           <NotificationProvider>
             <Routes>
               <Route path="/" element={<Landing />} />
-              <Route path="/auth" element={<Auth />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/invitations/:invitationId" element={<AcceptInvitation />} />

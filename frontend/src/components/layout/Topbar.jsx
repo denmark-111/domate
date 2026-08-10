@@ -255,7 +255,7 @@ const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = fa
           <div className="flex items-center gap-2 sm:gap-3 relative" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen((prev) => !prev)}
-              className="flex items-center cursor-pointer"
+              className="flex items-center cursor-pointer group relative"
             >
               <div
                 className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-primary text-on-primary flex items-center justify-center text-xs font-bold overflow-hidden shrink-0"
@@ -266,6 +266,12 @@ const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = fa
                   (user?.fullName || user?.email || 'G').split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)
                 )}
               </div>
+
+              {!dropdownOpen && (
+                <div className="absolute right-0 top-full mt-2 px-2.5 py-1 bg-inverse-surface text-inverse-on-surface text-xs font-body-sm font-medium rounded-DEFAULT shadow-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-40">
+                  {user?.fullName || user?.email || 'User'}
+                </div>
+              )}
             </button>
 
             {dropdownOpen && (

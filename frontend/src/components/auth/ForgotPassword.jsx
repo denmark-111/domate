@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { useNavigate, Navigate, Link } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Mail, ArrowLeft, Loader } from 'lucide-react';
-import AppLogo from '../common/AppLogo';
+import AuthCard from './AuthCard';
+import Input from '../common/Input';
+import Button from '../common/Button';
 
 const ForgotPassword = () => {
-  const navigate = useNavigate();
   const { sendPasswordReset, isAuthenticated, isLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
@@ -24,7 +25,7 @@ const ForgotPassword = () => {
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError('Please enter a valid email');
+      setError('Please enter a valid email address');
       return;
     }
 
@@ -40,95 +41,74 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-bg flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
-          <AppLogo className="mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-text mb-2">Domate</h1>
-          <p className="text-text-secondary">
-            {isSent ? 'Check your email' : 'Reset your password'}
-          </p>
-        </div>
-
-        {isSent ? (
-          <div className="space-y-6">
-            <div className="p-4 rounded-lg bg-label-done-bg border border-label-done-text text-center">
-              <p className="text-label-done-text text-sm font-medium leading-relaxed">
-                We&apos;ve sent a password reset link to <strong>{email}</strong>.
-                Please check your inbox and follow the instructions.
-              </p>
-            </div>
-            <p className="text-center text-text-secondary text-sm">
-              Didn&apos;t receive the email? Check your spam folder or{' '}
-              <button
-                onClick={() => { setIsSent(false); setError(''); }}
-                className="text-text-accent font-semibold hover:underline"
-              >
-                try again
-              </button>
+    <AuthCard
+      subtitle={isSent ? 'Check your email' : 'Reset your password'}
+      footer={
+        <Link
+          to="/login"
+          className="inline-flex items-center gap-1.5 font-body-sm text-xs text-secondary hover:text-on-surface transition-colors"
+        >
+          <ArrowLeft size={14} />
+          Back to Login
+        </Link>
+      }
+    >
+      {isSent ? (
+        <div className="space-y-4">
+          <div className="p-4 rounded-DEFAULT bg-surface-container-high border border-outline-variant text-center">
+            <p className="font-body-sm text-xs text-on-surface leading-relaxed">
+              We&apos;ve sent a password reset link to <strong>{email}</strong>.
+              Please check your inbox and follow the instructions.
             </p>
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <p className="text-text-secondary text-sm mb-2">
-              Enter your email and we&apos;ll send you a link to reset your password.
-            </p>
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-text-secondary mb-1.5">
-                Email *
-              </label>
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary">
-                  <Mail size={18} />
-                </div>
-                <input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => { setEmail(e.target.value); setError(''); }}
-                  placeholder="you@example.com"
-                  className={`w-full pl-10 pr-4 py-2.5 rounded-md border outline-none transition-colors ${
-                    error
-                      ? 'border-error-border bg-error-bg focus:border-error-border'
-                      : 'border-border bg-bg focus:border-input-border-focus'
-                  }`}
-                />
-              </div>
-              {error && (
-                <p className="text-error-text text-sm mt-1">{error}</p>
-              )}
-            </div>
-
+          <p className="text-center font-body-sm text-xs text-secondary">
+            Didn&apos;t receive the email? Check your spam folder or{' '}
             <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-button hover:bg-button-hover disabled:opacity-50 text-white font-semibold rounded-md transition-colors disabled:cursor-not-allowed"
+              onClick={() => { setIsSent(false); setError(''); }}
+              className="text-on-surface font-semibold hover:underline cursor-pointer"
             >
-              {isSubmitting ? (
-                <>
-                  <Loader size={20} className="animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                'Send Reset Link'
-              )}
+              try again
             </button>
-          </form>
-        )}
-
-        <div className="text-center mt-6">
-          <Link
-            to="/auth"
-            className="inline-flex items-center gap-2 text-text-secondary hover:text-text font-medium transition-colors"
-          >
-            <ArrowLeft size={18} />
-            Back to Login
-          </Link>
+          </p>
         </div>
-      </div>
-    </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <p className="font-body-sm text-xs text-secondary mb-2">
+            Enter your account email and we&apos;ll send you a link to reset your password.
+          </p>
+
+          <Input
+            label="Email address"
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => { setEmail(e.target.value); setError(''); }}
+            placeholder="you@example.com"
+            icon={Mail}
+            error={error}
+          />
+
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            className="w-full mt-2"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader size={16} className="animate-spin" />
+                Sending link...
+              </>
+            ) : (
+              'Send Reset Link'
+            )}
+          </Button>
+        </form>
+      )}
+    </AuthCard>
   );
 };
 
 export default ForgotPassword;
+

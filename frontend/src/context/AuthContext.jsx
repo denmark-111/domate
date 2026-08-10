@@ -5,8 +5,9 @@ import { supabase } from '../lib/supabaseClient.js';
 const AuthContext = createContext();
 
 const fetchUserProfile = async (session) => {
-  const res = await profileService.getProfile();
-  if (!res.success) throw new Error('Profile fetch failed');
+  const token = session?.access_token;
+  const res = await profileService.getProfile(token);
+  if (!res.success) throw new Error(res.error || 'Profile fetch failed');
   return {
     ...res.data,
     provider: session.user?.app_metadata?.provider || 'email',
@@ -50,7 +51,7 @@ export const AuthContextProvider = ({ children }) => {
             setUser(profile);
             setIsAuthenticated(true);
           } catch (profileError) {
-            console.error('Profile fetch failed, signing out:', profileError);
+            console.error('Profile fetch failed during init, signing out:', profileError);
             if (!mounted) return;
             await supabase.auth.signOut().catch(() => {});
             setUser(null);
@@ -87,13 +88,9 @@ export const AuthContextProvider = ({ children }) => {
           setUser(profile);
           setIsAuthenticated(true);
         } catch (profileError) {
-          console.error('Profile fetch failed during auth event, signing out:', profileError);
-          if (!mounted) return;
-          await supabase.auth.signOut().catch(() => {});
-          setUser(null);
-          setIsAuthenticated(false);
+          console.error('Profile fetch failed during auth event:', profileError);
         }
-      } else {
+      } else if (event === 'SIGNED_OUT') {
         setUser(null);
         setIsAuthenticated(false);
       }
