@@ -5,7 +5,7 @@ import { CSS } from '@dnd-kit/utilities';
 import TaskCard from './TaskCard';
 import AddTaskForm from './AddTaskForm';
 import ConfirmModal from '../common/ConfirmModal';
-import { GripVertical, Trash2 } from 'lucide-react';
+import { GripVertical, Trash2, Plus } from 'lucide-react';
 
 const ListColumn = ({
   id,
@@ -103,13 +103,13 @@ const ListColumn = ({
         transition,
         borderColor: lockInfo ? lockInfo.color : undefined
       }}
-      className={`w-72 sm:w-80 flex-shrink-0 flex flex-col max-h-full bg-surface-container-low border rounded-DEFAULT overflow-hidden relative transition-all ${
-        lockInfo ? 'border-2 shadow-md z-10' : 'border-outline-variant'
+      className={`w-72 sm:w-80 flex-shrink-0 flex flex-col max-h-full bg-surface-container-low border border-outline-variant rounded-DEFAULT overflow-hidden relative transition-all shadow-2xs ${
+        lockInfo ? 'border-2 shadow-md z-10' : ''
       } ${isDragging ? 'opacity-50' : ''}`}
     >
       {lockInfo && (
         <div
-          className="absolute -top-2.5 right-3 px-2 py-0.5 rounded-full text-white text-[9px] font-bold shadow-sm z-20 pointer-events-none"
+          className="absolute -top-2.5 right-3 px-2 py-0.5 rounded-DEFAULT text-white font-mono-label text-[9px] font-bold shadow-sm z-20 pointer-events-none"
           style={{ backgroundColor: lockInfo.color }}
         >
           Moving List: {lockInfo.fullName}
@@ -117,7 +117,7 @@ const ListColumn = ({
       )}
 
       {/* Column Header */}
-      <div className="flex items-center justify-between px-3 py-3 border-b-2 border-primary bg-surface-container-high group/list">
+      <div className="flex items-center justify-between px-3.5 py-3 group/list bg-transparent">
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <button
             type="button"
@@ -128,7 +128,7 @@ const ListColumn = ({
             {...(isLockedByOther ? {} : attributes)}
             {...(isLockedByOther ? {} : listeners)}
           >
-            <GripVertical size={14} />
+            <GripVertical size={15} />
           </button>
           {isEditing ? (
             <input
@@ -141,11 +141,11 @@ const ListColumn = ({
                 if (e.key === 'Enter') handleSaveEdit();
                 if (e.key === 'Escape') handleCancelEdit();
               }}
-              className="font-mono-label text-xs font-bold text-on-surface uppercase tracking-wider bg-surface-container-lowest border border-outline-variant rounded-DEFAULT px-2 py-0.5 outline-none flex-1 min-w-0"
+              className="font-body-md text-xs sm:text-sm font-bold text-on-surface bg-surface-container-lowest border border-outline-variant rounded-DEFAULT px-2 py-0.5 outline-none flex-1 min-w-0"
             />
           ) : (
             <h3
-              className="font-mono-label text-xs font-bold text-on-surface uppercase tracking-wider cursor-pointer flex-1 min-w-0 truncate"
+              className="font-body-md text-xs sm:text-sm font-bold text-on-surface cursor-pointer flex-1 min-w-0 truncate"
               onClick={() => {
                 setEditValue(title);
                 setIsEditing(true);
@@ -154,16 +154,16 @@ const ListColumn = ({
               {title}
             </h3>
           )}
-          <span className="font-mono-label text-[10px] font-bold text-secondary bg-surface-container-lowest border border-outline-variant px-2 py-0.5 rounded-DEFAULT flex-shrink-0">
+          <span className="font-mono-label text-[11px] font-bold text-secondary bg-surface-container-lowest border border-outline-variant px-2 py-0.5 rounded-DEFAULT flex-shrink-0">
             {isFiltered && totalTaskCount !== undefined && totalTaskCount !== tasks.length
-              ? `${tasks.length} / ${totalTaskCount}`
+              ? `${tasks.length}/${totalTaskCount}`
               : tasks.length}
           </span>
         </div>
         <div className="flex gap-1 ml-1">
           <button
             onClick={() => setShowDeleteList(true)}
-            className="opacity-0 group-hover/list:opacity-100 p-1 text-secondary hover:text-error hover:bg-error-container rounded transition-all"
+            className="opacity-0 group-hover/list:opacity-100 p-1 text-secondary hover:text-error hover:bg-error-container rounded-DEFAULT transition-all cursor-pointer"
             title="Delete list"
           >
             <Trash2 size={13} />
@@ -174,7 +174,7 @@ const ListColumn = ({
       {/* Task Cards Container */}
       <div
         ref={setCombinedRef}
-        className={`flex-1 flex flex-col gap-2.5 p-3 rounded-md transition-colors overflow-y-auto overflow-x-hidden min-h-0 thin-scrollbar ${isOver ? 'bg-surface-container-high/60' : ''}`}
+        className={`flex-1 flex flex-col gap-2.5 px-3 py-1 transition-colors overflow-y-auto overflow-x-hidden min-h-0 thin-scrollbar ${isOver ? 'bg-surface-container-high/40' : ''}`}
       >
         {isFiltered && tasks.length === 0 && (
           <div className="font-body-sm text-[11px] text-secondary text-center py-4 italic">
@@ -194,25 +194,27 @@ const ListColumn = ({
             />
           ))}
         </SortableContext>
+      </div>
 
-        <div className="sticky bottom-0 pt-1">
-          {!isAddingTask ? (
-            <button
-              onClick={() => onAddTask(id)}
-              className="w-full py-2 text-xs font-label-caps font-bold uppercase text-secondary hover:text-on-surface bg-surface-container-lowest border border-dashed border-outline-variant hover:border-primary rounded-DEFAULT transition-all cursor-pointer"
-            >
-              + Add Task
-            </button>
-          ) : (
-            <AddTaskForm
-              onSubmit={(data) => {
-                onSubmitTask(id, data);
-                onCancelAddTask();
-              }}
-              onCancel={onCancelAddTask}
-            />
-          )}
-        </div>
+      {/* Column Footer */}
+      <div className="px-3 pb-3 pt-1 shrink-0 bg-surface-container-low">
+        {!isAddingTask ? (
+          <button
+            onClick={() => onAddTask(id)}
+            className="w-full py-1.5 font-body-sm text-xs sm:text-sm font-medium text-secondary hover:text-on-surface hover:bg-surface-container-high/40 rounded-DEFAULT transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+          >
+            <Plus size={14} />
+            <span>Add Task</span>
+          </button>
+        ) : (
+          <AddTaskForm
+            onSubmit={(data) => {
+              onSubmitTask(id, data);
+              onCancelAddTask();
+            }}
+            onCancel={onCancelAddTask}
+          />
+        )}
       </div>
 
       <ConfirmModal

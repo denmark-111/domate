@@ -65,18 +65,18 @@ const CreateBoardForm = ({ workspaceName, onClose, onSubmit }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/50 transition-opacity" onClick={onClose} />
-      <div className="relative bg-bg rounded-xl border border-border shadow-xl w-full max-w-md mx-auto flex flex-col max-h-[85vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+      <div className="relative bg-surface-container-lowest rounded-DEFAULT border border-outline-variant shadow-xl w-full max-w-md mx-auto flex flex-col max-h-[85vh] overflow-hidden z-10" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="p-6 border-b border-border shrink-0">
-          <h2 className="text-xl font-bold text-text">Create Board</h2>
-          <p className="text-sm text-text-secondary mt-1">Add a new board to {workspaceName}</p>
+        <div className="p-6 border-b border-outline-variant shrink-0 bg-surface-container-lowest">
+          <h2 className="font-headline-md text-xl font-bold text-on-surface">Create Board</h2>
+          <p className="font-body-sm text-sm text-secondary mt-1">Add a new board to {workspaceName}</p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
           {/* Name */}
           <div>
-            <label htmlFor="name" className="block text-sm font-semibold text-text-secondary mb-1.5">
+            <label htmlFor="name" className="block font-mono-label text-xs uppercase font-bold text-on-surface mb-1.5">
               Name *
             </label>
             <input
@@ -86,18 +86,20 @@ const CreateBoardForm = ({ workspaceName, onClose, onSubmit }) => {
               value={formData.name}
               onChange={handleInputChange}
               placeholder="e.g., Development, Marketing, Q2 Planning"
-              className={`w-full px-4 py-2.5 rounded-lg border outline-none focus:border-input-border-focus transition-colors ${
-                errors.name ? 'border-error-border bg-error-bg' : 'border-border bg-bg'
+              className={`w-full px-3 py-2 rounded-DEFAULT border font-body-sm text-sm outline-none transition-colors ${
+                errors.name
+                  ? 'border-error text-error bg-error-container/20'
+                  : 'border-outline-variant bg-surface-container-lowest text-on-surface focus:border-primary'
               }`}
             />
             {errors.name && (
-              <p className="text-error-text text-sm mt-1">{errors.name}</p>
+              <p className="text-error font-body-sm text-xs mt-1">{errors.name}</p>
             )}
           </div>
 
           {/* Color */}
           <div>
-            <label className="block text-sm font-semibold text-text-secondary mb-1.5">
+            <label className="block font-mono-label text-xs uppercase font-bold text-on-surface mb-1.5">
               Color
             </label>
             <ColorPicker
@@ -109,8 +111,8 @@ const CreateBoardForm = ({ workspaceName, onClose, onSubmit }) => {
 
           {/* Error Message */}
           {errors.submit && (
-            <div className="p-3 rounded-lg bg-error-bg border border-error-border">
-              <p className="text-error-text text-sm">{errors.submit}</p>
+            <div className="p-3 rounded-DEFAULT bg-error-container border border-error">
+              <p className="text-on-error-container font-body-sm text-xs">{errors.submit}</p>
             </div>
           )}
 
@@ -119,14 +121,14 @@ const CreateBoardForm = ({ workspaceName, onClose, onSubmit }) => {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 rounded-lg border border-border bg-bg hover:bg-bg-secondary transition-colors font-semibold text-text"
+              className="flex-1 px-4 py-2 rounded-DEFAULT border border-outline-variant bg-surface-container-lowest hover:border-primary transition-colors font-label-caps text-xs font-bold uppercase text-on-surface cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 px-4 py-2 rounded-lg bg-button hover:bg-button-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold text-white flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2 rounded-DEFAULT bg-primary text-on-primary hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity font-label-caps text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer"
             >
               {isSubmitting ? (
                 <>

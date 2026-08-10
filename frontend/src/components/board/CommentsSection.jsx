@@ -145,16 +145,15 @@ const CommentsSection = ({ taskId, onCommentChange, commentCount = 0, realtimeCo
 
   return (
     <div ref={scrollContainerRef} className="sm:w-5/12 shrink-0 flex-1 sm:overflow-y-auto p-4 sm:p-6 space-y-4 sm:thin-scrollbar">
-      <h3 className="text-sm font-semibold text-text">
-        Comments <span className="text-text-secondary">({displayedCommentCount})</span>
+      <h3 className="font-mono-label text-xs uppercase font-bold text-on-surface">
+        Comments <span className="text-secondary font-normal">({displayedCommentCount})</span>
       </h3>
-
 
       <textarea
         value={newComment}
         onChange={(e) => setNewComment(e.target.value)}
         placeholder="Add a comment..."
-        className="w-full px-3 py-2.5 rounded-lg border border-border bg-bg text-sm text-text placeholder-text-secondary outline-none focus:border-input-border-focus transition-colors resize-none"
+        className="w-full p-3 rounded-DEFAULT border border-outline-variant bg-surface-container-lowest font-body-sm text-xs text-on-surface placeholder:text-outline outline-none focus:border-primary transition-colors resize-none"
         rows="3"
       />
       {(newComment.trim() || isAddingComment) && (
@@ -162,7 +161,7 @@ const CommentsSection = ({ taskId, onCommentChange, commentCount = 0, realtimeCo
           <button
             onClick={handleAddComment}
             disabled={isSubmittingComment || !newComment.trim()}
-            className="px-4 py-2 bg-button hover:bg-button-hover text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50"
+            className="px-4 py-2 bg-primary text-on-primary font-label-caps text-xs font-bold uppercase tracking-wider rounded-DEFAULT hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-50"
           >
             {isSubmittingComment ? 'Posting...' : 'Comment'}
           </button>
@@ -171,7 +170,7 @@ const CommentsSection = ({ taskId, onCommentChange, commentCount = 0, realtimeCo
               setNewComment('');
               setIsAddingComment(false);
             }}
-            className="px-4 py-2 bg-button-secondary text-button-secondary-text hover:bg-button-secondary-hover text-sm font-semibold rounded-lg transition-colors"
+            className="px-4 py-2 bg-surface-container-lowest text-on-surface border border-outline-variant font-label-caps text-xs font-bold uppercase tracking-wider rounded-DEFAULT hover:border-primary transition-colors cursor-pointer"
           >
             Cancel
           </button>
@@ -179,7 +178,7 @@ const CommentsSection = ({ taskId, onCommentChange, commentCount = 0, realtimeCo
       )}
 
       {isLoadingComments && comments.length === 0 ? (
-        <div className="text-sm text-text-secondary py-4 text-center">Loading comments...</div>
+        <div className="font-body-sm text-xs text-secondary py-4 text-center">Loading comments...</div>
       ) : (
         <>
           <div className="space-y-3">
@@ -190,43 +189,43 @@ const CommentsSection = ({ taskId, onCommentChange, commentCount = 0, realtimeCo
                 ? supabaseStorageService.getAvatarUrl(comment.author.avatarUrl)
                 : null;
               return (
-                <div key={comment.id} className="bg-bg-tertiary p-3 rounded border border-border">
+                <div key={comment.id} className="bg-surface-container-low p-3 rounded-DEFAULT border border-outline-variant">
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-2">
                       {commentAvatarUrl ? (
                         <img
                           src={commentAvatarUrl}
                           alt={authorName}
-                          className="w-6 h-6 rounded-full object-cover"
+                          className="w-6 h-6 rounded-full object-cover shrink-0"
                         />
                       ) : (
-                        <div className="w-6 h-6 rounded-full bg-button text-white text-[10px] font-bold flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-full bg-primary text-on-primary text-[10px] font-bold flex items-center justify-center shrink-0">
                           {getAuthorInitials(authorName)}
                         </div>
                       )}
-                      <span className="text-sm font-medium text-text">{authorName}</span>
+                      <span className="font-body-sm text-xs font-bold text-on-surface">{authorName}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-text-secondary">
+                      <span className="font-mono-label text-[10px] text-secondary">
                         {formatTimestamp(comment.createdAt)}
                       </span>
                       {isOwn && (
                         <button
                           onClick={() => handleDeleteComment(comment.id)}
                           disabled={deletingCommentId === comment.id}
-                          className="p-1 text-text-secondary hover:text-red-500 rounded transition-colors disabled:opacity-50"
+                          className="p-1 text-secondary hover:text-error rounded-DEFAULT transition-colors disabled:opacity-50 cursor-pointer"
                           title="Delete comment"
                         >
                           {deletingCommentId === comment.id ? (
                             <span className="text-xs">...</span>
                           ) : (
-                            <Trash2 size={14} />
+                            <Trash2 size={13} />
                           )}
                         </button>
                       )}
                     </div>
                   </div>
-                  <p className="text-sm text-text-secondary leading-relaxed whitespace-pre-wrap">{comment.content}</p>
+                  <p className="font-body-sm text-xs text-on-surface leading-relaxed whitespace-pre-wrap">{comment.content}</p>
                 </div>
               );
             })}
@@ -237,7 +236,7 @@ const CommentsSection = ({ taskId, onCommentChange, commentCount = 0, realtimeCo
           )}
 
           {isLoadingComments && comments.length > 0 && (
-            <div className="text-sm text-text-secondary py-2 text-center">Loading more...</div>
+            <div className="font-body-sm text-xs text-secondary py-2 text-center">Loading more...</div>
           )}
         </>
       )}

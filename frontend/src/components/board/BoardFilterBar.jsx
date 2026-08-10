@@ -114,7 +114,7 @@ const BoardFilterBar = ({
           {filterState.search && (
             <button
               onClick={() => setFilterState((prev) => ({ ...prev, search: '' }))}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-secondary hover:text-on-surface p-0.5 rounded transition-colors"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-secondary hover:text-on-surface p-0.5 rounded-DEFAULT transition-colors cursor-pointer"
               title="Clear search"
             >
               <X size={12} />

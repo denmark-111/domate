@@ -26,7 +26,7 @@ import BoardFilterBar from './BoardFilterBar';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useAuth } from '../../context/AuthContext';
 import { boardService, listService, taskService } from '../../services/index.js';
-import { Info, Tag, Filter } from 'lucide-react';
+import { Info, Tag, Filter, Plus } from 'lucide-react';
 import ActiveUsersBar from '../common/ActiveUsersBar';
 import usePresenceRealtime from '../../hooks/usePresenceRealtime';
 import useBoardRealtime from '../../hooks/useBoardRealtime';
@@ -905,14 +905,14 @@ const Board = () => {
 
   return (
     <>
-      <section className="flex-1 min-h-0 flex flex-col bg-surface dark:bg-background">
+      <section className="flex-1 min-h-0 flex flex-col bg-surface">
         {isLoading ? (
-          <div className="flex-1 flex items-center justify-center text-text-secondary">
+          <div className="flex-1 flex items-center justify-center font-body-sm text-sm text-secondary">
             Loading board...
           </div>
         ) : (
           <>
-              <div className="flex items-center justify-between px-3 sm:px-6 py-2.5 border-b border-outline-variant flex-shrink-0 bg-surface dark:bg-background">
+              <div className="flex items-center justify-between px-3 sm:px-6 py-2.5 border-b border-outline-variant shrink-0 bg-surface-container-lowest">
                 <div className="flex items-center gap-3">
                   {activeBoard?.color && (
                     <span
@@ -920,13 +920,13 @@ const Board = () => {
                       style={{ backgroundColor: activeBoard.color }}
                     />
                   )}
-                  <h1 className="text-base sm:text-lg font-bold text-on-surface truncate">{activeBoard?.name}</h1>
+                  <h1 className="font-headline-md text-base sm:text-lg font-bold text-on-surface truncate">{activeBoard?.name}</h1>
                 </div>
                 <div className="flex items-center gap-2">
                   <ActiveUsersBar users={activeUsers} />
                   <button
                     onClick={() => setShowFilterBar((prev) => !prev)}
-                    className={`p-2 rounded-lg transition-colors relative flex items-center justify-center ${
+                    className={`p-2 rounded-DEFAULT transition-colors relative flex items-center justify-center cursor-pointer ${
                       showFilterBar || activeFilterCount > 0
                         ? 'bg-primary text-on-primary font-medium'
                         : 'hover:bg-surface-container-high text-secondary'
@@ -935,21 +935,21 @@ const Board = () => {
                   >
                     <Filter size={20} />
                     {activeFilterCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-primary text-on-primary text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                      <span className="absolute -top-1 -right-1 bg-primary text-on-primary font-mono-label text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                         {activeFilterCount}
                       </span>
                     )}
                   </button>
                   <button
                     onClick={openBoardLabels}
-                    className="p-2 hover:bg-surface-container-high rounded-lg text-secondary transition-colors"
+                    className="p-2 hover:bg-surface-container-high rounded-DEFAULT text-secondary transition-colors cursor-pointer"
                     title="Labels"
                   >
                     <Tag size={20} />
                   </button>
                   <button
                     onClick={openBoardDetail}
-                    className="p-2 hover:bg-bg-tertiary rounded-lg text-text-secondary transition-colors"
+                    className="p-2 hover:bg-surface-container-high rounded-DEFAULT text-secondary transition-colors cursor-pointer"
                     title="Board Details"
                   >
                     <Info size={20} />
@@ -1030,9 +1030,10 @@ const Board = () => {
                   <div className="w-72 sm:w-80 flex-shrink-0">
                     <button
                       onClick={() => setShowAddList(true)}
-                      className="w-full py-2 rounded-lg border border-dashed border-border text-text-secondary hover:text-text hover:border-text-secondary text-xs font-medium transition-colors"
+                      className="w-full py-3 px-4 font-body-sm text-xs sm:text-sm font-medium text-secondary hover:text-on-surface bg-surface-container-low hover:bg-surface-container-high/60 border border-outline-variant hover:border-primary rounded-DEFAULT transition-all cursor-pointer flex items-center justify-center gap-2 shadow-2xs"
                     >
-                      + Add List
+                      <Plus size={16} />
+                      <span>Add List</span>
                     </button>
                   </div>
                 ) : (

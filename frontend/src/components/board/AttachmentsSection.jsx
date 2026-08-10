@@ -22,11 +22,9 @@ const AttachmentsSection = ({
 }) => {
   return (
     <div>
-      <label className="block text-sm font-semibold text-text mb-2">
-        Attachments {attachments.length > 0 && <span className="text-text-secondary">({attachments.length})</span>}
+      <label className="block font-mono-label text-xs uppercase font-bold text-on-surface mb-2">
+        Attachments {attachments.length > 0 && <span className="text-secondary font-normal">({attachments.length})</span>}
       </label>
-
-      
 
       {attachments.length > 0 && (
         <div className="space-y-2 mb-3">
@@ -36,25 +34,25 @@ const AttachmentsSection = ({
             return (
               <div
                 key={attachment.storagePath || attachment.id || index}
-                className="flex items-center justify-between p-2 bg-bg-tertiary rounded-lg border border-border"
+                className="flex items-center justify-between p-2.5 bg-surface-container-low rounded-DEFAULT border border-outline-variant"
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                   {isImage && previewUrl ? (
                     <img
                       src={previewUrl}
                       alt={attachment.fileName}
-                      className="w-10 h-10 rounded-md object-cover border border-border shrink-0"
+                      className="w-10 h-10 rounded-DEFAULT object-cover border border-outline-variant shrink-0"
                     />
                   ) : isImage ? (
-                    <div className="w-10 h-10 flex items-center justify-center bg-bg rounded-md border border-border shrink-0">
-                      <ImageIcon size={16} className="text-text-secondary" />
+                    <div className="w-10 h-10 flex items-center justify-center bg-surface-container-lowest rounded-DEFAULT border border-outline-variant shrink-0">
+                      <ImageIcon size={16} className="text-secondary" />
                     </div>
                   ) : (
-                    <File size={16} className="text-text-secondary shrink-0" />
+                    <File size={16} className="text-secondary shrink-0" />
                   )}
                   <div className="min-w-0">
-                    <p className="text-sm text-text-accent truncate">{attachment.fileName}</p>
-                    <p className="text-xs text-text-secondary">
+                    <p className="font-body-sm text-xs font-bold text-on-surface truncate">{attachment.fileName}</p>
+                    <p className="font-mono-label text-[11px] text-secondary">
                       {attachment.fileSize ? formatFileSize(attachment.fileSize) : ''}
                     </p>
                   </div>
@@ -64,7 +62,7 @@ const AttachmentsSection = ({
                     type="button"
                     onClick={() => onRemoveAttachment(index)}
                     disabled={isSavingAttachments}
-                    className="p-1.5 text-text-secondary hover:text-red-500 rounded transition-colors shrink-0 ml-2 disabled:opacity-50"
+                    className="p-1.5 text-secondary hover:text-error rounded-DEFAULT transition-colors shrink-0 ml-2 disabled:opacity-50 cursor-pointer"
                     title="Remove file"
                   >
                     <Trash2 size={14} />
@@ -83,24 +81,24 @@ const AttachmentsSection = ({
               {loadingFiles.map((file) => (
                 <div
                   key={file.id}
-                  className="flex items-center gap-2 p-2 bg-bg-tertiary rounded-lg border border-border"
+                  className="flex items-center gap-2 p-2.5 bg-surface-container-low rounded-DEFAULT border border-outline-variant"
                 >
-                  <Loader size={16} className="text-accent animate-spin shrink-0" />
-                  <span className="text-sm text-text-secondary">{file.name}</span>
-                  <span className="text-xs text-accent ml-auto">Uploading...</span>
+                  <Loader size={16} className="text-primary animate-spin shrink-0" />
+                  <span className="font-body-sm text-xs text-secondary">{file.name}</span>
+                  <span className="font-mono-label text-[11px] text-primary font-bold ml-auto">Uploading...</span>
                 </div>
               ))}
             </div>
           )}
 
-          <label className={`flex items-center gap-2 px-4 py-3 rounded-lg border border-dashed border-border bg-bg cursor-pointer hover:border-accent/50 transition-colors ${isSavingAttachments ? 'opacity-50 pointer-events-none' : ''}`}>
-            <Upload size={18} className="text-text-secondary" />
-            <span className="text-sm font-medium text-text-secondary">
+          <label className={`flex items-center gap-2 px-4 py-3 rounded-DEFAULT border border-dashed border-outline-variant bg-surface-container-lowest cursor-pointer hover:border-primary transition-colors ${isSavingAttachments ? 'opacity-50 pointer-events-none' : ''}`}>
+            <Upload size={16} className="text-secondary" />
+            <span className="font-label-caps text-xs font-bold uppercase text-secondary">
               {loadingFiles.length > 0
                 ? 'Add another file...'
                 : 'Click to upload files'}
             </span>
-            <span className="text-xs text-text-secondary ml-auto">Max 10 MB per file</span>
+            <span className="font-mono-label text-[11px] text-secondary ml-auto">Max 10 MB per file</span>
             <input
               type="file"
               multiple

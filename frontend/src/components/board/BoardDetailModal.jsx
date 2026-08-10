@@ -65,15 +65,15 @@ const BoardDetailModal = ({ isOpen, onClose, board, onUpdate }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/50 transition-opacity" onClick={onClose} />
       <div
-        className="relative bg-bg rounded-xl border border-border shadow-xl w-full max-w-md mx-auto flex flex-col max-h-[85vh] overflow-hidden"
+        className="relative bg-surface-container-lowest rounded-DEFAULT border border-outline-variant/60 shadow-xl w-full max-w-md mx-auto flex flex-col max-h-[85vh] overflow-hidden z-10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-border shrink-0 sticky top-0 bg-bg z-10">
-          <h2 className="text-base font-semibold text-text">Board Details</h2>
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-outline-variant/60 shrink-0 sticky top-0 bg-surface-container-lowest z-10">
+          <h2 className="font-headline-md text-base sm:text-lg font-bold text-on-surface">Board Details</h2>
           <button
             onClick={onClose}
-            className="p-1.5 text-text-secondary hover:text-text rounded-lg hover:bg-bg-tertiary transition-colors"
+            className="p-1.5 text-secondary hover:text-on-surface rounded-DEFAULT hover:bg-surface-container-high transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -90,23 +90,23 @@ const BoardDetailModal = ({ isOpen, onClose, board, onUpdate }) => {
                     style={{ backgroundColor: board.color }}
                   />
                 )}
-                <h3 className="text-xl font-bold text-text break-words">{board.name}</h3>
+                <h3 className="font-headline-md text-lg sm:text-xl font-bold text-on-surface break-words">{board.name}</h3>
               </div>
 
               <div>
                 {board.description ? (
-                  <p className="text-sm text-text-secondary whitespace-pre-wrap leading-relaxed break-words">{board.description}</p>
+                  <p className="font-body-sm text-sm text-secondary whitespace-pre-wrap leading-relaxed break-words">{board.description}</p>
                 ) : (
-                  <p className="text-sm text-text-tertiary italic">No description provided</p>
+                  <p className="font-body-sm text-sm text-outline italic">No description provided</p>
                 )}
               </div>
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-4 border-t border-border shrink-0">
+            <div className="flex items-center justify-end gap-2.5 px-4 sm:px-6 py-3.5 border-t border-outline-variant/60 shrink-0 bg-surface-container-lowest">
               <button
                 onClick={startEditing}
-                className="px-5 py-2 rounded-lg font-semibold text-sm bg-button hover:bg-button-hover text-white transition-colors"
+                className="px-4 py-2.5 font-body-sm text-sm font-semibold bg-primary text-on-primary rounded-DEFAULT hover:opacity-90 transition-all cursor-pointer shadow-2xs"
               >
                 Edit Details
               </button>
@@ -117,19 +117,19 @@ const BoardDetailModal = ({ isOpen, onClose, board, onUpdate }) => {
             {/* Edit mode */}
             <div className="px-4 sm:px-6 py-5 space-y-4 overflow-y-auto flex-1">
               <div>
-                <label className="block text-sm font-semibold text-text-secondary mb-1.5">Name</label>
+                <label className="block font-body-sm text-xs font-semibold text-secondary mb-1.5">Board Name</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors"
+                  className="w-full px-3.5 py-2.5 rounded-DEFAULT border border-outline-variant/60 bg-surface-container-lowest font-body-sm text-sm text-on-surface outline-none focus:border-primary transition-colors shadow-2xs"
                   placeholder="Board name"
                   autoFocus
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-text-secondary mb-1.5">Color</label>
+                <label className="block font-body-sm text-xs font-semibold text-secondary mb-1.5">Board Color</label>
                 <ColorPicker
                   colors={BOARD_COLORS}
                   selectedColor={formData.color || BOARD_COLORS[0]}
@@ -138,37 +138,37 @@ const BoardDetailModal = ({ isOpen, onClose, board, onUpdate }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-text-secondary mb-1.5">Description</label>
+                <label className="block font-body-sm text-xs font-semibold text-secondary mb-1.5">Description</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
                   rows="4"
-                  className="w-full px-4 py-2.5 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none"
+                  className="w-full p-3.5 rounded-DEFAULT border border-outline-variant/60 bg-surface-container-lowest font-body-sm text-sm text-on-surface outline-none focus:border-primary transition-colors resize-none shadow-2xs"
                   placeholder="Board description"
                 />
               </div>
 
               {error && (
-                <div className="p-3 bg-error-bg border border-error-border rounded-lg text-sm text-error-text">
+                <div className="p-3 bg-error-container border border-error rounded-DEFAULT font-body-sm text-xs text-on-error-container">
                   {error}
                 </div>
               )}
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-4 border-t border-border shrink-0">
+            <div className="flex items-center justify-end gap-2.5 px-4 sm:px-6 py-3.5 border-t border-outline-variant/60 shrink-0 bg-surface-container-lowest">
               <button
                 type="button"
                 onClick={cancelEditing}
                 disabled={isSaving}
-                className="px-5 py-2 rounded-lg font-semibold text-sm text-text-secondary hover:bg-bg-tertiary transition-colors disabled:opacity-50"
+                className="px-4 py-2.5 font-body-sm text-sm font-semibold rounded-DEFAULT border border-outline-variant/60 bg-surface-container-lowest text-on-surface hover:border-primary/60 transition-colors cursor-pointer disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSaving}
-                className="px-5 py-2 rounded-lg font-semibold text-sm bg-button hover:bg-button-hover text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2.5 font-body-sm text-sm font-semibold bg-primary text-on-primary rounded-DEFAULT hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-2xs"
               >
                 {isSaving ? 'Saving...' : 'Save'}
               </button>

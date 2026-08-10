@@ -23,7 +23,7 @@ const PeerCursorItem = ({ cursor }) => {
         className="drop-shadow-md shrink-0"
       />
       <span
-        className="px-2 py-0.5 rounded-full text-white text-[10px] font-semibold shadow-md whitespace-nowrap"
+        className="px-2 py-0.5 rounded-DEFAULT text-white font-mono-label text-[10px] font-bold shadow-md whitespace-nowrap"
         style={{ backgroundColor: cursor.color }}
       >
         {cursor.fullName}

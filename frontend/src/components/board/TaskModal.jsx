@@ -421,10 +421,10 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
 
       {/* Modal */}
       <div
-        className="relative bg-bg rounded-t-xl sm:rounded-xl border border-border shadow-xl w-[95vw] sm:w-[90vw] md:w-[85vw] max-w-5xl lg:max-w-6xl mx-auto max-h-[90vh] flex flex-col overflow-hidden"
+        className="relative bg-surface-container-lowest rounded-DEFAULT border border-outline-variant shadow-xl w-[95vw] sm:w-[90vw] md:w-[85vw] max-w-5xl lg:max-w-6xl mx-auto max-h-[90vh] flex flex-col overflow-hidden z-10"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border bg-bg shrink-0">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-outline-variant bg-surface-container-low shrink-0">
           <div className="flex items-center gap-3 flex-1 pr-4 min-w-0">
             {readOnly ? (
               task?.list?.board?.id && workspaceId ? (
@@ -433,7 +433,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                     e.stopPropagation();
                     navigate(`/workspaces/${workspaceId}`, { state: { selectBoardId: task.list.board.id } });
                   }}
-                  className="flex items-center gap-1.5 text-sm font-medium text-button hover:text-button-hover transition-colors"
+                  className="flex items-center gap-1.5 font-mono-label text-xs font-bold uppercase text-primary hover:underline transition-all cursor-pointer"
                 >
                   <ExternalLink size={14} />
                   <span className="truncate">{task.list.board.workspace?.name || 'Workspace'} / {task.list.board.name || 'Board'}</span>
@@ -444,15 +444,15 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                 <div ref={listPickerRef}>
                   <button
                     onClick={() => setShowListPicker(!showListPicker)}
-                    className="flex items-center gap-2 text-sm text-text bg-bg border border-border rounded-lg px-3 py-1.5 hover:border-input-border-focus transition-colors cursor-pointer"
+                    className="flex items-center gap-2 font-mono-label text-xs font-bold uppercase text-on-surface bg-surface-container-lowest border border-outline-variant rounded-DEFAULT px-3 py-1.5 hover:border-primary transition-colors cursor-pointer"
                   >
                     <span className="truncate max-w-[120px] sm:max-w-none">{lists.find(l => l.id === task.listId)?.title || lists.find(l => l.id === task.listId)?.name || 'Select list'}</span>
-                    <ChevronDown size={14} className={`text-text-secondary transition-transform shrink-0 ${showListPicker ? 'rotate-180' : ''}`} />
+                    <ChevronDown size={14} className={`text-secondary transition-transform shrink-0 ${showListPicker ? 'rotate-180' : ''}`} />
                   </button>
                   {showListPicker && createPortal(
                     <div
                       ref={listDropdownRef}
-                      className="bg-bg border border-border rounded-lg shadow-xl p-1.5 space-y-0.5"
+                      className="bg-surface-container-lowest border border-outline-variant rounded-DEFAULT shadow-xl p-1.5 space-y-0.5 z-50"
                       style={listDropdownStyle}
                     >
                       {lists.map((list) => (
@@ -465,11 +465,11 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                             }
                             setShowListPicker(false);
                           }}
-                          className="flex items-center gap-2 w-full px-3 py-2 rounded-lg hover:bg-bg-tertiary transition-colors text-left"
+                          className="flex items-center gap-2 w-full px-3 py-1.5 rounded-DEFAULT hover:bg-surface-container-low transition-colors text-left cursor-pointer"
                         >
-                          <span className="flex-1 text-sm text-text truncate">{list.title || list.name}</span>
+                          <span className="flex-1 font-mono-label text-xs font-bold text-on-surface uppercase truncate">{list.title || list.name}</span>
                           {list.id === task.listId && (
-                            <Check size={14} className="text-button shrink-0" />
+                            <Check size={14} className="text-primary shrink-0" />
                           )}
                         </button>
                       ))}
@@ -482,17 +482,17 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
           </div>
           <button
             onClick={onClose}
-            className="text-text-secondary hover:text-text text-2xl font-light transition-colors shrink-0"
+            className="text-secondary hover:text-on-surface p-1 rounded-DEFAULT transition-colors shrink-0 cursor-pointer"
             aria-label="Close"
           >
-            ✕
+            <X size={20} />
           </button>
         </div>
 
         {/* Body: responsive layout */}
         <div className="flex flex-1 min-h-0 flex-col sm:flex-row overflow-y-auto sm:overflow-hidden">
           {/* Left Column: Task Details */}
-          <div className="sm:w-7/12 shrink-0 sm:overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6 sm:border-r border-border sm:thin-scrollbar">
+          <div className="sm:w-7/12 shrink-0 sm:overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6 sm:border-r border-outline-variant sm:thin-scrollbar">
             {/* Task Title + checkbox */}
             <div className="flex flex-col sm:flex-row sm:gap-2 sm:items-start">
               {!readOnly && (
@@ -512,13 +512,13 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                       };
                       await onUpdate(updatedTask);
                     }}
-                    className="w-5 h-5 rounded border-text-secondary accent-button cursor-pointer shrink-0"
+                    className="w-4 h-4 rounded-DEFAULT border-outline-variant accent-primary cursor-pointer shrink-0"
                   />
                 </label>
               )}
               <div className="flex-1 min-w-0">
                 {readOnly ? (
-                  <p className="text-lg sm:text-xl font-bold text-text py-1 break-words">
+                  <p className="font-headline-md text-lg sm:text-xl font-bold text-on-surface py-1 break-words">
                     {editName}
                   </p>
                 ) : (
@@ -543,7 +543,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                         e.currentTarget.blur();
                       }
                     }}
-                    className="w-full text-lg sm:text-xl font-bold text-text bg-transparent border-none outline-none focus:bg-bg-tertiary rounded transition-colors resize-none overflow-hidden"
+                    className="w-full font-headline-md text-lg sm:text-xl font-bold text-on-surface bg-transparent border-none outline-none focus:bg-surface-container-low rounded-DEFAULT transition-colors resize-none overflow-hidden p-1"
                     placeholder="Task name"
                   />
                 )}
@@ -552,9 +552,9 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
 
               {/* Description */}
               <div className="mt-3 sm:mt-4">
-                <label className="block text-sm font-semibold text-text mb-2">Description</label>
+                <label className="block font-mono-label text-xs uppercase font-bold text-on-surface mb-2">Description</label>
                 {readOnly ? (
-                  <p className="w-full px-4 py-3 rounded-lg border border-border bg-bg text-text text-sm leading-relaxed min-h-[5rem]">
+                  <p className="w-full p-3 rounded-DEFAULT border border-outline-variant bg-surface-container-low text-on-surface font-body-sm text-sm leading-relaxed min-h-[5rem]">
                     {editDescription || 'No description'}
                   </p>
                 ) : (
@@ -564,7 +564,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                     onChange={(e) => setEditDescription(e.target.value)}
                     onBlur={handleSaveDetails}
                     rows="3"
-                    className="w-full px-4 py-3 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors resize-none text-sm leading-relaxed"
+                    className="w-full p-3 rounded-DEFAULT border border-outline-variant bg-surface-container-lowest text-on-surface font-body-sm text-sm outline-none focus:border-primary transition-colors resize-none leading-relaxed"
                     placeholder="Add a description..."
                   />
                 )}
@@ -572,9 +572,9 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
 
               {/* Due Date */}
               <div className="mt-3 sm:mt-4">
-                <label className="block text-sm font-semibold text-text mb-2">Due Date</label>
+                <label className="block font-mono-label text-xs uppercase font-bold text-on-surface mb-2">Due Date</label>
                 {readOnly ? (
-                  <p className="w-full px-4 py-3 rounded-lg border border-border bg-bg text-text text-sm">
+                  <p className="w-full p-3 rounded-DEFAULT border border-outline-variant bg-surface-container-low text-on-surface font-body-sm text-sm">
                     {editDueDate ? new Date(editDueDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'No due date'}
                   </p>
                 ) : (
@@ -584,20 +584,19 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                     value={editDueDate}
                     onChange={(e) => setEditDueDate(e.target.value)}
                     onBlur={handleSaveDetails}
-                    className="w-full px-4 py-3 rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors text-sm"
+                    className="w-full px-3 py-2.5 rounded-DEFAULT border border-outline-variant bg-surface-container-lowest text-on-surface font-body-sm text-sm outline-none focus:border-primary transition-colors"
                   />
                 )}
               </div>
 
-
               {/* Labels */}
               <div className="mt-3 sm:mt-4">
-                <h3 className="text-sm font-semibold text-text mb-2">Labels</h3>
+                <h3 className="font-mono-label text-xs uppercase font-bold text-on-surface mb-2">Labels</h3>
                 <div className="flex gap-2 flex-wrap items-center">
                   {taskLabels.map((label) => (
                     <span
                       key={label.id}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-bold rounded-md text-white group"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 font-mono-label text-xs font-bold uppercase rounded-DEFAULT text-white shadow-2xs"
                       style={{ backgroundColor: label.color }}
                     >
                       {label.name}
@@ -607,18 +606,18 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                     <div ref={labelContainerRef}>
                       <button
                         onClick={() => setShowLabelPicker(!showLabelPicker)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md border border-dashed border-border text-text-secondary hover:text-text hover:border-text-secondary transition-colors"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 font-label-caps text-xs font-bold uppercase text-secondary hover:text-on-surface bg-surface-container-lowest border border-dashed border-outline-variant hover:border-primary rounded-DEFAULT transition-all cursor-pointer"
                       >
                         + Add label
                       </button>
                       {showLabelPicker && createPortal(
                         <div
                           ref={labelDropdownRef}
-                          className="bg-bg border border-border rounded-lg shadow-xl p-3 space-y-2"
+                          className="bg-surface-container-lowest border border-outline-variant rounded-DEFAULT shadow-xl p-3 space-y-2 z-50"
                           style={labelDropdownStyle}
                         >
                           {boardLabels && boardLabels.length > 0 && (
-                            <div className="space-y-0.5 pb-2 border-b border-border max-h-40 overflow-y-auto">
+                            <div className="space-y-0.5 pb-2 border-b border-outline-variant max-h-40 overflow-y-auto">
                               {boardLabels.map((label) => {
                                 const isAttached = taskLabels.some((tl) => tl.id === label.id);
                                 return (
@@ -626,15 +625,15 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                                     key={label.id}
                                     type="button"
                                     onClick={() => isAttached ? handleRemoveLabel(label.id) : handleAddLabel(label.id)}
-                                    className="flex items-center gap-2 w-full px-3 py-2 rounded-lg hover:bg-bg-tertiary transition-colors text-left group"
+                                    className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-DEFAULT hover:bg-surface-container-low transition-colors text-left group cursor-pointer"
                                   >
                                     <span
-                                      className="w-4 h-4 rounded-md shrink-0"
+                                      className="w-3.5 h-3.5 rounded-DEFAULT shrink-0"
                                       style={{ backgroundColor: label.color }}
                                     />
-                                    <span className="text-sm text-text flex-1 truncate">{label.name}</span>
+                                    <span className="font-body-sm text-xs text-on-surface flex-1 truncate">{label.name}</span>
                                     {isAttached && (
-                                      <X size={14} className="text-text-secondary hover:text-red-500 transition-colors shrink-0" />
+                                      <X size={14} className="text-secondary hover:text-error transition-colors shrink-0" />
                                     )}
                                   </button>
                                 );
@@ -647,7 +646,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                               value={newLabelName}
                               onChange={(e) => setNewLabelName(e.target.value)}
                               placeholder="New label name..."
-                              className="w-full px-3 py-2 text-sm rounded-lg border border-border bg-bg text-text outline-none focus:border-input-border-focus transition-colors"
+                              className="w-full px-3 py-1.5 font-body-sm text-xs rounded-DEFAULT border border-outline-variant bg-surface-container-lowest text-on-surface outline-none focus:border-primary transition-colors"
                             />
                             <div className="flex gap-1.5 flex-wrap">
                               {availableLabelColors.map((color) => (
@@ -655,8 +654,8 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                                   key={color}
                                   type="button"
                                   onClick={() => setNewLabelColor(color)}
-                                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-md border-2 transition-all ${
-                                    newLabelColor === color ? 'border-white scale-110 ring-2 ring-accent' : 'border-transparent hover:scale-110'
+                                  className={`w-6 h-6 rounded-DEFAULT border-2 transition-all cursor-pointer ${
+                                    newLabelColor === color ? 'border-white scale-110 ring-2 ring-primary' : 'border-transparent hover:scale-110'
                                   }`}
                                   style={{ backgroundColor: color }}
                                 />
@@ -665,7 +664,7 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                             <button
                               type="submit"
                               disabled={isCreatingLabel || !newLabelName.trim()}
-                              className="w-full px-3 py-2 bg-button hover:bg-button-hover text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+                              className="w-full px-3 py-1.5 bg-primary text-on-primary font-label-caps text-xs font-bold uppercase tracking-wider rounded-DEFAULT hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-50"
                             >
                               {isCreatingLabel ? 'Creating...' : 'Create'}
                             </button>
@@ -680,11 +679,11 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
 
               {/* Assigned Members */}
               <div className="mt-3 sm:mt-4">
-                <h3 className="text-sm font-semibold text-text mb-2">Assigned To</h3>
+                <h3 className="font-mono-label text-xs uppercase font-bold text-on-surface mb-2">Assigned To</h3>
                 {readOnly ? (
                   <div className="flex items-center gap-2 flex-wrap">
                     {assignments.length === 0 && (
-                      <span className="text-sm text-text-secondary">No one assigned</span>
+                      <span className="font-body-sm text-xs text-secondary">No one assigned</span>
                     )}
                     {assignments.map((a) => {
                       const avatarUrl = a.user?.avatarUrl ? supabaseStorageService.getAvatarUrl(a.user.avatarUrl) : null;
@@ -692,23 +691,23 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                       return (
                         <div
                           key={a.userId}
-                          className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-bg-tertiary border border-border"
+                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-DEFAULT bg-surface-container-low border border-outline-variant"
                         >
                           {avatarUrl ? (
                             <img src={avatarUrl} alt="" className="w-5 h-5 rounded-full object-cover" />
                           ) : (
-                            <div className="w-5 h-5 rounded-full bg-button text-white text-[8px] font-bold flex items-center justify-center">
+                            <div className="w-5 h-5 rounded-full bg-primary text-on-primary text-[8px] font-bold flex items-center justify-center">
                               {(a.user?.fullName || a.user?.email || '?').split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                             </div>
                           )}
-                          <span className="text-sm text-text">{name}</span>
+                          <span className="font-body-sm text-xs text-on-surface">{name}</span>
                         </div>
                       );
                     })}
                   </div>
                 ) : (
                   <>
-                    {isSavingAssignees && <Loader size={12} className="inline ml-1 text-accent animate-spin" />}
+                    {isSavingAssignees && <Loader size={12} className="inline ml-1 text-primary animate-spin" />}
                     <MemberPicker
                       workspaceId={workspaceId}
                       selectedUserIds={assignments.map(a => a.userId)}
@@ -725,7 +724,6 @@ const TaskModal = ({ task, isOpen, onClose, onUpdate, onCommentChange, lists, on
                           setIsSavingAssignees(false);
                         }
                       }}
-
                     />
                   </>
                 )}

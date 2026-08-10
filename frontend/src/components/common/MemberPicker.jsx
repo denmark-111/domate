@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { memberService, supabaseStorageService } from '../../services/index.js';
 import { X, Loader } from 'lucide-react';
@@ -75,7 +75,6 @@ const MemberPicker = ({ workspaceId, selectedUserIds = [], selectedUsers = [], o
   }, [selectedUserIds, onChange]);
 
   const selectedMembers = selectedUsers.map(u => ({ userId: u.id, user: u }));
-  const nonSelectedMembers = members.filter(m => !selectedUserIds.includes(m.userId));
 
   const allMembersSorted = [...members].sort((a, b) => {
     const aSelected = selectedUserIds.includes(a.userId);
@@ -103,9 +102,9 @@ const MemberPicker = ({ workspaceId, selectedUserIds = [], selectedUsers = [], o
           return (
             <div key={m.userId}>
               {avatarUrl ? (
-                <img src={avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
+                <img src={avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover shrink-0 border border-outline-variant" />
               ) : (
-                <span className="w-8 h-8 inline-flex items-center justify-center text-xs font-bold text-text-secondary shrink-0">
+                <span className="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-mono-label text-xs font-bold shrink-0">
                   {getInitials(m.user?.fullName)}
                 </span>
               )}
@@ -121,7 +120,7 @@ const MemberPicker = ({ workspaceId, selectedUserIds = [], selectedUsers = [], o
               type="button"
               onClick={handleOpen}
               disabled={disabled}
-              className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md border border-dashed border-border text-text-secondary hover:text-text hover:border-text-secondary transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 font-label-caps text-xs font-bold uppercase text-secondary hover:text-on-surface bg-surface-container-lowest border border-dashed border-outline-variant hover:border-primary rounded-DEFAULT transition-all cursor-pointer disabled:opacity-50"
             >
               {isLoading ? (
                 <Loader size={12} className="animate-spin" />
@@ -133,7 +132,7 @@ const MemberPicker = ({ workspaceId, selectedUserIds = [], selectedUsers = [], o
             {isOpen && triggerRef.current && createPortal(
             <div
               ref={dropdownRef}
-              className="bg-bg border border-border rounded-lg shadow-xl p-2 space-y-1"
+              className="bg-surface-container-lowest border border-outline-variant rounded-DEFAULT shadow-xl p-2 space-y-1.5 z-50"
               style={dropdownStyle}
             >
               <div className="p-1">
@@ -142,13 +141,13 @@ const MemberPicker = ({ workspaceId, selectedUserIds = [], selectedUsers = [], o
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search members..."
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-bg text-text text-sm outline-none focus:border-input-border-focus transition-colors"
+                  className="w-full px-3 py-1.5 rounded-DEFAULT border border-outline-variant bg-surface-container-lowest text-on-surface font-body-sm text-xs outline-none focus:border-primary transition-colors"
                   autoFocus
                 />
               </div>
               <div className="max-h-48 overflow-y-auto">
                 {filtered.length === 0 ? (
-                  <p className="px-3 py-4 text-xs text-text-secondary text-center">
+                  <p className="px-3 py-4 font-body-sm text-xs text-secondary text-center">
                     {search ? 'No members found' : 'No members available'}
                   </p>
                 ) : (
@@ -163,9 +162,9 @@ const MemberPicker = ({ workspaceId, selectedUserIds = [], selectedUsers = [], o
                           toggleMember(m.userId);
                           setSearch('');
                         }}
-                        className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg hover:bg-bg-tertiary transition-colors text-left group"
+                        className="flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-DEFAULT hover:bg-surface-container-low transition-colors text-left group cursor-pointer"
                       >
-                        <div className="w-6 h-6 rounded-full bg-button text-white text-[9px] font-bold flex items-center justify-center shrink-0 overflow-hidden">
+                        <div className="w-6 h-6 rounded-full bg-primary text-on-primary text-[9px] font-bold flex items-center justify-center shrink-0 overflow-hidden">
                           {avatarUrl ? (
                             <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
                           ) : (
@@ -173,17 +172,17 @@ const MemberPicker = ({ workspaceId, selectedUserIds = [], selectedUsers = [], o
                           )}
                         </div>
                         <div className="min-w-0 flex-1 text-left">
-                          <p className="text-sm text-text truncate">
+                          <p className="font-body-sm text-xs text-on-surface truncate">
                             {m.user?.fullName || 'Unknown'}
                           </p>
                           {m.user?.email && (
-                            <p className="text-xs text-text-secondary truncate">
+                            <p className="font-body-sm text-[11px] text-secondary truncate">
                               {m.user.email}
                             </p>
                           )}
                         </div>
                         {isSelected && (
-                          <X size={14} className="text-text-secondary hover:text-red-500 transition-colors" />
+                          <X size={14} className="text-secondary hover:text-error transition-colors shrink-0" />
                         )}
                       </button>
                     );
