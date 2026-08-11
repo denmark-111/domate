@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeContextProvider } from './context/ThemeContext';
 import { AuthContextProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
-import Landing from './components/auth/Landing';
+import Landing from './components/landing/Landing';
 import Login from './components/auth/Login';
 import Signup from './components/auth/Signup';
 import ForgotPassword from './components/auth/ForgotPassword';
