@@ -46,30 +46,6 @@
 
   --background: #f9f9f9;
   --on-background: #1a1c1c;
-
-  /* Legacy variable mappings for backward compatibility */
-  --bg: var(--background);
-  --bg-secondary: var(--surface-container-lowest);
-  --bg-tertiary: var(--surface-container-low);
-  --text: var(--on-surface);
-  --text-secondary: var(--secondary);
-  --text-tertiary: var(--outline);
-  --text-accent: var(--primary);
-  --button: var(--primary);
-  --button-hover: #2b2d30;
-  --button-secondary: var(--secondary-container);
-  --button-secondary-hover: #c9ccd0;
-  --button-secondary-text: var(--on-surface);
-  --border: var(--outline-variant);
-  --border-light: var(--surface-container-highest);
-  --input-bg: var(--surface-container-lowest);
-  --input-border: var(--outline-variant);
-  --input-border-light: var(--surface-container-high);
-  --input-border-focus: var(--primary);
-  --error-bg: var(--error-container);
-  --error-border: var(--error);
-  --error-text: var(--on-error-container);
-  --accent: var(--primary);
 }
 
 /* Dark theme */
@@ -115,29 +91,6 @@ html[data-theme='dark'] {
 
   --background: #141618;
   --on-background: #f0f1f1;
-
-  --bg: var(--background);
-  --bg-secondary: var(--surface-container-lowest);
-  --bg-tertiary: var(--surface-container-low);
-  --text: var(--on-surface);
-  --text-secondary: var(--secondary);
-  --text-tertiary: var(--outline);
-  --text-accent: var(--primary);
-  --button: var(--primary);
-  --button-hover: #e2e2e5;
-  --button-secondary: var(--secondary-container);
-  --button-secondary-hover: #4a4e52;
-  --button-secondary-text: var(--on-surface);
-  --border: var(--outline-variant);
-  --border-light: var(--surface-container-highest);
-  --input-bg: var(--surface-container-lowest);
-  --input-border: var(--outline-variant);
-  --input-border-light: var(--surface-container-high);
-  --input-border-focus: var(--primary);
-  --error-bg: var(--error-container);
-  --error-border: var(--error);
-  --error-text: var(--on-error-container);
-  --accent: var(--primary);
 }
 
 @theme {
@@ -185,27 +138,6 @@ html[data-theme='dark'] {
   --color-on-background: var(--on-background);
 
   --color-surface-variant: var(--surface-container-highest);
-
-  /* Legacy Colors */
-  --color-bg: var(--bg);
-  --color-bg-secondary: var(--bg-secondary);
-  --color-bg-tertiary: var(--bg-tertiary);
-  --color-text: var(--text);
-  --color-text-secondary: var(--text-secondary);
-  --color-text-tertiary: var(--text-tertiary);
-  --color-text-accent: var(--text-accent);
-  --color-button: var(--button);
-  --color-button-hover: var(--button-hover);
-  --color-button-secondary: var(--button-secondary);
-  --color-button-secondary-hover: var(--button-secondary-hover);
-  --color-button-secondary-text: var(--button-secondary-text);
-  --color-border: var(--border);
-  --color-border-light: var(--border-light);
-  --color-input-bg: var(--input-bg);
-  --color-input-border: var(--input-border);
-  --color-input-border-light: var(--input-border-light);
-  --color-input-border-focus: var(--input-border-focus);
-  --color-accent: var(--accent);
 
   /* Typography */
   --font-sans: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;

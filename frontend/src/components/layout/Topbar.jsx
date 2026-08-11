@@ -147,46 +147,46 @@ const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = fa
 
           {/* Desktop search */}
           <div className="relative group hidden md:block" ref={searchRef}>
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary group-focus-within:text-text-accent transition-colors" size={18} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary group-focus-within:text-primary transition-colors" size={18} />
             <input
               type="text"
               placeholder="Search boards, workspaces..."
               value={searchQuery}
               onChange={handleSearchChange}
               onFocus={() => searchQuery.length >= 2 && setShowSearchDropdown(true)}
-              className="pl-10 pr-4 py-2 bg-bg-secondary border border-transparent rounded-lg text-sm focus:outline-none focus:bg-bg focus:border-input-border-focus transition-all w-48 lg:w-64"
+              className="pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-DEFAULT text-sm focus:outline-none focus:bg-surface-container-lowest focus:border-primary transition-all w-64 lg:w-80 xl:w-96"
             />
 
             {showSearchDropdown && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-bg border border-border rounded-lg shadow-xl z-50 max-h-80 overflow-y-auto">
+              <div className="absolute top-full left-0 right-0 mt-2 bg-surface-container-lowest border border-outline-variant rounded-DEFAULT shadow-xl z-50 max-h-80 overflow-y-auto">
                 {isSearching ? (
-                  <div className="p-4 text-sm text-text-secondary text-center">Searching...</div>
+                  <div className="p-4 text-sm text-secondary text-center">Searching...</div>
                 ) : searchResults.workspaces.length === 0 && searchResults.boards.length === 0 ? (
-                  <div className="p-4 text-sm text-text-secondary text-center">No results found</div>
+                  <div className="p-4 text-sm text-secondary text-center">No results found</div>
                 ) : (
                   <>
                     {searchResults.workspaces.length > 0 && (
                       <div>
-                        <div className="px-4 pt-3 pb-1 text-xs font-bold text-text-secondary uppercase tracking-wider">Workspaces</div>
+                        <div className="px-4 pt-3 pb-1 text-xs font-mono-label font-bold text-secondary uppercase tracking-wider">Workspaces</div>
                         {searchResults.workspaces.map((ws) => (
                           <button
                             key={ws.id}
                             onClick={() => { navigate(`/workspaces/${ws.id}`); setShowSearchDropdown(false); setSearchQuery(''); }}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text hover:bg-bg-tertiary transition-colors text-left"
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container-low transition-colors text-left"
                           >
                             {ws.coverImageUrl ? (
-                              <img src={supabaseStorageService.getCoverImageUrl(ws.coverImageUrl)} alt="" className="w-8 h-8 rounded-lg object-cover shrink-0" />
+                              <img src={supabaseStorageService.getCoverImageUrl(ws.coverImageUrl)} alt="" className="w-8 h-8 rounded-DEFAULT object-cover shrink-0" />
                             ) : (
                               <div
-                                className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0"
-                                style={{ backgroundColor: ws.color || 'var(--color-button)' }}
+                                className="w-8 h-8 rounded-DEFAULT flex items-center justify-center text-on-primary text-xs font-bold shadow-sm shrink-0"
+                                style={{ backgroundColor: ws.color || 'var(--color-primary)' }}
                               >
                                 {ws.name[0]}
                               </div>
                             )}
                             <div className="min-w-0">
                               <p className="font-bold truncate">{ws.name}</p>
-                              <p className="text-xs text-text-secondary">Workspace</p>
+                              <p className="text-xs text-secondary">Workspace</p>
                             </div>
                           </button>
                         ))}
@@ -194,22 +194,22 @@ const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = fa
                     )}
                     {searchResults.boards.length > 0 && (
                       <div>
-                        <div className="px-4 pt-3 pb-1 text-xs font-bold text-text-secondary uppercase tracking-wider">Boards</div>
+                        <div className="px-4 pt-3 pb-1 text-xs font-mono-label font-bold text-secondary uppercase tracking-wider">Boards</div>
                         {searchResults.boards.map((board) => (
                           <button
                             key={board.id}
                             onClick={() => { navigate(`/workspaces/${board.workspace.id}/boards/${board.id}`); setShowSearchDropdown(false); setSearchQuery(''); }}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text hover:bg-bg-tertiary transition-colors text-left"
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container-low transition-colors text-left"
                           >
                             <div
-                              className="w-8 h-8 rounded-lg flex items-center justify-center text-xs text-white shrink-0"
-                              style={{ backgroundColor: board.color || 'var(--color-bg-tertiary)' }}
+                              className="w-8 h-8 rounded-DEFAULT flex items-center justify-center text-xs text-on-primary shrink-0"
+                              style={{ backgroundColor: board.color || 'var(--color-surface-container-high)' }}
                             >
                               {board.name[0]}
                             </div>
                             <div className="min-w-0">
                               <p className="font-bold truncate">{board.name}</p>
-                              <p className="text-xs text-text-secondary truncate">{board.workspace?.name}</p>
+                              <p className="text-xs text-secondary truncate">{board.workspace?.name}</p>
                             </div>
                           </button>
                         ))}
@@ -226,7 +226,7 @@ const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = fa
           {/* Mobile search toggle */}
           <button
             onClick={() => setShowMobileSearch(true)}
-            className="md:hidden p-2 text-text-secondary hover:bg-bg-tertiary rounded-lg transition-colors"
+            className="md:hidden p-2 text-secondary hover:bg-surface-container-low rounded-DEFAULT transition-colors"
             aria-label="Search"
           >
             <Search size={18} />
@@ -235,7 +235,7 @@ const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = fa
           {/* Dark Mode Toggle */}
           <button 
             onClick={toggleTheme}
-            className="p-2 text-text-secondary hover:bg-bg-tertiary rounded-full transition-colors"
+            className="p-2 text-secondary hover:bg-surface-container-low rounded-full transition-colors"
             aria-label="Toggle dark mode"
           >
             {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
@@ -245,7 +245,7 @@ const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = fa
             <NotificationBell />
             <button
               onClick={() => navigate('/settings')}
-              className="hidden sm:block p-2 text-text-secondary hover:bg-bg-tertiary rounded-full transition-colors"
+              className="hidden sm:block p-2 text-secondary hover:bg-surface-container-low rounded-full transition-colors"
               title="Settings"
             >
               <Settings size={18} />
@@ -275,20 +275,20 @@ const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = fa
             </button>
 
             {dropdownOpen && (
-              <div className="absolute right-0 top-full mt-2 w-48 bg-bg border border-border rounded-lg shadow-xl z-50 py-1">
+              <div className="absolute right-0 top-full mt-2 w-48 bg-surface-container-lowest border border-outline-variant rounded-DEFAULT shadow-xl z-50 py-1">
                 <button
                   onClick={() => { navigate('/settings'); setDropdownOpen(false); }}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text hover:bg-bg-tertiary transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container-low transition-colors text-left"
                 >
-                  <User size={16} className="text-text-secondary" />
+                  <User size={16} className="text-secondary" />
                   Profile
                 </button>
-                <div className="border-t border-border mx-2" />
+                <div className="border-t border-outline-variant mx-2" />
                 <button
                   onClick={() => { logout(); setDropdownOpen(false); }}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text hover:bg-bg-tertiary transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container-low transition-colors text-left"
                 >
-                  <LogOut size={16} className="text-text-secondary" />
+                  <LogOut size={16} className="text-secondary" />
                   Logout
                 </button>
               </div>
@@ -298,22 +298,22 @@ const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = fa
 
       {/* Mobile search overlay */}
       {showMobileSearch && (
-        <div className="fixed inset-0 z-50 bg-bg md:hidden flex flex-col">
-          <div className="flex items-center gap-2 p-3 border-b border-border">
+        <div className="fixed inset-0 z-50 bg-background md:hidden flex flex-col">
+          <div className="flex items-center gap-2 p-3 border-b border-outline-variant">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" size={18} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary" size={18} />
               <input
                 ref={mobileSearchInputRef}
                 type="text"
                 placeholder="Search boards, workspaces..."
                 value={searchQuery}
                 onChange={handleSearchChange}
-                className="w-full pl-10 pr-4 py-2.5 bg-bg-secondary border border-border rounded-lg text-sm focus:outline-none focus:bg-bg focus:border-input-border-focus transition-all"
+                className="w-full pl-10 pr-4 py-2.5 bg-surface-container-low border border-outline-variant rounded-DEFAULT text-sm focus:outline-none focus:bg-surface-container-lowest focus:border-primary transition-all"
               />
             </div>
             <button
               onClick={() => { setShowMobileSearch(false); setSearchQuery(''); setShowSearchDropdown(false); }}
-              className="px-3 py-2 text-sm text-text-secondary hover:text-text font-semibold"
+              className="px-3 py-2 text-sm text-secondary hover:text-on-surface font-semibold"
             >
               Cancel
             </button>
@@ -321,35 +321,35 @@ const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = fa
           {showSearchDropdown && (
             <div className="flex-1 overflow-y-auto">
               {isSearching ? (
-                <div className="p-4 text-sm text-text-secondary text-center">Searching...</div>
+                <div className="p-4 text-sm text-secondary text-center">Searching...</div>
               ) : searchResults.workspaces.length === 0 && searchResults.boards.length === 0 ? (
-                <div className="p-4 text-sm text-text-secondary text-center">No results found</div>
+                <div className="p-4 text-sm text-secondary text-center">No results found</div>
               ) : (
                 <>
                   {searchResults.workspaces.length > 0 && (
                     <div>
-                      <div className="px-4 pt-3 pb-1 text-xs font-bold text-text-secondary uppercase tracking-wider">Workspaces</div>
+                      <div className="px-4 pt-3 pb-1 text-xs font-mono-label font-bold text-secondary uppercase tracking-wider">Workspaces</div>
                       {searchResults.workspaces.map((ws) => (
                         <button
                           key={ws.id}
                           type="button"
                           onClick={() => { navigate(`/workspaces/${ws.id}`); setShowMobileSearch(false); setShowSearchDropdown(false); setSearchQuery(''); }}
                           onTouchEnd={(e) => { e.preventDefault(); navigate(`/workspaces/${ws.id}`); setShowMobileSearch(false); setShowSearchDropdown(false); setSearchQuery(''); }}
-                          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-text hover:bg-bg-tertiary transition-colors text-left border-b border-border-light"
+                          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-on-surface hover:bg-surface-container-low transition-colors text-left border-b border-outline-variant"
                         >
                           {ws.coverImageUrl ? (
-                            <img src={supabaseStorageService.getCoverImageUrl(ws.coverImageUrl)} alt="" className="w-8 h-8 rounded-lg object-cover shrink-0" />
+                            <img src={supabaseStorageService.getCoverImageUrl(ws.coverImageUrl)} alt="" className="w-8 h-8 rounded-DEFAULT object-cover shrink-0" />
                           ) : (
                             <div
-                              className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0"
-                              style={{ backgroundColor: ws.color || 'var(--color-button)' }}
+                              className="w-8 h-8 rounded-DEFAULT flex items-center justify-center text-on-primary text-xs font-bold shadow-sm shrink-0"
+                              style={{ backgroundColor: ws.color || 'var(--color-primary)' }}
                             >
                               {ws.name[0]}
                             </div>
                           )}
                           <div className="min-w-0">
                             <p className="font-bold truncate">{ws.name}</p>
-                            <p className="text-xs text-text-secondary">Workspace</p>
+                            <p className="text-xs text-secondary">Workspace</p>
                           </div>
                         </button>
                       ))}
@@ -357,24 +357,24 @@ const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = fa
                   )}
                   {searchResults.boards.length > 0 && (
                     <div>
-                      <div className="px-4 pt-3 pb-1 text-xs font-bold text-text-secondary uppercase tracking-wider">Boards</div>
+                      <div className="px-4 pt-3 pb-1 text-xs font-mono-label font-bold text-secondary uppercase tracking-wider">Boards</div>
                       {searchResults.boards.map((board) => (
                         <button
                           key={board.id}
                           type="button"
                           onClick={() => { navigate(`/workspaces/${board.workspace.id}/boards/${board.id}`); setShowMobileSearch(false); setShowSearchDropdown(false); setSearchQuery(''); }}
                           onTouchEnd={(e) => { e.preventDefault(); navigate(`/workspaces/${board.workspace.id}/boards/${board.id}`); setShowMobileSearch(false); setShowSearchDropdown(false); setSearchQuery(''); }}
-                          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-text hover:bg-bg-tertiary transition-colors text-left border-b border-border-light"
+                          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-on-surface hover:bg-surface-container-low transition-colors text-left border-b border-outline-variant"
                         >
                           <div
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-xs text-white shrink-0"
-                            style={{ backgroundColor: board.color || 'var(--color-bg-tertiary)' }}
+                            className="w-8 h-8 rounded-DEFAULT flex items-center justify-center text-xs text-on-primary shrink-0"
+                            style={{ backgroundColor: board.color || 'var(--color-surface-container-high)' }}
                           >
                             {board.name[0]}
                           </div>
                           <div className="min-w-0">
                             <p className="font-bold truncate">{board.name}</p>
-                            <p className="text-xs text-text-secondary truncate">{board.workspace?.name}</p>
+                            <p className="text-xs text-secondary truncate">{board.workspace?.name}</p>
                           </div>
                         </button>
                       ))}

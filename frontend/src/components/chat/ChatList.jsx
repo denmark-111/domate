@@ -188,8 +188,8 @@ const ChatList = () => {
 
   if (isLoading) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center bg-bg-secondary min-h-0">
-        <div className="flex items-center gap-3 text-text-secondary">
+      <div className="flex-1 flex flex-col items-center justify-center bg-surface-container-lowest min-h-0">
+        <div className="flex items-center gap-3 text-secondary">
           <Loader size={20} className="animate-spin" />
           <span className="text-sm font-medium">Loading messages...</span>
         </div>
