@@ -916,7 +916,7 @@ const Board = () => {
           </div>
         ) : (
           <>
-              <div className="flex items-center justify-between px-3 sm:px-6 py-2.5 border-b border-outline-variant shrink-0 bg-surface-container-lowest">
+              <div className="flex items-center justify-between px-4 sm:px-6 py-2.5 border-b border-outline-variant shrink-0 bg-surface-container-lowest">
                 <div className="flex items-center gap-3">
                   {activeBoard?.color && (
                     <span

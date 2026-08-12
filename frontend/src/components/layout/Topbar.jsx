@@ -84,12 +84,12 @@ const Topbar = ({ onToggle, hideBranding = false, hideSearch = false, title }) =
     : null;
 
   return (
-    <header className="h-14 sm:h-16 border-b border-outline-variant bg-surface-container-lowest flex items-center justify-between px-3 sm:px-6 z-10">
+    <header className="h-14 sm:h-16 border-b border-outline-variant bg-surface-container-lowest flex items-center justify-between px-4 sm:px-6 z-10">
       <div className="flex items-center gap-2 sm:gap-4 min-w-0 h-full">
         {onToggle && (
           <button
             onClick={onToggle}
-            className="lg:hidden p-2 text-secondary hover:bg-surface-container-low rounded-DEFAULT transition-colors cursor-pointer"
+            className="lg:hidden -ml-2 p-2 text-secondary hover:bg-surface-container-low rounded-DEFAULT transition-colors cursor-pointer"
             aria-label="Open menu"
           >
             <Menu size={20} />
