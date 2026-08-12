@@ -6,7 +6,8 @@ import {
   DndContext,
   DragOverlay,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors
 } from '@dnd-kit/core';
@@ -265,8 +266,11 @@ const Board = () => {
   const [activeTask, setActiveTask] = useState(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
+    useSensor(MouseSensor, {
       activationConstraint: { distance: 6 }
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 250, tolerance: 8 }
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates
