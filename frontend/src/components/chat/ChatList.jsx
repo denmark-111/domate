@@ -199,17 +199,6 @@ const ChatList = () => {
 
   return (
     <div className="flex-1 flex flex-col bg-surface dark:bg-background min-h-0">
-      {/* Header */}
-      <header className="shrink-0 px-4 sm:px-8 py-4 border-b border-outline-variant bg-surface dark:bg-background">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="font-headline-md text-xl font-bold text-on-surface">Chat</h1>
-            <p className="font-body-sm text-xs text-secondary mt-0.5">
-              {activeWorkspace?.name || 'Workspace'} discussion
-            </p>
-          </div>
-        </div>
-      </header>
 
       {/* Error banner */}
       {error && (

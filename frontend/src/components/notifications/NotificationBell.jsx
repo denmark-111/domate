@@ -17,7 +17,7 @@ const timeAgo = (dateStr) => {
   return date.toLocaleDateString();
 };
 
-export default function NotificationBell({ fullWidth = false, collapsed = false }) {
+export default function NotificationBell() {
   const { notifications, unreadCount, markAsRead, markAllAsRead, fetchNotifications, isLoading, hasMore } = useNotifications();
   const [open, setOpen] = useState(false);
   const [fetched, setFetched] = useState(false);
@@ -66,48 +66,23 @@ export default function NotificationBell({ fullWidth = false, collapsed = false 
     }
   }, [isLoading, hasMore, notifications.length, fetchNotifications]);
 
-  const dropdownPositionClass = fullWidth
-    ? (collapsed ? 'left-full bottom-0 ml-2' : 'left-0 bottom-full mb-2')
-    : 'right-0 top-full mt-2';
-
   return (
-    <div className={`relative ${fullWidth ? 'w-full' : ''}`} ref={dropdownRef}>
+    <div className="relative" ref={dropdownRef}>
       <button
         onClick={handleToggle}
-        className={
-          fullWidth
-            ? 'w-full flex items-center gap-3 px-3 py-2 rounded-DEFAULT text-xs font-body-sm font-medium transition-colors text-left cursor-pointer overflow-hidden text-secondary hover:text-on-surface hover:bg-surface-container-high'
-            : 'p-2 text-secondary hover:bg-surface-container-high rounded-full transition-colors relative cursor-pointer'
-        }
+        className="p-2 text-secondary hover:bg-surface-container-high rounded-full transition-colors relative cursor-pointer"
         aria-label="Notifications"
-        title={collapsed ? 'Notifications' : undefined}
       >
-        {fullWidth ? (
-          <>
-            <div className="w-6 h-6 flex items-center justify-center shrink-0 relative">
-              <Bell size={18} />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] flex items-center justify-center bg-error text-on-error text-[9px] font-bold rounded-full px-0.5 leading-none pointer-events-none">
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </span>
-              )}
-            </div>
-            {!collapsed && <span className="truncate whitespace-nowrap">Notifications</span>}
-          </>
-        ) : (
-          <>
-            <Bell size={18} />
-            {unreadCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] flex items-center justify-center bg-error text-on-error text-[10px] font-bold rounded-full px-1 leading-none border-2 border-surface pointer-events-none">
-                {unreadCount > 99 ? '99+' : unreadCount}
-              </span>
-            )}
-          </>
+        <Bell size={18} />
+        {unreadCount > 0 && (
+          <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] flex items-center justify-center bg-error text-on-error text-[10px] font-bold rounded-full px-1 leading-none border-2 border-surface pointer-events-none">
+            {unreadCount > 99 ? '99+' : unreadCount}
+          </span>
         )}
       </button>
 
       {open && (
-        <div className={`absolute ${dropdownPositionClass} w-80 sm:w-96 bg-surface-container-lowest border border-outline-variant rounded-DEFAULT shadow-xl z-50 max-h-[70vh] flex flex-col`}>
+        <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-surface-container-lowest border border-outline-variant rounded-DEFAULT shadow-xl z-50 max-h-[70vh] flex flex-col">
           <div className="flex items-center justify-between px-4 py-3 border-b border-outline-variant shrink-0">
             <h3 className="text-sm font-bold text-on-surface">Notifications</h3>
             {unreadCount > 0 && (

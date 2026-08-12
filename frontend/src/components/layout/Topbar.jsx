@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
-import { Settings, Search, Sun, Moon, LogOut, User, PanelLeftClose, PanelLeftOpen, Menu, X } from 'lucide-react';
+import { Settings, Search, Sun, Moon, LogOut, User, Menu } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { supabaseStorageService, searchService } from '../../services/index.js';
 import NotificationBell from '../notifications/NotificationBell';
 
-const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = false }) => {
+const Topbar = ({ onToggle, hideBranding = false, hideSearch = false, title }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
@@ -45,7 +45,7 @@ const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = fa
   };
 
   useEffect(() => {
-    if (searchQuery.length < 2) return;
+    if (hideSearch || searchQuery.length < 2) return;
 
     const timer = setTimeout(async () => {
       setIsSearching(true);
@@ -58,7 +58,7 @@ const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = fa
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery, hideSearch]);
 
   useEffect(() => {
     const handleEscape = (e) => {
@@ -86,151 +86,153 @@ const Topbar = ({ collapsed, mobileSidebarOpen, onToggle, hideSidebarToggle = fa
   return (
     <header className="h-14 sm:h-16 border-b border-outline-variant bg-surface-container-lowest flex items-center justify-between px-3 sm:px-6 z-10">
       <div className="flex items-center gap-2 sm:gap-4 min-w-0 h-full">
-          {!hideSidebarToggle && (
-            <>
-              {/* Mobile hamburger */}
-              <button
-                onClick={onToggle}
-                className="lg:hidden p-2 text-secondary hover:bg-surface-container-low rounded-DEFAULT transition-colors"
-                aria-label={mobileSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
-              >
-                {mobileSidebarOpen ? <X size={20} /> : <Menu size={20} />}
-              </button>
+        {onToggle && (
+          <button
+            onClick={onToggle}
+            className="lg:hidden p-2 text-secondary hover:bg-surface-container-low rounded-DEFAULT transition-colors cursor-pointer"
+            aria-label="Open menu"
+          >
+            <Menu size={20} />
+          </button>
+        )}
 
-              {/* Desktop sidebar toggle */}
-              <button
-                onClick={onToggle}
-                className="hidden lg:block p-2 text-secondary hover:bg-surface-container-low rounded-DEFAULT transition-colors"
-                title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        {title && (
+          <span className="font-headline-md text-base sm:text-lg font-bold text-on-surface tracking-tight truncate select-none">
+            {title}
+          </span>
+        )}
+
+          {!hideBranding && (
+            <>
+              <span
+                onClick={() => navigate('/dashboard')}
+                className="font-headline-md text-xl sm:text-2xl font-bold text-on-surface cursor-pointer tracking-tight shrink-0 mr-4 select-none"
               >
-                {collapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
-              </button>
+                Domate
+              </span>
+
+              {/* Top Navbar Links (Home link removed, clicking Domate navigates to home) */}
+              <nav className="hidden md:flex items-center h-full gap-1 font-body-sm text-sm font-medium">
+                <button
+                  onClick={() => navigate('/tasks')}
+                  className={`h-full px-4 flex items-center transition-colors relative cursor-pointer ${
+                    location.pathname === '/tasks'
+                      ? 'text-on-surface font-bold'
+                      : 'text-secondary hover:text-on-surface'
+                  }`}
+                >
+                  <span>Tasks</span>
+                  {location.pathname === '/tasks' && (
+                    <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary" />
+                  )}
+                </button>
+                <button
+                  onClick={() => navigate('/workspaces')}
+                  className={`h-full px-4 flex items-center transition-colors relative cursor-pointer ${
+                    location.pathname === '/workspaces'
+                      ? 'text-on-surface font-bold'
+                      : 'text-secondary hover:text-on-surface'
+                  }`}
+                >
+                  <span>Workspaces</span>
+                  {location.pathname === '/workspaces' && (
+                    <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary" />
+                  )}
+                </button>
+              </nav>
             </>
           )}
 
-          <span
-            onClick={() => navigate('/dashboard')}
-            className="font-headline-md text-xl sm:text-2xl font-bold text-on-surface cursor-pointer tracking-tight shrink-0 mr-4 select-none"
-          >
-            Domate
-          </span>
-
-          {/* Top Navbar Links (Home link removed, clicking Domate navigates to home) */}
-          <nav className="hidden md:flex items-center h-full gap-1 font-body-sm text-sm font-medium">
-            <button
-              onClick={() => navigate('/tasks')}
-              className={`h-full px-4 flex items-center transition-colors relative cursor-pointer ${
-                location.pathname === '/tasks'
-                  ? 'text-on-surface font-bold'
-                  : 'text-secondary hover:text-on-surface'
-              }`}
-            >
-              <span>Tasks</span>
-              {location.pathname === '/tasks' && (
-                <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary" />
-              )}
-            </button>
-            <button
-              onClick={() => navigate('/workspaces')}
-              className={`h-full px-4 flex items-center transition-colors relative cursor-pointer ${
-                location.pathname === '/workspaces'
-                  ? 'text-on-surface font-bold'
-                  : 'text-secondary hover:text-on-surface'
-              }`}
-            >
-              <span>Workspaces</span>
-              {location.pathname === '/workspaces' && (
-                <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary" />
-              )}
-            </button>
-          </nav>
-
           {/* Desktop search */}
-          <div className="relative group hidden md:block" ref={searchRef}>
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary group-focus-within:text-primary transition-colors" size={18} />
-            <input
-              type="text"
-              placeholder="Search boards, workspaces..."
-              value={searchQuery}
-              onChange={handleSearchChange}
-              onFocus={() => searchQuery.length >= 2 && setShowSearchDropdown(true)}
-              className="pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-DEFAULT text-sm focus:outline-none focus:bg-surface-container-lowest focus:border-primary transition-all w-64 lg:w-80 xl:w-96"
-            />
+          {!hideSearch && (
+            <div className="relative group hidden md:block" ref={searchRef}>
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary group-focus-within:text-primary transition-colors" size={18} />
+              <input
+                type="text"
+                placeholder="Search boards, workspaces..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                onFocus={() => searchQuery.length >= 2 && setShowSearchDropdown(true)}
+                className="pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-DEFAULT text-sm focus:outline-none focus:bg-surface-container-lowest focus:border-primary transition-all w-64 lg:w-80 xl:w-96"
+              />
 
-            {showSearchDropdown && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-surface-container-lowest border border-outline-variant rounded-DEFAULT shadow-xl z-50 max-h-80 overflow-y-auto">
-                {isSearching ? (
-                  <div className="p-4 text-sm text-secondary text-center">Searching...</div>
-                ) : searchResults.workspaces.length === 0 && searchResults.boards.length === 0 ? (
-                  <div className="p-4 text-sm text-secondary text-center">No results found</div>
-                ) : (
-                  <>
-                    {searchResults.workspaces.length > 0 && (
-                      <div>
-                        <div className="px-4 pt-3 pb-1 text-xs font-mono-label font-bold text-secondary uppercase tracking-wider">Workspaces</div>
-                        {searchResults.workspaces.map((ws) => (
-                          <button
-                            key={ws.id}
-                            onClick={() => { navigate(`/workspaces/${ws.id}`); setShowSearchDropdown(false); setSearchQuery(''); }}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container-low transition-colors text-left"
-                          >
-                            {ws.coverImageUrl ? (
-                              <img src={supabaseStorageService.getCoverImageUrl(ws.coverImageUrl)} alt="" className="w-8 h-8 rounded-DEFAULT object-cover shrink-0" />
-                            ) : (
-                              <div
-                                className="w-8 h-8 rounded-DEFAULT flex items-center justify-center text-on-primary text-xs font-bold shadow-sm shrink-0"
-                                style={{ backgroundColor: ws.color || 'var(--color-primary)' }}
-                              >
-                                {ws.name[0]}
-                              </div>
-                            )}
-                            <div className="min-w-0">
-                              <p className="font-bold truncate">{ws.name}</p>
-                              <p className="text-xs text-secondary">Workspace</p>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                    {searchResults.boards.length > 0 && (
-                      <div>
-                        <div className="px-4 pt-3 pb-1 text-xs font-mono-label font-bold text-secondary uppercase tracking-wider">Boards</div>
-                        {searchResults.boards.map((board) => (
-                          <button
-                            key={board.id}
-                            onClick={() => { navigate(`/workspaces/${board.workspace.id}/boards/${board.id}`); setShowSearchDropdown(false); setSearchQuery(''); }}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container-low transition-colors text-left"
-                          >
-                            <div
-                              className="w-8 h-8 rounded-DEFAULT flex items-center justify-center text-xs text-on-primary shrink-0"
-                              style={{ backgroundColor: board.color || 'var(--color-surface-container-high)' }}
+              {showSearchDropdown && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-surface-container-lowest border border-outline-variant rounded-DEFAULT shadow-xl z-50 max-h-80 overflow-y-auto">
+                  {isSearching ? (
+                    <div className="p-4 text-sm text-secondary text-center">Searching...</div>
+                  ) : searchResults.workspaces.length === 0 && searchResults.boards.length === 0 ? (
+                    <div className="p-4 text-sm text-secondary text-center">No results found</div>
+                  ) : (
+                    <>
+                      {searchResults.workspaces.length > 0 && (
+                        <div>
+                          <div className="px-4 pt-3 pb-1 text-xs font-mono-label font-bold text-secondary uppercase tracking-wider">Workspaces</div>
+                          {searchResults.workspaces.map((ws) => (
+                            <button
+                              key={ws.id}
+                              onClick={() => { navigate(`/workspaces/${ws.id}`); setShowSearchDropdown(false); setSearchQuery(''); }}
+                              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container-low transition-colors text-left"
                             >
-                              {board.name[0]}
-                            </div>
-                            <div className="min-w-0">
-                              <p className="font-bold truncate">{board.name}</p>
-                              <p className="text-xs text-secondary truncate">{board.workspace?.name}</p>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-          </div>
+                              {ws.coverImageUrl ? (
+                                <img src={supabaseStorageService.getCoverImageUrl(ws.coverImageUrl)} alt="" className="w-8 h-8 rounded-DEFAULT object-cover shrink-0" />
+                              ) : (
+                                <div
+                                  className="w-8 h-8 rounded-DEFAULT flex items-center justify-center text-on-primary text-xs font-bold shadow-sm shrink-0"
+                                  style={{ backgroundColor: ws.color || 'var(--color-primary)' }}
+                                >
+                                  {ws.name[0]}
+                                </div>
+                              )}
+                              <div className="min-w-0">
+                                <p className="font-bold truncate">{ws.name}</p>
+                                <p className="text-xs text-secondary">Workspace</p>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {searchResults.boards.length > 0 && (
+                        <div>
+                          <div className="px-4 pt-3 pb-1 text-xs font-mono-label font-bold text-secondary uppercase tracking-wider">Boards</div>
+                          {searchResults.boards.map((board) => (
+                            <button
+                              key={board.id}
+                              onClick={() => { navigate(`/workspaces/${board.workspace.id}/boards/${board.id}`); setShowSearchDropdown(false); setSearchQuery(''); }}
+                              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container-low transition-colors text-left"
+                            >
+                              <div
+                                className="w-8 h-8 rounded-DEFAULT flex items-center justify-center text-xs text-on-primary shrink-0"
+                                style={{ backgroundColor: board.color || 'var(--color-surface-container-high)' }}
+                              >
+                                {board.name[0]}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-bold truncate">{board.name}</p>
+                                <p className="text-xs text-secondary truncate">{board.workspace?.name}</p>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
           {/* Mobile search toggle */}
-          <button
-            onClick={() => setShowMobileSearch(true)}
-            className="md:hidden p-2 text-secondary hover:bg-surface-container-low rounded-DEFAULT transition-colors"
-            aria-label="Search"
-          >
-            <Search size={18} />
-          </button>
+          {!hideSearch && (
+            <button
+              onClick={() => setShowMobileSearch(true)}
+              className="md:hidden p-2 text-secondary hover:bg-surface-container-low rounded-DEFAULT transition-colors"
+              aria-label="Search"
+            >
+              <Search size={18} />
+            </button>
+          )}
 
           {/* Dark Mode Toggle */}
           <button 

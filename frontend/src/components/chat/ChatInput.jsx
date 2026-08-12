@@ -95,7 +95,7 @@ const ChatInput = ({ onSend, isLoading, onTyping, onStopTyping }) => {
             }
             onStopTyping?.();
           }}
-          placeholder="Type a message (Return to send, Shift+Return for new line)..."
+          placeholder="Type a message..."
           rows={1}
           className="flex-1 px-4 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-DEFAULT text-sm font-body-md text-on-surface placeholder:text-outline resize-none outline-none focus:border-primary transition-colors"
           style={{ minHeight: '44px', maxHeight: '140px' }}
