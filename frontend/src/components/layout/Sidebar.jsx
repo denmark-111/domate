@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { supabaseStorageService } from '../../services/supabaseStorageService';
 import ConfirmModal from '../common/ConfirmModal';
+import Button from '../common/Button';
 import WorkspaceIcon from '../workspace/WorkspaceIcon';
 import {
   LayoutDashboard,
@@ -218,10 +219,10 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
                 setIsBoardsOpen(!isBoardsOpen);
               }
             }}
-            className={`w-full flex items-center justify-between px-3 py-2 rounded-DEFAULT text-xs font-body-sm font-medium transition-colors text-left cursor-pointer overflow-hidden ${
+            className={`w-full flex items-center justify-between px-3 py-2 rounded-DEFAULT text-xs font-body-sm transition-colors text-left cursor-pointer overflow-hidden ${
               isAnyBoardActive && !isOverviewActive && !isChatActive && !isAnnouncementsActive
-                ? 'text-on-surface font-bold bg-surface-container-high'
-                : 'text-secondary hover:text-on-surface hover:bg-surface-container-high'
+                ? 'bg-primary text-on-primary font-bold shadow-2xs'
+                : 'text-secondary font-medium hover:text-on-surface hover:bg-surface-container-high'
             }`}
             title={collapsed ? 'Boards' : undefined}
           >
@@ -233,7 +234,11 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
             </div>
             {!collapsed && (
               <div className="flex items-center gap-1 shrink-0">
-                <span className="font-mono-label text-[10px] text-secondary font-bold mr-1">
+                <span className={`font-mono-label text-[10px] font-bold mr-1 ${
+                  isAnyBoardActive && !isOverviewActive && !isChatActive && !isAnnouncementsActive
+                    ? 'text-on-primary/80'
+                    : 'text-secondary'
+                }`}>
                   {safeBoards.length}
                 </span>
                 {isBoardsOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
@@ -243,7 +248,7 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
 
           {/* Sub-boards List */}
           {!collapsed && isBoardsOpen && (
-            <div className="pl-7 pr-1 py-1 flex flex-col gap-0.5">
+            <div className="py-1 flex flex-col gap-0.5">
               {(showAllBoards ? safeBoards : safeBoards.slice(0, 8)).map((board) => {
                 const isBoardActive = location.pathname === `/workspaces/${activeWorkspace.id}/boards/${board.id}`;
 
@@ -254,10 +259,10 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
                         navigate(`/workspaces/${activeWorkspace.id}/boards/${board.id}`);
                         onCloseMobile?.();
                       }}
-                      className={`w-full flex items-center justify-between py-1.5 px-2.5 rounded-DEFAULT text-xs font-body-sm text-left transition-colors cursor-pointer ${
+                      className={`w-full flex items-center justify-between py-1.5 pl-9 pr-3 rounded-DEFAULT text-xs font-body-sm text-left transition-colors cursor-pointer ${
                         isBoardActive
-                          ? 'bg-surface-container-high text-on-surface font-bold border-l-2 border-primary'
-                          : 'text-secondary hover:text-on-surface hover:bg-surface-container-high'
+                          ? 'bg-surface-container-high text-on-surface font-semibold'
+                          : 'text-secondary font-medium hover:text-on-surface hover:bg-surface-container-high'
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0 pr-4">
@@ -275,7 +280,7 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
                         setDeletingBoardId(board.id);
                         setShowDeleteBoard(true);
                       }}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 text-secondary hover:text-error hover:bg-error-container rounded-DEFAULT transition-opacity cursor-pointer"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 text-secondary hover:text-error hover:bg-error-container rounded-DEFAULT transition-opacity cursor-pointer"
                       title="Delete board"
                     >
                       <Trash2 size={12} />
@@ -285,7 +290,7 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
               })}
 
               {safeBoards.length === 0 && (
-                <p className="font-body-sm text-[11px] text-secondary py-1 px-2 italic">
+                <p className="font-body-sm text-[11px] text-secondary py-1 pl-9 pr-3 italic">
                   No boards created
                 </p>
               )}
@@ -293,7 +298,7 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
               {safeBoards.length > 8 && (
                 <button
                   onClick={() => setShowAllBoards(!showAllBoards)}
-                  className="text-left px-2 py-1 font-mono-label text-[10px] text-secondary hover:text-on-surface transition-colors cursor-pointer mt-0.5"
+                  className="text-left pl-9 pr-3 py-1 font-mono-label text-[10px] text-secondary hover:text-on-surface transition-colors cursor-pointer mt-0.5"
                 >
                   {showAllBoards ? 'Show less' : `+ Show more (${safeBoards.length - 8})`}
                 </button>
@@ -347,17 +352,17 @@ const Sidebar = ({ collapsed, onToggle, mobile = false, onCloseMobile }) => {
       {/* Bottom Sidebar Footer Section */}
       <div className="p-2 mt-auto space-y-2">
         {/* New Board Action */}
-        <button
+        <Button
           onClick={() => {
             setShowCreateBoard(true);
             onCloseMobile?.();
           }}
-          className="w-full bg-primary hover:opacity-90 text-on-primary font-label-caps text-xs font-bold uppercase h-9 flex items-center justify-center gap-2 px-3 rounded-DEFAULT transition-opacity cursor-pointer shadow-2xs overflow-hidden"
+          className="w-full shadow-2xs overflow-hidden"
           title="New Board"
         >
           <Plus size={16} className="shrink-0" />
           {!collapsed && <span className="truncate whitespace-nowrap">New Board</span>}
-        </button>
+        </Button>
 
         {/* Profile Button & Menu */}
         <div className="relative w-full" ref={dropdownRef}>

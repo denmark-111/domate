@@ -239,13 +239,14 @@ const WorkspaceOverview = () => {
 
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             {isOwner && (
-              <button
+              <Button
+                variant="secondary"
                 onClick={() => setShowInviteModal(true)}
-                className="px-4 py-2 bg-surface-container-lowest border border-outline-variant hover:border-primary text-on-surface font-label-caps text-xs font-bold uppercase rounded-DEFAULT flex items-center gap-2 transition-colors cursor-pointer"
+                className="shrink-0"
               >
                 <UserPlus size={16} />
                 <span>Invite Member</span>
-              </button>
+              </Button>
             )}
             <Button
               onClick={() => setShowCreateBoard(true)}
