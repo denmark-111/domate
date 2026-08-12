@@ -103,7 +103,7 @@ const ListColumn = ({
         transition,
         borderColor: lockInfo ? lockInfo.color : undefined
       }}
-      className={`w-72 sm:w-80 flex-shrink-0 flex flex-col max-h-full bg-surface-container-low border border-outline-variant rounded-DEFAULT overflow-hidden relative transition-all shadow-2xs ${
+      className={`w-72 sm:w-80 flex-shrink-0 flex flex-col max-h-full bg-surface-container-low border border-outline-variant rounded-DEFAULT overflow-hidden relative transition-colors shadow-2xs ${
         lockInfo ? 'border-2 shadow-md z-10' : ''
       } ${isDragging ? 'opacity-50' : ''}`}
     >

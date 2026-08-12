@@ -51,7 +51,7 @@ const TaskCard = ({ task, sortableId, onClick, onDelete, onToggleComplete, lockI
         borderColor: lockInfo ? lockInfo.color : undefined
       }}
       onClick={onClick}
-      className={`bg-surface-container-lowest p-3.5 rounded-DEFAULT border border-outline-variant hover:border-primary transition-all duration-200 cursor-pointer group relative shadow-2xs space-y-2.5 touch-manipulation ${
+      className={`bg-surface-container-lowest p-3.5 rounded-DEFAULT border border-outline-variant hover:border-primary transition-colors duration-200 cursor-pointer group relative shadow-2xs space-y-2.5 touch-manipulation ${
         lockInfo ? 'border-2 shadow-md z-10' : ''
       } ${isDragging ? 'opacity-50 z-50' : ''} ${isCompleted ? 'opacity-60' : ''} ${
         isLockedByOther ? 'select-none opacity-80' : ''
